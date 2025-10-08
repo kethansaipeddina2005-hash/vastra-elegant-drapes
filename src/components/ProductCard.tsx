@@ -1,38 +1,72 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Link } from "react-router-dom";
+import { Card, CardContent } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { Heart } from "lucide-react";
+import { Button } from "./ui/button";
+import { useState } from "react";
 
 interface ProductCardProps {
+  id: number;
   image: string;
   name: string;
-  price: string;
+  price: string | number;
+  isNew?: boolean;
+  isOnSale?: boolean;
+  rating?: number;
 }
 
-const ProductCard = ({ image, name, price }: ProductCardProps) => {
+const ProductCard = ({ id, image, name, price, isNew, isOnSale, rating }: ProductCardProps) => {
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  const formattedPrice = typeof price === 'number' 
+    ? `₹${price.toLocaleString('en-IN')}` 
+    : `₹${price}`;
+
   return (
-    <Card className="group overflow-hidden border-border bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-      <div className="aspect-[3/4] overflow-hidden bg-muted">
-        <img 
-          src={image} 
-          alt={name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        />
-      </div>
-      <CardContent className="p-4 space-y-2">
-        <h3 className="text-lg font-playfair font-semibold text-foreground">
-          {name}
-        </h3>
-        <p className="text-2xl font-medium text-primary">
-          ₹{price}
-        </p>
+    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
+      <Link to={`/product/${id}`}>
+        <div className="relative overflow-hidden aspect-[3/4]">
+          <img
+            src={image}
+            alt={name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          {(isNew || isOnSale) && (
+            <div className="absolute top-4 left-4 flex flex-col gap-2">
+              {isNew && <Badge className="bg-accent text-accent-foreground">New</Badge>}
+              {isOnSale && <Badge className="bg-destructive text-destructive-foreground">Sale</Badge>}
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 bg-background/80 hover:bg-background opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={(e) => {
+              e.preventDefault();
+              setIsWishlisted(!isWishlisted);
+            }}
+          >
+            <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-primary text-primary' : ''}`} />
+          </Button>
+        </div>
+      </Link>
+      
+      <CardContent className="p-4">
+        <Link to={`/product/${id}`}>
+          <h3 className="font-playfair text-lg font-semibold text-foreground mb-2 line-clamp-1">
+            {name}
+          </h3>
+          <div className="flex items-center justify-between">
+            <p className="text-xl font-semibold text-primary">{formattedPrice}</p>
+            {rating && (
+              <div className="flex items-center gap-1">
+                <span className="text-gold">★</span>
+                <span className="text-sm text-muted-foreground">{rating}</span>
+              </div>
+            )}
+          </div>
+        </Link>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
-        <Button 
-          variant="outline" 
-          className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300"
-        >
-          View Details
-        </Button>
-      </CardFooter>
     </Card>
   );
 };

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-saree.jpg";
 
@@ -19,12 +20,14 @@ const Hero = () => {
           <p className="text-xl md:text-2xl text-muted-foreground font-light">
             The Essence of Indian Elegance
           </p>
-          <Button 
-            size="lg"
-            className="bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-lg hover:shadow-xl px-8 py-6 text-lg"
-          >
-            Shop Now
-          </Button>
+          <Link to="/collections">
+            <Button 
+              size="lg"
+              className="bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-lg hover:shadow-xl px-8 py-6 text-lg"
+            >
+              Shop Now
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
