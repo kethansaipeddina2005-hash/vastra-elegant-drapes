@@ -38,7 +38,7 @@ const Contact = () => {
                   <Mail className="h-6 w-6 text-primary mt-1" />
                   <div>
                     <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                    <a href="mailto:info@vastra.com" className="text-muted-foreground hover:text-primary transition-colors">
+                    <a href="mailto:@vastra.com" className="text-muted-foreground hover:text-primary transition-colors">
                       info@vastra.com
                     </a>
                   </div>
@@ -49,7 +49,7 @@ const Contact = () => {
                   <div>
                     <h3 className="font-semibold text-foreground mb-1">Location</h3>
                     <p className="text-muted-foreground">
-                      Mumbai, India
+                      Kotthuru,Srikakulam,Andhra Pradesh, India 532455
                     </p>
                   </div>
                 </div>
