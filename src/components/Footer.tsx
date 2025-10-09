@@ -26,7 +26,7 @@ const Footer = () => {
           
           <div className="flex gap-4">
             <a 
-              href="https://instagram.com" 
+              href="https://www.instagram.com/vastra_family_shoppy/" 
               target="_blank" 
               rel="noopener noreferrer"
               className="bg-card p-3 rounded-full hover:bg-primary hover:text-primary-foreground transition-all duration-300"
