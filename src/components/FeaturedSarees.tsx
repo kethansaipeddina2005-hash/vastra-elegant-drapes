@@ -16,16 +16,7 @@ const FeaturedSarees = () => {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.slice(0, 6).map((saree) => (
-            <ProductCard 
-              key={saree.id}
-              id={saree.id}
-              image={saree.image}
-              name={saree.name}
-              price={saree.price}
-              isNew={saree.isNew}
-              isOnSale={saree.isOnSale}
-              rating={saree.rating}
-            />
+            <ProductCard key={saree.id} {...saree} />
           ))}
         </div>
       </div>

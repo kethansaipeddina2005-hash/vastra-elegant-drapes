@@ -7,14 +7,15 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, ShoppingCart, Minus, Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const { toast } = useToast();
   const product = products.find(p => p.id === parseInt(id || '0'));
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { addToCart } = useCart();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   
   if (!product) {
     return (
@@ -34,19 +35,18 @@ const ProductDetail = () => {
     (p.fabricType === product.fabricType || p.occasion === product.occasion)
   ).slice(0, 3);
 
+  const inWishlist = isInWishlist(product.id);
+
   const handleAddToCart = () => {
-    toast({
-      title: "Added to cart",
-      description: `${quantity} ${quantity === 1 ? 'item' : 'items'} added to your cart`,
-    });
+    addToCart(product, quantity);
   };
 
   const handleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
-    toast({
-      title: isWishlisted ? "Removed from wishlist" : "Added to wishlist",
-      description: isWishlisted ? "Item removed from your wishlist" : "Item added to your wishlist",
-    });
+    if (inWishlist) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
   };
   
   return (
@@ -141,9 +141,9 @@ const ProductDetail = () => {
                 size="lg" 
                 variant="outline" 
                 onClick={handleWishlist}
-                className={isWishlisted ? "text-primary" : ""}
+                className={inWishlist ? "text-primary" : ""}
               >
-                <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-primary' : ''}`} />
+                <Heart className={`h-5 w-5 ${inWishlist ? 'fill-primary' : ''}`} />
               </Button>
             </div>
 
@@ -190,16 +190,7 @@ const ProductDetail = () => {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {relatedProducts.map(product => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  image={product.image}
-                  name={product.name}
-                  price={product.price}
-                  isNew={product.isNew}
-                  isOnSale={product.isOnSale}
-                  rating={product.rating}
-                />
+                <ProductCard key={product.id} {...product} />
               ))}
             </div>
           </div>
