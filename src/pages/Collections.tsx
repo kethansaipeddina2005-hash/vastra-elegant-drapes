@@ -147,16 +147,7 @@ const Collections = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {products.map((product) => (
-                  <ProductCard 
-                    key={product.id}
-                    id={product.id}
-                    image={product.image}
-                    name={product.name}
-                    price={product.price}
-                    isNew={product.isNew}
-                    isOnSale={product.isOnSale}
-                    rating={product.rating}
-                  />
+                  <ProductCard key={product.id} {...product} />
                 ))}
               </div>
             )}

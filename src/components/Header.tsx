@@ -1,13 +1,17 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { Search, ShoppingCart, User, Menu, X } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { cartCount } = useCart();
+  const { wishlistCount } = useWishlist();
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
@@ -57,9 +61,11 @@ const Header = () => {
             <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  0
-                </span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
               </Button>
             </Link>
             
