@@ -35,16 +35,59 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const shipping = cartTotal > 2000 ? 0 : 200;
-  const total = cartTotal + shipping;
+  // Coupon states
+  const [promoCode, setPromoCode] = useState("");
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [couponMessage, setCouponMessage] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
 
+  const shipping = cartTotal > 2000 ? 0 : 200;
+  const discountAmount = Math.floor((discountPercent / 100) * cartTotal);
+  const total = cartTotal + shipping - discountAmount;
+
+  const { user } = useAuth();
+
+  // ----------------- Coupon Handling -----------------
+  const handleApplyCoupon = async () => {
+    if (!promoCode.trim()) {
+      setCouponMessage("Please enter a coupon code");
+      return;
+    }
+
+    setCouponLoading(true);
+
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("*")
+      .eq("code", promoCode.trim().toUpperCase())
+      .eq("is_active", true)
+      .maybeSingle();
+
+    setCouponLoading(false);
+
+    if (error || !data) {
+      setCouponMessage("Invalid coupon code ❌");
+      setDiscountPercent(0);
+      return;
+    }
+
+    if (new Date(data.expiry_date) < new Date()) {
+      setCouponMessage("Coupon expired ❌");
+      setDiscountPercent(0);
+      return;
+    }
+
+    setDiscountPercent(data.discount_percent);
+    setCouponMessage(`Success! ${data.discount_percent}% off applied ✅`);
+  };
+
+  // ----------------- Shipping Submit -----------------
   const handleShippingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStep(2);
   };
 
-  const { user } = useAuth();
-
+  // ----------------- Razorpay Script Loader -----------------
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
       if (window.Razorpay) {
@@ -59,6 +102,7 @@ const Checkout = () => {
     });
   };
 
+  // ----------------- Place Order -----------------
   const handlePlaceOrder = async () => {
     if (!user) {
       toast({
@@ -75,14 +119,17 @@ const Checkout = () => {
     try {
       // Create order in database first
       const { data: order, error: orderError } = await supabase
-        .from('orders')
+        .from("orders")
         .insert({
           user_id: user.id,
-          total_amount: total,
+          total_amount: cartTotal,
+          discount_percent: discountPercent,
+          coupon_code: promoCode || null,
+          final_amount: total,
           shipping_address_id: null,
-          status: 'pending',
+          status: "pending",
           payment_method: paymentMethod,
-          payment_status: 'pending'
+          payment_status: "pending",
         })
         .select()
         .single();
@@ -98,16 +145,15 @@ const Checkout = () => {
       }));
 
       const { error: itemsError } = await supabase
-        .from('order_items')
+        .from("order_items")
         .insert(orderItems);
 
       if (itemsError) throw itemsError;
 
-      // Handle payment based on method
+      // Handle payment
       if (paymentMethod === "razorpay") {
         await handleRazorpayPayment(order.id, total);
       } else if (paymentMethod === "cod") {
-        // COD - Order already created with pending status
         toast({
           title: "Order Placed Successfully!",
           description: `Order #${order.id.slice(0, 8)} confirmed. Pay on delivery.`,
@@ -116,6 +162,7 @@ const Checkout = () => {
         navigate("/account/orders");
         setIsProcessing(false);
       }
+
     } catch (error) {
       console.error('Error placing order:', error);
       toast({
@@ -127,6 +174,7 @@ const Checkout = () => {
     }
   };
 
+  // ----------------- Razorpay Payment -----------------
   const handleRazorpayPayment = async (orderId: string, amount: number) => {
     try {
       const scriptLoaded = await loadRazorpayScript();
@@ -141,7 +189,6 @@ const Checkout = () => {
         return;
       }
 
-      // Create Razorpay order
       const { data, error } = await supabase.functions.invoke('create-razorpay-order', {
         body: {
           amount: amount,
@@ -165,7 +212,6 @@ const Checkout = () => {
         order_id: data.orderId,
         handler: async function (response: any) {
           try {
-            // Verify payment
             const { error: verifyError } = await supabase.functions.invoke('verify-razorpay-payment', {
               body: {
                 razorpay_order_id: response.razorpay_order_id,
@@ -216,6 +262,7 @@ const Checkout = () => {
 
       const razorpay = new window.Razorpay(options);
       razorpay.open();
+
     } catch (error) {
       console.error('Razorpay payment error:', error);
       toast({
@@ -227,6 +274,7 @@ const Checkout = () => {
     }
   };
 
+  // ----------------- Redirect if Cart is Empty -----------------
   if (cart.length === 0) {
     navigate("/cart");
     return null;
@@ -347,6 +395,25 @@ const Checkout = () => {
                     <CardTitle>Payment Method</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
+
+                    {/* Coupon Section */}
+                    <div className="space-y-2">
+                      <Input 
+                        placeholder="Enter promo code" 
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value)}
+                      />
+                      <Button 
+                        variant="outline" 
+                        className="w-full" 
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading}
+                      >
+                        {couponLoading ? "Applying..." : "Apply Code"}
+                      </Button>
+                      {couponMessage && <p className="text-sm mt-1">{couponMessage}</p>}
+                    </div>
+
                     <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
                       <div className="flex items-center space-x-2 border rounded-lg p-4 bg-card hover:bg-accent/5 transition-colors">
                         <RadioGroupItem value="razorpay" id="razorpay" />
@@ -396,6 +463,7 @@ const Checkout = () => {
               )}
             </div>
 
+            {/* Order Summary */}
             <div>
               <Card className="sticky top-4">
                 <CardHeader>
@@ -403,33 +471,35 @@ const Checkout = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
-                    {cart.map(item => {
-                      return (
-                        <div key={item.id} className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">
-                            {item.name} × {item.quantity}
-                          </span>
-                          <span>₹{(item.price * item.quantity).toLocaleString()}</span>
-                        </div>
-                      );
-                    })}
+                    {cart.map(item => (
+                      <div key={item.id} className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {item.name} × {item.quantity}
+                        </span>
+                        <span>₹{(item.price * item.quantity).toLocaleString()}</span>
+                      </div>
+                    ))}
                   </div>
                   
                   <Separator />
-                  
+
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Subtotal</span>
                       <span>₹{cartTotal.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
+                      <span className="text-muted-foreground">Discount</span>
+                      <span>- ₹{discountAmount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Shipping</span>
                       <span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
                     <span>₹{total.toLocaleString()}</span>

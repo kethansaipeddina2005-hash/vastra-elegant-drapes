@@ -6,9 +6,49 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import { supabase } from "@/supabaseClient"; // <-- import Supabase
+import { useState } from "react";
 
 const Cart = () => {
   const { cart, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
+
+  const [promoCode, setPromoCode] = useState("");
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleApplyCode = async () => {
+    if (!promoCode.trim()) {
+      setMessage("Please enter a coupon code");
+      return;
+    }
+
+    setLoading(true);
+
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("*")
+      .eq("code", promoCode.trim().toUpperCase())
+      .eq("is_active", true)
+      .maybeSingle();
+
+    setLoading(false);
+
+    if (error || !data) {
+      setMessage("Invalid coupon code ❌");
+      setDiscountPercent(0);
+      return;
+    }
+
+    if (new Date(data.expiry_date) < new Date()) {
+      setMessage("Coupon expired ❌");
+      setDiscountPercent(0);
+      return;
+    }
+
+    setDiscountPercent(data.discount_percent);
+    setMessage(`Success! ${data.discount_percent}% off applied ✅`);
+  };
 
   if (cartCount === 0) {
     return (
@@ -25,7 +65,8 @@ const Cart = () => {
   }
 
   const shipping = cartTotal > 2000 ? 0 : 200;
-  const total = cartTotal + shipping;
+  const discountAmount = Math.floor((discountPercent / 100) * cartTotal);
+  const total = cartTotal + shipping - discountAmount;
 
   return (
     <Layout>
@@ -34,58 +75,38 @@ const Cart = () => {
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
-            {cart.map(item => {
-              return (
-                <Card key={item.id}>
-                  <CardContent className="p-6">
-                    <div className="flex gap-6">
-                      <img 
-                        src={item.image} 
-                        alt={item.name}
-                        className="w-24 h-24 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg mb-2">{item.name}</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          {item.fabricType} • {item.color}
-                        </p>
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center border rounded">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            >
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                            <span className="px-4 text-sm font-medium">{item.quantity}</span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeFromCart(item.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+            {cart.map(item => (
+              <Card key={item.id}>
+                <CardContent className="p-6">
+                  <div className="flex gap-6">
+                    <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg mb-2">{item.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        {item.fabricType} • {item.color}
+                      </p>
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center border rounded">
+                          <Button variant="ghost" size="icon" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="px-4 text-sm font-medium">{item.quantity}</span>
+                          <Button variant="ghost" size="icon" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                            <Plus className="h-4 w-4" />
                           </Button>
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-lg">₹{(item.price * item.quantity).toLocaleString()}</p>
+                        <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    <div className="text-right">
+                      <p className="font-semibold text-lg">₹{(item.price * item.quantity).toLocaleString()}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
           <div>
@@ -100,10 +121,14 @@ const Cart = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Shipping</span>
-                    <span className="font-medium">
-                      {shipping === 0 ? 'FREE' : `₹${shipping}`}
-                    </span>
+                    <span className="font-medium">{shipping === 0 ? "FREE" : `₹${shipping}`}</span>
                   </div>
+                  {discountPercent > 0 && (
+                    <div className="flex justify-between text-green-600 font-medium">
+                      <span>Discount ({discountPercent}%)</span>
+                      <span>-₹{discountAmount.toLocaleString()}</span>
+                    </div>
+                  )}
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
@@ -112,8 +137,15 @@ const Cart = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Input placeholder="Enter promo code" />
-                  <Button variant="outline" className="w-full">Apply Code</Button>
+                  <Input
+                    placeholder="Enter promo code"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                  />
+                  <Button variant="outline" className="w-full" onClick={handleApplyCode} disabled={loading}>
+                    {loading ? "Checking..." : "Apply Code"}
+                  </Button>
+                  {message && <p className="text-sm text-center text-green-600">{message}</p>}
                 </div>
 
                 <Button asChild size="lg" className="w-full">
