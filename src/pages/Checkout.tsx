@@ -10,8 +10,14 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -26,7 +32,8 @@ const Checkout = () => {
     state: "",
     pincode: "",
   });
-  const [paymentMethod, setPaymentMethod] = useState("cod");
+  const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const shipping = cartTotal > 2000 ? 0 : 200;
   const total = cartTotal + shipping;
@@ -37,6 +44,20 @@ const Checkout = () => {
   };
 
   const { user } = useAuth();
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
 
   const handlePlaceOrder = async () => {
     if (!user) {
@@ -49,17 +70,19 @@ const Checkout = () => {
       return;
     }
 
+    setIsProcessing(true);
+
     try {
-      // Create order in database
+      // Create order in database first
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user.id,
           total_amount: total,
-          shipping_address_id: null, // We'll handle addresses separately
+          shipping_address_id: null,
           status: 'pending',
           payment_method: paymentMethod,
-          payment_status: paymentMethod === 'cod' ? 'pending' : 'pending'
+          payment_status: 'pending'
         })
         .select()
         .single();
@@ -80,13 +103,19 @@ const Checkout = () => {
 
       if (itemsError) throw itemsError;
 
-      toast({
-        title: "Order Placed Successfully!",
-        description: `Order #${order.id.slice(0, 8)} has been confirmed.`,
-      });
-      
-      clearCart();
-      navigate("/account/orders");
+      // Handle payment based on method
+      if (paymentMethod === "razorpay") {
+        await handleRazorpayPayment(order.id, total);
+      } else if (paymentMethod === "cod") {
+        // COD - Order already created with pending status
+        toast({
+          title: "Order Placed Successfully!",
+          description: `Order #${order.id.slice(0, 8)} confirmed. Pay on delivery.`,
+        });
+        clearCart();
+        navigate("/account/orders");
+        setIsProcessing(false);
+      }
     } catch (error) {
       console.error('Error placing order:', error);
       toast({
@@ -94,6 +123,107 @@ const Checkout = () => {
         description: "There was an error placing your order. Please try again.",
         variant: "destructive",
       });
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRazorpayPayment = async (orderId: string, amount: number) => {
+    try {
+      const scriptLoaded = await loadRazorpayScript();
+      
+      if (!scriptLoaded) {
+        toast({
+          title: "Payment Gateway Error",
+          description: "Unable to load payment gateway. Please try again.",
+          variant: "destructive",
+        });
+        setIsProcessing(false);
+        return;
+      }
+
+      // Create Razorpay order
+      const { data, error } = await supabase.functions.invoke('create-razorpay-order', {
+        body: {
+          amount: amount,
+          currency: 'INR',
+          receipt: orderId,
+          notes: {
+            order_id: orderId,
+            user_id: user!.id
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      const options = {
+        key: data.keyId,
+        amount: data.amount,
+        currency: data.currency,
+        name: "Vastra",
+        description: "Purchase of Traditional Sarees",
+        order_id: data.orderId,
+        handler: async function (response: any) {
+          try {
+            // Verify payment
+            const { error: verifyError } = await supabase.functions.invoke('verify-razorpay-payment', {
+              body: {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                order_id: orderId
+              }
+            });
+
+            if (verifyError) throw verifyError;
+
+            toast({
+              title: "Payment Successful!",
+              description: `Order #${orderId.slice(0, 8)} has been confirmed.`,
+            });
+            clearCart();
+            navigate("/account/orders");
+          } catch (error) {
+            console.error('Payment verification failed:', error);
+            toast({
+              title: "Payment Verification Failed",
+              description: "Please contact support with your order ID.",
+              variant: "destructive",
+            });
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        prefill: {
+          name: shippingData.fullName,
+          email: shippingData.email,
+          contact: shippingData.phone,
+        },
+        theme: {
+          color: "#c2a079",
+        },
+        modal: {
+          ondismiss: function() {
+            toast({
+              title: "Payment Cancelled",
+              description: "You can retry payment from your orders page.",
+              variant: "destructive",
+            });
+            setIsProcessing(false);
+          }
+        }
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error) {
+      console.error('Razorpay payment error:', error);
+      toast({
+        title: "Payment Failed",
+        description: "There was an error processing your payment. Please try again.",
+        variant: "destructive",
+      });
+      setIsProcessing(false);
     }
   };
 
@@ -218,32 +348,47 @@ const Checkout = () => {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                      <div className="flex items-center space-x-2 border rounded p-4">
+                      <div className="flex items-center space-x-2 border rounded-lg p-4 bg-card hover:bg-accent/5 transition-colors">
+                        <RadioGroupItem value="razorpay" id="razorpay" />
+                        <Label htmlFor="razorpay" className="flex-1 cursor-pointer">
+                          <div className="font-medium">Pay with Razorpay</div>
+                          <div className="text-xs text-muted-foreground mt-1">Credit/Debit Card, UPI, Wallets</div>
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2 border rounded-lg p-4 bg-card hover:bg-accent/5 transition-colors">
                         <RadioGroupItem value="cod" id="cod" />
                         <Label htmlFor="cod" className="flex-1 cursor-pointer">
-                          Cash on Delivery
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2 border rounded p-4">
-                        <RadioGroupItem value="card" id="card" />
-                        <Label htmlFor="card" className="flex-1 cursor-pointer">
-                          Credit / Debit Card
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2 border rounded p-4">
-                        <RadioGroupItem value="upi" id="upi" />
-                        <Label htmlFor="upi" className="flex-1 cursor-pointer">
-                          UPI Payment
+                          <div className="font-medium">Cash on Delivery</div>
+                          <div className="text-xs text-muted-foreground mt-1">Pay when you receive</div>
                         </Label>
                       </div>
                     </RadioGroup>
 
                     <div className="flex gap-4">
-                      <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setStep(1)} 
+                        className="flex-1"
+                        disabled={isProcessing}
+                      >
                         Back to Shipping
                       </Button>
-                      <Button onClick={handlePlaceOrder} size="lg" className="flex-1">
-                        Place Order
+                      <Button 
+                        onClick={handlePlaceOrder} 
+                        size="lg" 
+                        className="flex-1"
+                        disabled={isProcessing}
+                      >
+                        {isProcessing ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : paymentMethod === "razorpay" ? (
+                          "Pay Now"
+                        ) : (
+                          "Place Order"
+                        )}
                       </Button>
                     </div>
                   </CardContent>
