@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -34,13 +36,65 @@ const Checkout = () => {
     setStep(2);
   };
 
-  const handlePlaceOrder = () => {
-    toast({
-      title: "Order Placed Successfully!",
-      description: "You will receive a confirmation email shortly.",
-    });
-    clearCart();
-    navigate("/account/orders");
+  const { user } = useAuth();
+
+  const handlePlaceOrder = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to place an order.",
+        variant: "destructive",
+      });
+      navigate("/account/login");
+      return;
+    }
+
+    try {
+      // Create order in database
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          total_amount: total,
+          shipping_address_id: null, // We'll handle addresses separately
+          status: 'pending',
+          payment_method: paymentMethod,
+          payment_status: paymentMethod === 'cod' ? 'pending' : 'pending'
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order items
+      const orderItems = cart.map(item => ({
+        order_id: order.id,
+        product_id: item.id,
+        quantity: item.quantity,
+        price: item.price
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      toast({
+        title: "Order Placed Successfully!",
+        description: `Order #${order.id.slice(0, 8)} has been confirmed.`,
+      });
+      
+      clearCart();
+      navigate("/account/orders");
+    } catch (error) {
+      console.error('Error placing order:', error);
+      toast({
+        title: "Order Failed",
+        description: "There was an error placing your order. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (cart.length === 0) {
