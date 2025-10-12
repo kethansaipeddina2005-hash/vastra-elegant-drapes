@@ -130,6 +130,9 @@ const Checkout = () => {
           status: "pending",
           payment_method: paymentMethod,
           payment_status: "pending",
+          customer_name: shippingData.fullName,
+          customer_email: shippingData.email,
+          customer_phone: shippingData.phone,
         })
         .select()
         .single();
@@ -149,6 +152,27 @@ const Checkout = () => {
         .insert(orderItems);
 
       if (itemsError) throw itemsError;
+
+      // Send order notification emails
+      try {
+        await supabase.functions.invoke('send-order-notification', {
+          body: {
+            orderId: order.id,
+            customerName: shippingData.fullName,
+            customerEmail: shippingData.email,
+            customerPhone: shippingData.phone,
+            totalAmount: total,
+            orderItems: cart.map(item => ({
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price * item.quantity
+            }))
+          }
+        });
+      } catch (emailError) {
+        console.error('Error sending order notification:', emailError);
+        // Don't fail the order if email fails
+      }
 
       // Handle payment
       if (paymentMethod === "razorpay") {

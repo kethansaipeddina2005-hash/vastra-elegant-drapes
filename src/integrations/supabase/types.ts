@@ -136,7 +136,13 @@ export type Database = {
       }
       orders: {
         Row: {
+          coupon_code: string | null
           created_at: string | null
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          discount_percent: number | null
+          final_amount: number | null
           id: string
           payment_method: string | null
           payment_status: string | null
@@ -147,7 +153,13 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          coupon_code?: string | null
           created_at?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          discount_percent?: number | null
+          final_amount?: number | null
           id?: string
           payment_method?: string | null
           payment_status?: string | null
@@ -158,7 +170,13 @@ export type Database = {
           user_id: string
         }
         Update: {
+          coupon_code?: string | null
           created_at?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          discount_percent?: number | null
+          final_amount?: number | null
           id?: string
           payment_method?: string | null
           payment_status?: string | null
