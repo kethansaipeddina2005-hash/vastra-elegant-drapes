@@ -56,9 +56,9 @@ const Cart = () => {
         <div className="container mx-auto px-6 py-16 text-center">
           <h1 className="text-4xl font-playfair font-bold text-foreground mb-4">Shopping Cart</h1>
           <p className="text-muted-foreground text-lg mb-8">Your cart is empty. Start shopping to add items here.</p>
-          <Button asChild size="lg">
-            <Link to="/collections">Browse Collections</Link>
-          </Button>
+          <Link to="/collections">
+            <Button size="lg">Browse Collections</Button>
+          </Link>
         </div>
       </Layout>
     );
@@ -148,13 +148,13 @@ const Cart = () => {
                   {message && <p className="text-sm text-center text-green-600">{message}</p>}
                 </div>
 
-                <Button asChild size="lg" className="w-full">
-                  <Link to="/checkout">Proceed to Checkout</Link>
-                </Button>
+                <Link to="/checkout" className="w-full">
+                  <Button size="lg" className="w-full">Proceed to Checkout</Button>
+                </Link>
                 
-                <Button variant="outline" asChild className="w-full">
-                  <Link to="/collections">Continue Shopping</Link>
-                </Button>
+                <Link to="/collections" className="w-full">
+                  <Button variant="outline" className="w-full">Continue Shopping</Button>
+                </Link>
 
                 {cartTotal < 2000 && (
                   <p className="text-sm text-center text-muted-foreground">
