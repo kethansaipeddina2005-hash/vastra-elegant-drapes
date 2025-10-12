@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
 import { Minus, Plus, Trash2 } from "lucide-react";
-import { supabase } from "@/supabaseClient"; // <-- import Supabase
+import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 
 const Cart = () => {
