@@ -24,9 +24,9 @@ const Wishlist = () => {
           <p className="text-muted-foreground text-lg mb-8">
             Your wishlist is empty. Start adding items you love!
           </p>
-          <Button asChild size="lg">
-            <Link to="/collections">Browse Collections</Link>
-          </Button>
+          <Link to="/collections">
+            <Button size="lg">Browse Collections</Button>
+          </Link>
         </div>
       </Layout>
     );
