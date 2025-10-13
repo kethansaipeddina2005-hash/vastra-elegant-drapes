@@ -3,16 +3,25 @@ import { Link, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Heart, User, MapPin, LogOut } from "lucide-react";
+import { Package, Heart, User, MapPin, LogOut, Filter } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Dashboard = () => {
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [paymentFilter, setPaymentFilter] = useState<string>("all");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -25,10 +34,20 @@ const Dashboard = () => {
       if (!user) return;
       
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from("orders")
           .select("*")
-          .eq("user_id", user.id)
+          .eq("user_id", user.id);
+
+        if (statusFilter !== "all") {
+          query = query.eq("status", statusFilter);
+        }
+
+        if (paymentFilter !== "all") {
+          query = query.eq("payment_status", paymentFilter);
+        }
+
+        const { data, error } = await query
           .order("created_at", { ascending: false })
           .limit(3);
 
@@ -44,7 +63,7 @@ const Dashboard = () => {
     if (user) {
       fetchRecentOrders();
     }
-  }, [user]);
+  }, [user, statusFilter, paymentFilter]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -98,28 +117,64 @@ const Dashboard = () => {
               </Card>
             </Link>
 
-            <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer h-full">
-              <User className="w-8 h-8 text-primary mb-4" />
-              <h3 className="font-semibold mb-2">Profile</h3>
-              <p className="text-sm text-muted-foreground">Edit your details</p>
-            </Card>
+            <Link to="/account/profile">
+              <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <User className="w-8 h-8 text-primary mb-4" />
+                <h3 className="font-semibold mb-2">Profile</h3>
+                <p className="text-sm text-muted-foreground">Edit your details</p>
+              </Card>
+            </Link>
 
-            <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer h-full">
-              <MapPin className="w-8 h-8 text-primary mb-4" />
-              <h3 className="font-semibold mb-2">Addresses</h3>
-              <p className="text-sm text-muted-foreground">Manage shipping</p>
-            </Card>
+            <Link to="/account/addresses">
+              <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <MapPin className="w-8 h-8 text-primary mb-4" />
+                <h3 className="font-semibold mb-2">Addresses</h3>
+                <p className="text-sm text-muted-foreground">Manage shipping</p>
+              </Card>
+            </Link>
           </div>
 
           {/* Recent Orders */}
           <Card className="p-8">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
               <h2 className="text-2xl font-playfair font-bold">Recent Orders</h2>
-              {recentOrders.length > 0 && (
-                <Link to="/account/orders">
-                  <Button variant="outline" size="sm">View All</Button>
-                </Link>
-              )}
+              
+              <div className="flex flex-wrap gap-3 items-center">
+                <div className="flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-muted-foreground" />
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="processing">Processing</SelectItem>
+                      <SelectItem value="shipped">Shipped</SelectItem>
+                      <SelectItem value="delivered">Delivered</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder="Payment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Payment</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {recentOrders.length > 0 && (
+                  <Link to="/account/orders">
+                    <Button variant="outline" size="sm">View All</Button>
+                  </Link>
+                )}
+              </div>
             </div>
             
             {loadingOrders ? (

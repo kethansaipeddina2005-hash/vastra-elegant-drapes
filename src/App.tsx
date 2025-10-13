@@ -16,6 +16,8 @@ import Register from "./pages/account/Register";
 import Dashboard from "./pages/account/Dashboard";
 import Orders from "./pages/account/Orders";
 import Wishlist from "./pages/account/Wishlist";
+import Profile from "./pages/account/Profile";
+import Addresses from "./pages/account/Addresses";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Blog from "./pages/Blog";
@@ -44,6 +46,8 @@ const App = () => (
           <Route path="/account/dashboard" element={<Dashboard />} />
           <Route path="/account/orders" element={<Orders />} />
           <Route path="/account/wishlist" element={<Wishlist />} />
+          <Route path="/account/profile" element={<Profile />} />
+          <Route path="/account/addresses" element={<Addresses />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/blog" element={<Blog />} />
