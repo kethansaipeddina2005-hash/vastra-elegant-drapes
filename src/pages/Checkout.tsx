@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -19,10 +19,25 @@ declare global {
   }
 }
 
+interface SavedAddress {
+  id: string;
+  full_name: string;
+  phone: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  is_default: boolean;
+}
+
 const Checkout = () => {
   const navigate = useNavigate();
   const { cart, cartTotal, clearCart } = useCart();
   const [step, setStep] = useState(1);
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [useNewAddress, setUseNewAddress] = useState(false);
   const [shippingData, setShippingData] = useState({
     fullName: "",
     email: "",
@@ -46,6 +61,49 @@ const Checkout = () => {
   const total = cartTotal + shipping - discountAmount;
 
   const { user } = useAuth();
+
+  // Fetch saved addresses
+  useEffect(() => {
+    if (user) {
+      fetchSavedAddresses();
+    }
+  }, [user]);
+
+  const fetchSavedAddresses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("addresses")
+        .select("*")
+        .eq("user_id", user?.id)
+        .order("is_default", { ascending: false });
+
+      if (error) throw error;
+      setSavedAddresses(data || []);
+      
+      // Auto-select default address
+      const defaultAddr = data?.find(addr => addr.is_default);
+      if (defaultAddr) {
+        setSelectedAddressId(defaultAddr.id);
+      }
+    } catch (error) {
+      console.error("Error fetching addresses:", error);
+    }
+  };
+
+  const loadSelectedAddress = () => {
+    const selected = savedAddresses.find(addr => addr.id === selectedAddressId);
+    if (selected) {
+      setShippingData({
+        fullName: selected.full_name,
+        email: user?.email || "",
+        phone: selected.phone,
+        address: selected.address_line1 + (selected.address_line2 ? `, ${selected.address_line2}` : ""),
+        city: selected.city,
+        state: selected.state,
+        pincode: selected.postal_code,
+      });
+    }
+  };
 
   // ----------------- Coupon Handling -----------------
   const handleApplyCoupon = async () => {
@@ -84,6 +142,12 @@ const Checkout = () => {
   // ----------------- Shipping Submit -----------------
   const handleShippingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // If using saved address, load it
+    if (!useNewAddress && selectedAddressId) {
+      loadSelectedAddress();
+    }
+    
     setStep(2);
   };
 
@@ -337,76 +401,125 @@ const Checkout = () => {
                     <CardTitle>Shipping Information</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <form onSubmit={handleShippingSubmit} className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="fullName">Full Name</Label>
-                          <Input 
-                            id="fullName" 
-                            required 
-                            value={shippingData.fullName}
-                            onChange={(e) => setShippingData({...shippingData, fullName: e.target.value})}
-                          />
+                    <form onSubmit={handleShippingSubmit} className="space-y-6">
+                      {/* Saved Addresses Section */}
+                      {savedAddresses.length > 0 && (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <Label>Select Saved Address</Label>
+                            <Button
+                              type="button"
+                              variant="link"
+                              size="sm"
+                              onClick={() => setUseNewAddress(!useNewAddress)}
+                            >
+                              {useNewAddress ? "Use Saved Address" : "Enter New Address"}
+                            </Button>
+                          </div>
+                          
+                          {!useNewAddress && (
+                            <RadioGroup value={selectedAddressId || ""} onValueChange={setSelectedAddressId}>
+                              {savedAddresses.map((address) => (
+                                <div key={address.id} className="flex items-start space-x-2 border rounded-lg p-4 hover:bg-accent/5 transition-colors">
+                                  <RadioGroupItem value={address.id} id={address.id} className="mt-1" />
+                                  <Label htmlFor={address.id} className="flex-1 cursor-pointer">
+                                    <div className="font-medium">{address.full_name}</div>
+                                    <div className="text-sm text-muted-foreground mt-1">
+                                      {address.address_line1}
+                                      {address.address_line2 && `, ${address.address_line2}`}
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">
+                                      {address.city}, {address.state} {address.postal_code}
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">{address.phone}</div>
+                                    {address.is_default && (
+                                      <span className="inline-block mt-1 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded">
+                                        Default
+                                      </span>
+                                    )}
+                                  </Label>
+                                </div>
+                              ))}
+                            </RadioGroup>
+                          )}
                         </div>
-                        <div>
-                          <Label htmlFor="phone">Phone</Label>
-                          <Input 
-                            id="phone" 
-                            type="tel" 
-                            required
-                            value={shippingData.phone}
-                            onChange={(e) => setShippingData({...shippingData, phone: e.target.value})}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label htmlFor="email">Email</Label>
-                        <Input 
-                          id="email" 
-                          type="email" 
-                          required
-                          value={shippingData.email}
-                          onChange={(e) => setShippingData({...shippingData, email: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="address">Address</Label>
-                        <Input 
-                          id="address" 
-                          required
-                          value={shippingData.address}
-                          onChange={(e) => setShippingData({...shippingData, address: e.target.value})}
-                        />
-                      </div>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <Label htmlFor="city">City</Label>
-                          <Input 
-                            id="city" 
-                            required
-                            value={shippingData.city}
-                            onChange={(e) => setShippingData({...shippingData, city: e.target.value})}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="state">State</Label>
-                          <Input 
-                            id="state" 
-                            required
-                            value={shippingData.state}
-                            onChange={(e) => setShippingData({...shippingData, state: e.target.value})}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="pincode">Pincode</Label>
-                          <Input 
-                            id="pincode" 
-                            required
-                            value={shippingData.pincode}
-                            onChange={(e) => setShippingData({...shippingData, pincode: e.target.value})}
-                          />
-                        </div>
-                      </div>
+                      )}
+
+                      {/* New Address Form */}
+                      {(useNewAddress || savedAddresses.length === 0) && (
+                        <>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="fullName">Full Name</Label>
+                              <Input 
+                                id="fullName" 
+                                required 
+                                value={shippingData.fullName}
+                                onChange={(e) => setShippingData({...shippingData, fullName: e.target.value})}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="phone">Phone</Label>
+                              <Input 
+                                id="phone" 
+                                type="tel" 
+                                required
+                                value={shippingData.phone}
+                                onChange={(e) => setShippingData({...shippingData, phone: e.target.value})}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label htmlFor="email">Email</Label>
+                            <Input 
+                              id="email" 
+                              type="email" 
+                              required
+                              value={shippingData.email}
+                              onChange={(e) => setShippingData({...shippingData, email: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="address">Address</Label>
+                            <Input 
+                              id="address" 
+                              required
+                              value={shippingData.address}
+                              onChange={(e) => setShippingData({...shippingData, address: e.target.value})}
+                            />
+                          </div>
+                          <div className="grid grid-cols-3 gap-4">
+                            <div>
+                              <Label htmlFor="city">City</Label>
+                              <Input 
+                                id="city" 
+                                required
+                                value={shippingData.city}
+                                onChange={(e) => setShippingData({...shippingData, city: e.target.value})}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="state">State</Label>
+                              <Input 
+                                id="state" 
+                                required
+                                value={shippingData.state}
+                                onChange={(e) => setShippingData({...shippingData, state: e.target.value})}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="pincode">Pincode</Label>
+                              <Input 
+                                id="pincode" 
+                                required
+                                value={shippingData.pincode}
+                                onChange={(e) => setShippingData({...shippingData, pincode: e.target.value})}
+                              />
+                            </div>
+                          </div>
+                        </>
+                      )}
+
                       <Button type="submit" size="lg" className="w-full">Continue to Payment</Button>
                     </form>
                   </CardContent>
