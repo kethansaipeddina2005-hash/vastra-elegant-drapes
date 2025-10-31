@@ -20,8 +20,6 @@ If you want to work locally using your own IDE, you can clone this repo and push
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Follow these steps:
-
 ```sh
 # Step 1: Clone the repository using the project's Git URL.
 git clone <YOUR_GIT_URL>
@@ -71,3 +69,90 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+---
+
+## Admin Dashboard Project
+
+### Project Description
+
+Create a comprehensive admin dashboard application with the following features and requirements:
+
+### Core Features
+
+1. **User Management**
+   - View all users in a data table
+   - Add, edit, and delete user accounts
+   - User roles and permissions management
+   - Search and filter users
+
+2. **Analytics Dashboard**
+   - Key performance indicators (KPIs) display
+   - Charts and graphs for data visualization
+   - Real-time statistics
+   - Customizable dashboard widgets
+
+3. **Data Management**
+   - CRUD operations for primary data entities
+   - Export data to CSV/Excel
+   - Import data functionality
+   - Data validation and error handling
+
+4. **Reporting System**
+   - Generate various reports
+   - Schedule automated reports
+   - Report templates
+   - PDF export functionality
+
+5. **Authentication & Authorization**
+   - Secure login system
+   - Role-based access control (RBAC)
+   - Session management
+   - Password reset functionality
+
+### Technical Requirements
+
+- **Frontend**: React with TypeScript
+- **Styling**: Tailwind CSS with shadcn-ui components
+- **State Management**: React hooks and context API
+- **Routing**: React Router for navigation
+- **Data Tables**: Implement sortable, filterable data tables
+- **Charts**: Use recharts or similar library for data visualization
+- **Forms**: Form validation with proper error handling
+- **Responsive Design**: Mobile-first approach
+
+### UI/UX Requirements
+
+- Clean and modern interface
+- Intuitive navigation with sidebar menu
+- Dark mode support
+- Loading states and error boundaries
+- Toast notifications for user feedback
+- Accessibility compliance (WCAG 2.1)
+
+### Additional Features
+
+- Settings page for application configuration
+- Profile management for logged-in users
+- Activity logs and audit trail
+- Search functionality across modules
+- Breadcrumb navigation
+- Help/documentation section
+
+### Performance & Security
+
+- Optimized bundle size
+- Lazy loading for routes
+- Input sanitization
+- HTTPS enforcement
+- Rate limiting consideration
+- Error logging and monitoring
+
+### Development Guidelines
+
+- Follow React best practices
+- Implement proper TypeScript typing
+- Write clean, maintainable code
+- Use component composition
+- Implement proper error handling
+- Add loading states for async operations
