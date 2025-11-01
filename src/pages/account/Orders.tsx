@@ -21,6 +21,7 @@ interface Order {
   status: string;
   payment_method: string;
   payment_status: string;
+  shipping_id: string | null;
   order_items: OrderItem[];
 }
 
@@ -113,10 +114,26 @@ const Orders = () => {
                   
                   <Separator />
                   
+                  {order.shipping_id && (
+                    <>
+                      <div className="bg-muted p-4 rounded-lg">
+                        <p className="text-sm text-muted-foreground mb-1">Tracking Number</p>
+                        <p className="font-mono font-medium">{order.shipping_id}</p>
+                      </div>
+                      <Separator />
+                    </>
+                  )}
+                  
                   <div className="flex justify-between items-center">
                     <div className="text-sm">
                       <p className="text-muted-foreground">Payment Method</p>
                       <p className="font-medium capitalize">{order.payment_method}</p>
+                    </div>
+                    <div className="text-sm">
+                      <p className="text-muted-foreground">Payment Status</p>
+                      <Badge variant={order.payment_status === 'completed' ? 'default' : 'outline'}>
+                        {order.payment_status}
+                      </Badge>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">Total Amount</p>

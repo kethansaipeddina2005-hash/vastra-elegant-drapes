@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { Search, ShoppingCart, User, Menu, X, Heart, LogOut } from "lucide-react";
+import { Search, ShoppingCart, User, Menu, X, Heart, LogOut, Shield } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdmin } from "@/hooks/useAdmin";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +21,7 @@ const Header = () => {
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
@@ -79,6 +81,14 @@ const Header = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin/dashboard" className="w-full cursor-pointer">
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin Panel
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link to="/account/dashboard" className="w-full cursor-pointer">
                       Dashboard
