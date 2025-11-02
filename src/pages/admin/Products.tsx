@@ -35,6 +35,7 @@ const AdminProducts = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -78,24 +79,47 @@ const AdminProducts = () => {
     const uploadedUrls: string[] = [];
 
     for (const file of imageFiles) {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${fileName}`;
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `product-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = fileName;
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file);
+        console.log('Uploading file:', fileName);
 
-      if (uploadError) throw uploadError;
+        const { error: uploadError, data } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+        }
 
-      uploadedUrls.push(publicUrl);
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+
+        console.log('Uploaded successfully:', publicUrl);
+        uploadedUrls.push(publicUrl);
+      } catch (error) {
+        console.error('Error uploading file:', file.name, error);
+        throw error;
+      }
     }
 
     return uploadedUrls;
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setImageFiles(files);
+    
+    // Create preview URLs
+    const previews = files.map(file => URL.createObjectURL(file));
+    setImagePreviews(previews);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,9 +162,9 @@ const AdminProducts = () => {
       setIsDialogOpen(false);
       resetForm();
       fetchProducts();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving product:', error);
-      toast.error('Failed to save product');
+      toast.error(error.message || 'Failed to save product');
     } finally {
       setUploading(false);
     }
@@ -189,6 +213,9 @@ const AdminProducts = () => {
       region: '',
     });
     setImageFiles([]);
+    setImagePreviews([]);
+    // Clean up preview URLs
+    imagePreviews.forEach(url => URL.revokeObjectURL(url));
   };
 
   if (adminLoading || loading) {
@@ -307,12 +334,43 @@ const AdminProducts = () => {
                     type="file"
                     multiple
                     accept="image/*"
-                    onChange={(e) => setImageFiles(Array.from(e.target.files || []))}
+                    onChange={handleImageChange}
+                    className="mb-2"
                   />
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Upload multiple images (JPG, PNG, WEBP)
+                  </p>
+                  
+                  {/* Image Previews */}
+                  {imagePreviews.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2 mb-2">
+                      {imagePreviews.map((preview, index) => (
+                        <div key={index} className="relative">
+                          <img 
+                            src={preview} 
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-24 object-cover rounded border"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Current Images */}
                   {editingProduct && editingProduct.images.length > 0 && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Current images: {editingProduct.images.length}
-                    </p>
+                    <div className="mb-2">
+                      <p className="text-sm font-medium mb-2">Current images:</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {editingProduct.images.map((img, index) => (
+                          <img 
+                            key={index}
+                            src={img} 
+                            alt={`Current ${index + 1}`}
+                            className="w-full h-24 object-cover rounded border"
+                          />
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
                 <Button type="submit" disabled={uploading} className="w-full">

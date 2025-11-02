@@ -32,6 +32,7 @@ const AdminBanners = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -74,21 +75,47 @@ const AdminBanners = () => {
   const uploadImage = async (): Promise<string> => {
     if (!imageFile) throw new Error('No image file selected');
 
-    const fileExt = imageFile.name.split('.').pop();
-    const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const filePath = `${fileName}`;
+    try {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `banner-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = fileName;
 
-    const { error: uploadError } = await supabase.storage
-      .from('banners')
-      .upload(filePath, imageFile);
+      console.log('Uploading banner:', fileName);
 
-    if (uploadError) throw uploadError;
+      const { error: uploadError, data } = await supabase.storage
+        .from('banners')
+        .upload(filePath, imageFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('banners')
-      .getPublicUrl(filePath);
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(`Failed to upload banner: ${uploadError.message}`);
+      }
 
-    return publicUrl;
+      const { data: { publicUrl } } = supabase.storage
+        .from('banners')
+        .getPublicUrl(filePath);
+
+      console.log('Banner uploaded successfully:', publicUrl);
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading banner:', error);
+      throw error;
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setImageFile(file);
+    
+    if (file) {
+      const preview = URL.createObjectURL(file);
+      setImagePreview(preview);
+    } else {
+      setImagePreview('');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -129,9 +156,9 @@ const AdminBanners = () => {
       setIsDialogOpen(false);
       resetForm();
       fetchBanners();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving banner:', error);
-      toast.error('Failed to save banner');
+      toast.error(error.message || 'Failed to save banner');
     } finally {
       setUploading(false);
     }
@@ -174,6 +201,10 @@ const AdminBanners = () => {
       is_active: true,
     });
     setImageFile(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+      setImagePreview('');
+    }
   };
 
   if (adminLoading || loading) {
@@ -258,13 +289,39 @@ const AdminBanners = () => {
                     id="image"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                    onChange={handleImageChange}
                     required={!editingBanner}
+                    className="mb-2"
                   />
-                  {editingBanner && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Leave empty to keep current image
-                    </p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Upload banner image (JPG, PNG, WEBP) - recommended size: 1920x600px
+                  </p>
+                  
+                  {/* Image Preview */}
+                  {imagePreview && (
+                    <div className="mb-2">
+                      <p className="text-sm font-medium mb-2">New image preview:</p>
+                      <img 
+                        src={imagePreview} 
+                        alt="Banner preview"
+                        className="w-full h-32 object-cover rounded border"
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Current Image */}
+                  {editingBanner && !imagePreview && (
+                    <div className="mb-2">
+                      <p className="text-sm font-medium mb-2">Current image:</p>
+                      <img 
+                        src={editingBanner.image_url} 
+                        alt={editingBanner.title}
+                        className="w-full h-32 object-cover rounded border"
+                      />
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Upload a new image to replace this one
+                      </p>
+                    </div>
                   )}
                 </div>
                 <Button type="submit" disabled={uploading} className="w-full">
