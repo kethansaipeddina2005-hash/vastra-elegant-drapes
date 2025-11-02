@@ -25,11 +25,11 @@ const Header = () => {
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="Vastra Logo" className="h-12 w-12 object-contain" />
-            <h1 className="text-2xl md:text-3xl font-playfair font-semibold text-foreground">
+      <div className="container mx-auto px-4 md:px-6 py-3 md:py-4">
+        <div className="flex items-center justify-between gap-2">
+          <Link to="/" className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+            <img src={logo} alt="Vastra Logo" className="h-10 w-10 md:h-12 md:w-12 object-contain" />
+            <h1 className="text-xl md:text-3xl font-playfair font-semibold text-foreground">
               Vastra
             </h1>
           </Link>
@@ -52,7 +52,7 @@ const Header = () => {
             </Link>
           </nav>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 md:gap-3">
             <Button
               variant="ghost"
               size="icon"
@@ -62,11 +62,11 @@ const Header = () => {
               <Search className="h-5 w-5" />
             </Button>
 
-            <Link to="/account/wishlist">
-              <Button variant="ghost" size="icon" className="relative">
-                <Heart className="h-5 w-5" />
+            <Link to="/account/wishlist" className="flex-shrink-0">
+              <Button variant="ghost" size="icon" className="relative h-9 w-9 md:h-10 md:w-10">
+                <Heart className="h-4 w-4 md:h-5 md:w-5" />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 md:h-5 md:w-5 flex items-center justify-center text-[10px] md:text-xs">
                     {wishlistCount}
                   </span>
                 )}
@@ -76,8 +76,8 @@ const Header = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <User className="h-5 w-5" />
+                  <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10 flex-shrink-0">
+                    <User className="h-4 w-4 md:h-5 md:w-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -106,18 +106,18 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link to="/account/login">
-                <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
+              <Link to="/account/login" className="flex-shrink-0">
+                <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10">
+                  <User className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
               </Link>
             )}
             
-            <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative">
-                <ShoppingCart className="h-5 w-5" />
+            <Link to="/cart" className="flex-shrink-0">
+              <Button variant="ghost" size="icon" className="relative h-9 w-9 md:h-10 md:w-10">
+                <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 md:h-5 md:w-5 flex items-center justify-center text-[10px] md:text-xs">
                     {cartCount}
                   </span>
                 )}
@@ -127,10 +127,10 @@ const Header = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
+              className="lg:hidden h-9 w-9 md:h-10 md:w-10 flex-shrink-0"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMobileMenuOpen ? <X className="h-5 w-5 md:h-6 md:w-6" /> : <Menu className="h-5 w-5 md:h-6 md:w-6" />}
             </Button>
           </div>
         </div>
