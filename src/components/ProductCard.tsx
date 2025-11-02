@@ -48,17 +48,17 @@ const ProductCard = (product: Product) => {
         <Heart className={`h-5 w-5 ${inWishlist ? 'fill-primary text-primary' : ''}`} />
       </Button>
       
-      <CardContent className="p-4">
+      <CardContent className="p-3 md:p-4">
         <Link to={`/product/${product.id}`}>
-          <h3 className="font-playfair text-lg font-semibold text-foreground mb-2 line-clamp-1">
+          <h3 className="font-playfair text-sm md:text-lg font-semibold text-foreground mb-1 md:mb-2 line-clamp-2">
             {product.name}
           </h3>
-          <div className="flex items-center justify-between">
-            <p className="text-xl font-semibold text-primary">{formattedPrice}</p>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
+            <p className="text-base md:text-xl font-semibold text-primary">{formattedPrice}</p>
             {product.rating && (
               <div className="flex items-center gap-1">
-                <span className="text-gold">★</span>
-                <span className="text-sm text-muted-foreground">{product.rating}</span>
+                <span className="text-gold text-sm">★</span>
+                <span className="text-xs md:text-sm text-muted-foreground">{product.rating}</span>
               </div>
             )}
           </div>
