@@ -10,7 +10,7 @@ import { Loading } from "@/components/ui/loading";
 import { X } from "lucide-react";
 
 const Collections = () => {
-  const { products, filters, setFilters, sortBy, setSortBy, loading } = useProducts();
+  const { products, filters, setFilters, sortBy, setSortBy, loading, maxPrice } = useProducts();
 
   const clearFilter = (category: keyof typeof filters, value?: string) => {
     if (value) {
@@ -18,7 +18,7 @@ const Collections = () => {
       setFilters({ ...filters, [category]: currentValues.filter(v => v !== value) });
     } else {
       setFilters({
-        priceRange: [0, 50000],
+        priceRange: [0, maxPrice],
         fabricTypes: [],
         colors: [],
         occasions: [],
@@ -145,7 +145,7 @@ const Collections = () => {
         <div className="grid lg:grid-cols-4 gap-8">
           <aside className="lg:col-span-1">
             <div className="sticky top-24">
-              <FilterSidebar filters={filters} onFilterChange={setFilters} />
+              <FilterSidebar filters={filters} onFilterChange={setFilters} maxPrice={maxPrice} />
             </div>
           </aside>
           

@@ -8,9 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 interface FilterSidebarProps {
   filters: Filter;
   onFilterChange: (filters: Filter) => void;
+  maxPrice?: number;
 }
 
-const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
+const FilterSidebar = ({ filters, onFilterChange, maxPrice = 50000 }: FilterSidebarProps) => {
   const handlePriceChange = (value: number[]) => {
     onFilterChange({ ...filters, priceRange: [value[0], value[1]] });
   };
@@ -32,7 +33,7 @@ const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
         <CardContent>
           <Slider
             min={0}
-            max={50000}
+            max={maxPrice}
             step={1000}
             value={filters.priceRange}
             onValueChange={handlePriceChange}

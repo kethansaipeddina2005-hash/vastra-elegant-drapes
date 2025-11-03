@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 export const useProducts = () => {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [maxPrice, setMaxPrice] = useState(50000);
   const [filters, setFilters] = useState<Filter>({
     priceRange: [0, 50000],
     fabricTypes: [],
@@ -47,8 +48,17 @@ export const useProducts = () => {
         rating: Number(product.rating) || 0,
         reviews: product.reviews || 0,
       }));
+      const max = transformedProducts.length > 0 
+        ? Math.max(50000, ...transformedProducts.map(p => p.price))
+        : 50000;
 
       setAllProducts(transformedProducts);
+      setMaxPrice(max);
+      // Initialize price range to include all products on first load
+      setFilters(prev => {
+        const [, prevMax] = prev.priceRange;
+        return prevMax < max ? { ...prev, priceRange: [0, max] } : prev;
+      });
     } catch (error) {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
@@ -56,7 +66,6 @@ export const useProducts = () => {
       setLoading(false);
     }
   };
-
   const filteredProducts = useMemo(() => {
     let filtered = [...allProducts];
 
@@ -130,5 +139,6 @@ export const useProducts = () => {
     setSearchQuery,
     loading,
     refetch: fetchProducts,
+    maxPrice,
   };
 };
