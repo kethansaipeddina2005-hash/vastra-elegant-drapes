@@ -1,8 +1,9 @@
 import { useParams, Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/data/products";
+import { supabase } from "@/integrations/supabase/client";
+import { Product } from "@/types/product";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +11,7 @@ import { Heart, ShoppingCart, Minus, Plus, Share2, Facebook, Twitter, Link2 } fr
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { toast } from "@/hooks/use-toast";
+import { Loading } from "@/components/ui/loading";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,10 +21,90 @@ import {
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const product = products.find(p => p.id === parseInt(id || '0'));
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  
+  useEffect(() => {
+    fetchProduct();
+  }, [id]);
+
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', parseInt(id || '0'))
+        .single();
+
+      if (error) throw error;
+
+      const transformedProduct: Product = {
+        id: data.id,
+        name: data.name,
+        price: Number(data.price),
+        description: data.description || '',
+        image: data.images?.[0] || '',
+        images: data.images || [],
+        fabricType: data.fabric_type || '',
+        color: data.color || '',
+        occasion: data.occasion || '',
+        region: data.region || '',
+        stockQuantity: data.stock_quantity || 0,
+        isNew: data.is_new || false,
+        rating: Number(data.rating) || 0,
+        reviews: data.reviews || 0,
+      };
+
+      setProduct(transformedProduct);
+
+      // Fetch related products
+      const { data: relatedData } = await supabase
+        .from('products')
+        .select('*')
+        .neq('id', transformedProduct.id)
+        .or(`fabric_type.eq.${transformedProduct.fabricType},occasion.eq.${transformedProduct.occasion}`)
+        .limit(3);
+
+      if (relatedData) {
+        const transformedRelated: Product[] = relatedData.map((p) => ({
+          id: p.id,
+          name: p.name,
+          price: Number(p.price),
+          description: p.description || '',
+          image: p.images?.[0] || '',
+          images: p.images || [],
+          fabricType: p.fabric_type || '',
+          color: p.color || '',
+          occasion: p.occasion || '',
+          region: p.region || '',
+          stockQuantity: p.stock_quantity || 0,
+          isNew: p.is_new || false,
+          rating: Number(p.rating) || 0,
+          reviews: p.reviews || 0,
+        }));
+        setRelatedProducts(transformedRelated);
+      }
+    } catch (error) {
+      console.error('Error fetching product:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-6 py-8 flex justify-center items-center min-h-[60vh]">
+          <Loading />
+        </div>
+      </Layout>
+    );
+  }
   
   if (!product) {
     return (
@@ -36,11 +118,6 @@ const ProductDetail = () => {
       </Layout>
     );
   }
-
-  const relatedProducts = products.filter(p => 
-    p.id !== product.id && 
-    (p.fabricType === product.fabricType || p.occasion === product.occasion)
-  ).slice(0, 3);
 
   const inWishlist = isInWishlist(product.id);
 

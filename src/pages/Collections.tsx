@@ -6,10 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/ui/loading";
 import { X } from "lucide-react";
 
 const Collections = () => {
-  const { products, filters, setFilters, sortBy, setSortBy } = useProducts();
+  const { products, filters, setFilters, sortBy, setSortBy, loading } = useProducts();
 
   const clearFilter = (category: keyof typeof filters, value?: string) => {
     if (value) {
@@ -31,6 +32,16 @@ const Collections = () => {
     filters.colors.length + 
     filters.occasions.length + 
     filters.regions.length;
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-6 py-8 flex justify-center items-center min-h-[60vh]">
+          <Loading />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>

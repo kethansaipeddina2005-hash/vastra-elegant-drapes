@@ -1,8 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Product, Filter, SortOption } from '@/types/product';
-import { products as allProducts } from '@/data/products';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const useProducts = () => {
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Filter>({
     priceRange: [0, 50000],
     fabricTypes: [],
@@ -12,6 +15,47 @@ export const useProducts = () => {
   });
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Transform database products to match Product type
+      const transformedProducts: Product[] = (data || []).map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        description: product.description || '',
+        image: product.images?.[0] || '',
+        images: product.images || [],
+        fabricType: product.fabric_type || '',
+        color: product.color || '',
+        occasion: product.occasion || '',
+        region: product.region || '',
+        stockQuantity: product.stock_quantity || 0,
+        isNew: product.is_new || false,
+        rating: Number(product.rating) || 0,
+        reviews: product.reviews || 0,
+      }));
+
+      setAllProducts(transformedProducts);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast.error('Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredProducts = useMemo(() => {
     let filtered = [...allProducts];
@@ -84,5 +128,7 @@ export const useProducts = () => {
     setSortBy,
     searchQuery,
     setSearchQuery,
+    loading,
+    refetch: fetchProducts,
   };
 };
