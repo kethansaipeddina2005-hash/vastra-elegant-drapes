@@ -61,23 +61,23 @@ const Collections = () => {
           </BreadcrumbList>
         </Breadcrumb>
         
-        <div className="flex flex-col gap-4 mb-8">
-          <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 mb-6 md:mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-playfair font-bold text-foreground mb-2">
+              <h1 className="text-2xl md:text-4xl font-playfair font-bold text-foreground mb-1 md:mb-2">
                 Our Collections
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm md:text-base text-muted-foreground">
                 {products.length} {products.length === 1 ? 'saree' : 'sarees'} found
               </p>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full md:w-auto">
               <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="gap-2">
+                  <Button variant="outline" className="flex-1 md:flex-none gap-2 h-11">
                     <SlidersHorizontal className="h-4 w-4" />
-                    Filters
+                    <span className="md:inline">Filters</span>
                     {activeFiltersCount > 0 && (
                       <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
                         {activeFiltersCount}
@@ -85,7 +85,7 @@ const Collections = () => {
                     )}
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[300px] sm:w-[400px] overflow-y-auto">
+                <SheetContent side="left" className="w-[85vw] sm:w-[400px] overflow-y-auto">
                   <SheetHeader className="mb-6">
                     <SheetTitle>Filters</SheetTitle>
                   </SheetHeader>
@@ -94,7 +94,7 @@ const Collections = () => {
               </Sheet>
 
               <Select value={sortBy} onValueChange={(value) => setSortBy(value as any)}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="flex-1 md:flex-none md:w-48 h-11">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -109,10 +109,10 @@ const Collections = () => {
         </div>
 
         {activeFiltersCount > 0 && (
-          <div className="mb-6 flex flex-wrap gap-2 items-center">
-            <span className="text-sm text-muted-foreground">Active filters:</span>
+          <div className="mb-4 md:mb-6 flex flex-wrap gap-2 items-center">
+            <span className="text-xs md:text-sm text-muted-foreground w-full md:w-auto mb-1 md:mb-0">Active filters:</span>
             {filters.fabricTypes.map(fabric => (
-              <Badge key={fabric} variant="secondary" className="gap-1">
+              <Badge key={fabric} variant="secondary" className="gap-1 text-xs h-7">
                 {fabric}
                 <Button
                   variant="ghost"
@@ -125,7 +125,7 @@ const Collections = () => {
               </Badge>
             ))}
             {filters.colors.map(color => (
-              <Badge key={color} variant="secondary" className="gap-1">
+              <Badge key={color} variant="secondary" className="gap-1 text-xs h-7">
                 {color}
                 <Button
                   variant="ghost"
@@ -138,7 +138,7 @@ const Collections = () => {
               </Badge>
             ))}
             {filters.occasions.map(occasion => (
-              <Badge key={occasion} variant="secondary" className="gap-1">
+              <Badge key={occasion} variant="secondary" className="gap-1 text-xs h-7">
                 {occasion}
                 <Button
                   variant="ghost"
@@ -151,7 +151,7 @@ const Collections = () => {
               </Badge>
             ))}
             {filters.regions.map(region => (
-              <Badge key={region} variant="secondary" className="gap-1">
+              <Badge key={region} variant="secondary" className="gap-1 text-xs h-7">
                 {region}
                 <Button
                   variant="ghost"
@@ -163,7 +163,7 @@ const Collections = () => {
                 </Button>
               </Badge>
             ))}
-            <Button variant="ghost" size="sm" onClick={() => clearFilter('fabricTypes')}>
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => clearFilter('fabricTypes')}>
               Clear all
             </Button>
           </div>
@@ -171,12 +171,12 @@ const Collections = () => {
 
         <div>
             {products.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="text-muted-foreground text-lg mb-4">No sarees found matching your criteria</p>
-                <Button onClick={() => clearFilter('fabricTypes')}>Clear all filters</Button>
+              <div className="text-center py-12 md:py-20 px-4">
+                <p className="text-muted-foreground text-base md:text-lg mb-4">No sarees found matching your criteria</p>
+                <Button onClick={() => clearFilter('fabricTypes')} className="h-11">Clear all filters</Button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
                 {products.map((product) => (
                   <ProductCard key={product.id} {...product} />
                 ))}
