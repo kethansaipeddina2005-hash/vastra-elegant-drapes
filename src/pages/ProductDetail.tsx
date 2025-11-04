@@ -175,111 +175,147 @@ const ProductDetail = () => {
           </BreadcrumbList>
         </Breadcrumb>
         
-        <div className="grid md:grid-cols-2 gap-12 mb-20">
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-12 mb-16 md:mb-20">
           <div className="space-y-4">
-            <div className="aspect-[3/4] overflow-hidden rounded-lg">
+            <div className="aspect-[3/4] overflow-hidden rounded-2xl shadow-xl border border-border/50 bg-muted/20">
               <img 
                 src={product.image} 
                 alt={product.name}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
               />
             </div>
           </div>
           
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-4xl font-playfair font-bold text-foreground mb-4">
+          <div className="space-y-6 md:space-y-8">
+            <div className="space-y-3">
+              {product.isNew && (
+                <span className="inline-block px-3 py-1 text-xs font-semibold bg-primary/10 text-primary rounded-full mb-2">
+                  New Arrival
+                </span>
+              )}
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-playfair font-bold text-foreground leading-tight">
                 {product.name}
               </h1>
-              <p className="text-3xl font-semibold text-primary mb-4">
-                ₹{product.price.toLocaleString('en-IN')}
-              </p>
-              {product.rating && (
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} className={`text-xl ${i < Math.floor(product.rating!) ? 'text-gold' : 'text-muted'}`}>
-                        ★
-                      </span>
-                    ))}
+              <div className="flex items-baseline gap-3">
+                <p className="text-4xl font-bold text-primary">
+                  ₹{product.price.toLocaleString('en-IN')}
+                </p>
+                {product.rating && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i} className={`text-lg ${i < Math.floor(product.rating!) ? 'text-gold' : 'text-muted'}`}>
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-sm text-muted-foreground">({product.reviews})</span>
                   </div>
-                  <span className="text-muted-foreground">({product.reviews} reviews)</span>
+                )}
+              </div>
+            </div>
+
+            <div className="p-6 bg-muted/30 rounded-xl space-y-3 border border-border/50">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Fabric</p>
+                  <p className="font-semibold text-foreground">{product.fabricType}</p>
                 </div>
-              )}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Color</p>
+                  <p className="font-semibold text-foreground">{product.color}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Region</p>
+                  <p className="font-semibold text-foreground">{product.region}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Occasion</p>
+                  <p className="font-semibold text-foreground">{product.occasion}</p>
+                </div>
+              </div>
+              <div className="pt-3 border-t border-border/50">
+                <p className={`text-sm font-semibold ${product.stockQuantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {product.stockQuantity > 0 ? `✓ In Stock (${product.stockQuantity} available)` : '✗ Out of Stock'}
+                </p>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <p className="text-muted-foreground"><span className="font-semibold text-foreground">Fabric:</span> {product.fabricType}</p>
-              <p className="text-muted-foreground"><span className="font-semibold text-foreground">Color:</span> {product.color}</p>
-              <p className="text-muted-foreground"><span className="font-semibold text-foreground">Region:</span> {product.region}</p>
-              <p className="text-muted-foreground"><span className="font-semibold text-foreground">Occasion:</span> {product.occasion}</p>
-              <p className="text-muted-foreground">
-                <span className="font-semibold text-foreground">Availability:</span> 
-                {product.stockQuantity > 0 ? ` In Stock (${product.stockQuantity} available)` : ' Out of Stock'}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="flex items-center border border-border rounded-md">
+            <div className="flex items-center gap-4 mb-2">
+              <span className="text-sm font-medium text-muted-foreground">Quantity:</span>
+              <div className="flex items-center border border-border rounded-lg overflow-hidden bg-background">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="rounded-none hover:bg-muted"
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span className="px-4 font-medium">{quantity}</span>
+                <span className="px-6 py-2 font-semibold min-w-[60px] text-center">{quantity}</span>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setQuantity(Math.min(product.stockQuantity, quantity + 1))}
+                  className="rounded-none hover:bg-muted"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
             </div>
 
-            <div className="flex gap-4">
-              <Button size="lg" className="flex-1" onClick={handleAddToCart}>
-                <ShoppingCart className="mr-2 h-5 w-5" />
+            {/* Primary CTA - Buy Now */}
+            <Link to="/checkout" className="block">
+              <Button 
+                size="lg" 
+                className="w-full h-14 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary group"
+              >
+                <ShoppingCart className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                Buy Now
+              </Button>
+            </Link>
+
+            {/* Secondary actions */}
+            <div className="flex gap-3">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="flex-1 h-12 border-2 hover:bg-muted" 
+                onClick={handleAddToCart}
+              >
+                <ShoppingCart className="mr-2 h-4 w-4" />
                 Add to Cart
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
                 onClick={handleWishlist}
-                className={inWishlist ? "text-primary" : ""}
+                className={`h-12 border-2 hover:bg-muted ${inWishlist ? "text-primary border-primary" : ""}`}
               >
-                <Heart className={`h-5 w-5 ${inWishlist ? 'fill-primary' : ''}`} />
+                <Heart className={`h-5 w-5 transition-all ${inWishlist ? 'fill-primary scale-110' : ''}`} />
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="lg" variant="outline">
+                  <Button size="lg" variant="outline" className="h-12 border-2 hover:bg-muted">
                     <Share2 className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleShare('facebook')}>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => handleShare('facebook')} className="cursor-pointer">
                     <Facebook className="mr-2 h-4 w-4" />
                     Share on Facebook
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShare('twitter')}>
+                  <DropdownMenuItem onClick={() => handleShare('twitter')} className="cursor-pointer">
                     <Twitter className="mr-2 h-4 w-4" />
                     Share on Twitter
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShare('copy')}>
+                  <DropdownMenuItem onClick={() => handleShare('copy')} className="cursor-pointer">
                     <Link2 className="mr-2 h-4 w-4" />
                     Copy Link
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-
-            <Link to="/checkout">
-              <Button size="lg" className="w-full" variant="secondary">
-                Buy Now
-              </Button>
-            </Link>
           </div>
         </div>
 
