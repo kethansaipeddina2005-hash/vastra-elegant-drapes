@@ -37,12 +37,18 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Ensure minimum loading time for smooth animation
-    const timer = setTimeout(() => {
+    // Show loading only on first mount
+    const hasLoaded = sessionStorage.getItem('app-loaded');
+    
+    if (!hasLoaded) {
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+        sessionStorage.setItem('app-loaded', 'true');
+      }, 1500);
+      return () => clearTimeout(timer);
+    } else {
       setIsLoading(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
+    }
   }, []);
 
   return (
