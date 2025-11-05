@@ -50,6 +50,7 @@ const ProductDetail = () => {
         description: data.description || '',
         image: data.images?.[0] || '',
         images: data.images || [],
+        videos: data.videos || [],
         fabricType: data.fabric_type || '',
         color: data.color || '',
         occasion: data.occasion || '',
@@ -78,6 +79,7 @@ const ProductDetail = () => {
           description: p.description || '',
           image: p.images?.[0] || '',
           images: p.images || [],
+          videos: p.videos || [],
           fabricType: p.fabric_type || '',
           color: p.color || '',
           occasion: p.occasion || '',
@@ -176,14 +178,35 @@ const ProductDetail = () => {
         </Breadcrumb>
         
         <div className="grid md:grid-cols-2 gap-4 md:gap-6 mb-6">
-          {/* Product Image - Compact */}
+          {/* Product Image & Videos - Compact */}
           <div className="flex items-center justify-center">
-            <div className="w-full max-w-sm aspect-[3/4] overflow-hidden rounded-lg shadow-md border border-border/50 bg-muted/20">
-              <img 
-                src={product.image} 
-                alt={product.name}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-              />
+            <div className="w-full max-w-sm space-y-3">
+              {/* Main Image */}
+              <div className="aspect-[3/4] overflow-hidden rounded-lg shadow-md border border-border/50 bg-muted/20">
+                <img 
+                  src={product.image} 
+                  alt={product.name}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+              
+              {/* Videos Section */}
+              {product.videos && product.videos.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Product Videos</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {product.videos.map((video, index) => (
+                      <div key={index} className="overflow-hidden rounded-lg border border-border/50">
+                        <video 
+                          src={video} 
+                          controls
+                          className="w-full aspect-video object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           

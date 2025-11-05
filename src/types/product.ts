@@ -5,6 +5,7 @@ export interface Product {
   description: string;
   image: string;
   images?: string[];
+  videos?: string[];
   fabricType: string;
   color: string;
   occasion: string;

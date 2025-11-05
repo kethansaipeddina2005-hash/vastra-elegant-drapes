@@ -252,6 +252,7 @@ export type Database = {
           reviews: number | null
           stock_quantity: number | null
           updated_at: string | null
+          videos: string[] | null
         }
         Insert: {
           color?: string | null
@@ -269,6 +270,7 @@ export type Database = {
           reviews?: number | null
           stock_quantity?: number | null
           updated_at?: string | null
+          videos?: string[] | null
         }
         Update: {
           color?: string | null
@@ -286,6 +288,7 @@ export type Database = {
           reviews?: number | null
           stock_quantity?: number | null
           updated_at?: string | null
+          videos?: string[] | null
         }
         Relationships: []
       }

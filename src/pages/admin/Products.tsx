@@ -25,6 +25,7 @@ interface Product {
   occasion: string;
   region: string;
   images: string[];
+  videos?: string[];
 }
 
 const AdminProducts = () => {
@@ -35,7 +36,9 @@ const AdminProducts = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [videoFiles, setVideoFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -113,6 +116,44 @@ const AdminProducts = () => {
     return uploadedUrls;
   };
 
+  const uploadVideos = async (): Promise<string[]> => {
+    const uploadedUrls: string[] = [];
+
+    for (const file of videoFiles) {
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `video-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = fileName;
+
+        console.log('Uploading video:', fileName);
+
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+
+        console.log('Video uploaded successfully:', publicUrl);
+        uploadedUrls.push(publicUrl);
+      } catch (error) {
+        console.error('Error uploading video:', file.name, error);
+        throw error;
+      }
+    }
+
+    return uploadedUrls;
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setImageFiles(files);
@@ -122,16 +163,31 @@ const AdminProducts = () => {
     setImagePreviews(previews);
   };
 
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setVideoFiles(files);
+    
+    // Create preview URLs
+    const previews = files.map(file => URL.createObjectURL(file));
+    setVideoPreviews(previews);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploading(true);
 
     try {
       let imageUrls: string[] = editingProduct?.images || [];
+      let videoUrls: string[] = editingProduct?.videos || [];
 
       if (imageFiles.length > 0) {
         const newUrls = await uploadImages();
         imageUrls = [...imageUrls, ...newUrls];
+      }
+
+      if (videoFiles.length > 0) {
+        const newVideoUrls = await uploadVideos();
+        videoUrls = [...videoUrls, ...newVideoUrls];
       }
 
       const productData = {
@@ -139,6 +195,7 @@ const AdminProducts = () => {
         price: parseFloat(formData.price),
         stock_quantity: parseInt(formData.stock_quantity),
         images: imageUrls,
+        videos: videoUrls,
         is_new: true,
         rating: 0,
         reviews: 0,
@@ -213,9 +270,12 @@ const AdminProducts = () => {
       region: '',
     });
     setImageFiles([]);
+    setVideoFiles([]);
     setImagePreviews([]);
+    setVideoPreviews([]);
     // Clean up preview URLs
     imagePreviews.forEach(url => URL.revokeObjectURL(url));
+    videoPreviews.forEach(url => URL.revokeObjectURL(url));
   };
 
   if (adminLoading || loading) {
@@ -367,6 +427,53 @@ const AdminProducts = () => {
                             src={img} 
                             alt={`Current ${index + 1}`}
                             className="w-full h-24 object-cover rounded border"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="videos">Product Videos</Label>
+                  <Input
+                    id="videos"
+                    type="file"
+                    multiple
+                    accept="video/*"
+                    onChange={handleVideoChange}
+                    className="mb-2"
+                  />
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Upload product videos (MP4, WebM, MOV)
+                  </p>
+                  
+                  {/* Video Previews */}
+                  {videoPreviews.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      {videoPreviews.map((preview, index) => (
+                        <div key={index} className="relative">
+                          <video 
+                            src={preview} 
+                            className="w-full h-32 object-cover rounded border"
+                            controls
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Current Videos */}
+                  {editingProduct && editingProduct.videos && editingProduct.videos.length > 0 && (
+                    <div className="mb-2">
+                      <p className="text-sm font-medium mb-2">Current videos:</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {editingProduct.videos.map((video, index) => (
+                          <video 
+                            key={index}
+                            src={video} 
+                            className="w-full h-32 object-cover rounded border"
+                            controls
                           />
                         ))}
                       </div>
