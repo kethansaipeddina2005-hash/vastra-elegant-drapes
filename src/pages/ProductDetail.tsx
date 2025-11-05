@@ -158,201 +158,211 @@ const ProductDetail = () => {
   
   return (
     <Layout>
-      <div className="container mx-auto px-6 py-8">
-        <Breadcrumb className="mb-6">
+      <div className="container mx-auto px-4 py-4 max-w-6xl">
+        <Breadcrumb className="mb-3">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              <BreadcrumbLink href="/" className="text-xs">Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/collections">Collections</BreadcrumbLink>
+              <BreadcrumbLink href="/collections" className="text-xs">Collections</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>{product.name}</BreadcrumbPage>
+              <BreadcrumbPage className="text-xs">{product.name}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
         
-        <div className="grid md:grid-cols-2 gap-8 lg:gap-12 mb-16 md:mb-20">
-          <div className="space-y-4">
-            <div className="aspect-[3/4] overflow-hidden rounded-2xl shadow-xl border border-border/50 bg-muted/20">
+        <div className="grid md:grid-cols-2 gap-4 md:gap-6 mb-6">
+          {/* Product Image - Compact */}
+          <div className="flex items-center justify-center">
+            <div className="w-full max-w-sm aspect-[3/4] overflow-hidden rounded-lg shadow-md border border-border/50 bg-muted/20">
               <img 
                 src={product.image} 
                 alt={product.name}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
               />
             </div>
           </div>
           
-          <div className="space-y-6 md:space-y-8">
-            <div className="space-y-3">
+          {/* Product Details - Compact */}
+          <div className="space-y-3 flex flex-col">
+            <div className="space-y-2">
               {product.isNew && (
-                <span className="inline-block px-3 py-1 text-xs font-semibold bg-primary/10 text-primary rounded-full mb-2">
-                  New Arrival
+                <span className="inline-block px-2 py-0.5 text-xs font-semibold bg-primary/10 text-primary rounded-full">
+                  New
                 </span>
               )}
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-playfair font-bold text-foreground leading-tight">
+              <h1 className="text-xl md:text-2xl font-playfair font-bold text-foreground leading-tight">
                 {product.name}
               </h1>
-              <div className="flex items-baseline gap-3">
-                <p className="text-4xl font-bold text-primary">
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold text-primary">
                   ₹{product.price.toLocaleString('en-IN')}
                 </p>
                 {product.rating && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
-                        <span key={i} className={`text-lg ${i < Math.floor(product.rating!) ? 'text-gold' : 'text-muted'}`}>
+                        <span key={i} className={`text-sm ${i < Math.floor(product.rating!) ? 'text-gold' : 'text-muted'}`}>
                           ★
                         </span>
                       ))}
                     </div>
-                    <span className="text-sm text-muted-foreground">({product.reviews})</span>
+                    <span className="text-xs text-muted-foreground">({product.reviews})</span>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="p-6 bg-muted/30 rounded-xl space-y-3 border border-border/50">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Fabric</p>
-                  <p className="font-semibold text-foreground">{product.fabricType}</p>
+            {/* Product Description - Concise */}
+            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+              {product.description}
+            </p>
+
+            {/* Product Specs - Compact */}
+            <div className="p-3 bg-muted/30 rounded-lg space-y-2 border border-border/50">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <p className="text-muted-foreground">Fabric</p>
+                  <p className="font-semibold">{product.fabricType}</p>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Color</p>
-                  <p className="font-semibold text-foreground">{product.color}</p>
+                <div>
+                  <p className="text-muted-foreground">Color</p>
+                  <p className="font-semibold">{product.color}</p>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Region</p>
-                  <p className="font-semibold text-foreground">{product.region}</p>
+                <div>
+                  <p className="text-muted-foreground">Region</p>
+                  <p className="font-semibold">{product.region}</p>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Occasion</p>
-                  <p className="font-semibold text-foreground">{product.occasion}</p>
+                <div>
+                  <p className="text-muted-foreground">Occasion</p>
+                  <p className="font-semibold">{product.occasion}</p>
                 </div>
               </div>
-              <div className="pt-3 border-t border-border/50">
-                <p className={`text-sm font-semibold ${product.stockQuantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {product.stockQuantity > 0 ? `✓ In Stock (${product.stockQuantity} available)` : '✗ Out of Stock'}
+              <div className="pt-2 border-t border-border/50">
+                <p className={`text-xs font-semibold ${product.stockQuantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {product.stockQuantity > 0 ? `✓ In Stock (${product.stockQuantity})` : '✗ Out of Stock'}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 mb-2">
-              <span className="text-sm font-medium text-muted-foreground">Quantity:</span>
-              <div className="flex items-center border border-border rounded-lg overflow-hidden bg-background">
+            {/* Quantity Selector - Compact */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-medium text-muted-foreground">Qty:</span>
+              <div className="flex items-center border border-border rounded-md overflow-hidden bg-background">
                 <Button
                   variant="ghost"
-                  size="icon"
+                  size="sm"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="rounded-none hover:bg-muted"
+                  className="h-8 w-8 p-0 rounded-none hover:bg-muted"
                 >
-                  <Minus className="h-4 w-4" />
+                  <Minus className="h-3 w-3" />
                 </Button>
-                <span className="px-6 py-2 font-semibold min-w-[60px] text-center">{quantity}</span>
+                <span className="px-4 text-sm font-semibold">{quantity}</span>
                 <Button
                   variant="ghost"
-                  size="icon"
+                  size="sm"
                   onClick={() => setQuantity(Math.min(product.stockQuantity, quantity + 1))}
-                  className="rounded-none hover:bg-muted"
+                  className="h-8 w-8 p-0 rounded-none hover:bg-muted"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3 w-3" />
                 </Button>
               </div>
             </div>
 
-            {/* Primary CTA - Buy Now */}
-            <Link to="/checkout" className="block">
-              <Button 
-                size="lg" 
-                className="w-full h-14 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary group"
-              >
-                <ShoppingCart className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                Buy Now
-              </Button>
-            </Link>
+            {/* Action Buttons - Compact and Proportionate */}
+            <div className="space-y-2 mt-auto">
+              <Link to="/checkout" className="block">
+                <Button 
+                  size="sm"
+                  className="w-full h-9 text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+                >
+                  <ShoppingCart className="mr-1.5 h-4 w-4" />
+                  Buy Now
+                </Button>
+              </Link>
 
-            {/* Secondary actions */}
-            <div className="flex gap-3">
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="flex-1 h-12 border-2 hover:bg-muted" 
-                onClick={handleAddToCart}
-              >
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Add to Cart
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                onClick={handleWishlist}
-                className={`h-12 border-2 hover:bg-muted ${inWishlist ? "text-primary border-primary" : ""}`}
-              >
-                <Heart className={`h-5 w-5 transition-all ${inWishlist ? 'fill-primary scale-110' : ''}`} />
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="lg" variant="outline" className="h-12 border-2 hover:bg-muted">
-                    <Share2 className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => handleShare('facebook')} className="cursor-pointer">
-                    <Facebook className="mr-2 h-4 w-4" />
-                    Share on Facebook
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShare('twitter')} className="cursor-pointer">
-                    <Twitter className="mr-2 h-4 w-4" />
-                    Share on Twitter
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleShare('copy')} className="cursor-pointer">
-                    <Link2 className="mr-2 h-4 w-4" />
-                    Copy Link
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm"
+                  variant="outline" 
+                  className="flex-1 h-9 text-sm rounded-lg" 
+                  onClick={handleAddToCart}
+                >
+                  <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
+                  Add to Cart
+                </Button>
+                <Button 
+                  size="sm"
+                  variant="outline" 
+                  onClick={handleWishlist}
+                  className={`h-9 w-9 p-0 rounded-lg ${inWishlist ? "text-primary border-primary" : ""}`}
+                >
+                  <Heart className={`h-4 w-4 transition-all ${inWishlist ? 'fill-primary' : ''}`} />
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline" className="h-9 w-9 p-0 rounded-lg">
+                      <Share2 className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => handleShare('facebook')} className="cursor-pointer text-xs">
+                      <Facebook className="mr-2 h-3.5 w-3.5" />
+                      Facebook
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleShare('twitter')} className="cursor-pointer text-xs">
+                      <Twitter className="mr-2 h-3.5 w-3.5" />
+                      Twitter
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleShare('copy')} className="cursor-pointer text-xs">
+                      <Link2 className="mr-2 h-3.5 w-3.5" />
+                      Copy Link
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
         </div>
 
-        <Tabs defaultValue="description" className="mb-20">
-          <TabsList className="grid w-full grid-cols-3 max-w-md">
-            <TabsTrigger value="description">Description</TabsTrigger>
-            <TabsTrigger value="care">Care Instructions</TabsTrigger>
-            <TabsTrigger value="size">Size Guide</TabsTrigger>
+        {/* Tabs - Compact */}
+        <Tabs defaultValue="description" className="mb-6">
+          <TabsList className="grid w-full grid-cols-3 max-w-md h-9">
+            <TabsTrigger value="description" className="text-xs">Description</TabsTrigger>
+            <TabsTrigger value="care" className="text-xs">Care</TabsTrigger>
+            <TabsTrigger value="size" className="text-xs">Size</TabsTrigger>
           </TabsList>
-          <TabsContent value="description" className="mt-6">
-            <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+          <TabsContent value="description" className="mt-3">
+            <p className="text-sm text-muted-foreground leading-relaxed">{product.description}</p>
           </TabsContent>
-          <TabsContent value="care" className="mt-6">
-            <ul className="space-y-2 text-muted-foreground">
-              <li>• Dry clean only for best results</li>
-              <li>• Store in a cool, dry place</li>
-              <li>• Avoid direct sunlight to prevent fading</li>
-              <li>• Iron on low heat if needed</li>
-              <li>• Keep away from perfumes and deodorants</li>
+          <TabsContent value="care" className="mt-3">
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              <li>• Dry clean only</li>
+              <li>• Store in cool, dry place</li>
+              <li>• Avoid direct sunlight</li>
+              <li>• Iron on low heat</li>
             </ul>
           </TabsContent>
-          <TabsContent value="size" className="mt-6">
-            <p className="text-muted-foreground mb-4">Standard saree dimensions:</p>
-            <ul className="space-y-2 text-muted-foreground">
-              <li>• Length: 5.5 meters (18 feet)</li>
-              <li>• Width: 1.1 meters (44 inches)</li>
-              <li>• Blouse piece: 80 cm included</li>
+          <TabsContent value="size" className="mt-3">
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              <li>• Length: 5.5m (18ft)</li>
+              <li>• Width: 1.1m (44in)</li>
+              <li>• Blouse: 80cm included</li>
             </ul>
           </TabsContent>
         </Tabs>
 
+        {/* Related Products - Compact */}
         {relatedProducts.length > 0 && (
           <div>
-            <h2 className="text-3xl font-playfair font-bold text-foreground mb-8">
+            <h2 className="text-lg md:text-xl font-playfair font-bold text-foreground mb-4">
               You Might Also Like
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
               {relatedProducts.map(product => (
                 <ProductCard key={product.id} {...product} />
               ))}
