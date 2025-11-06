@@ -15,7 +15,16 @@ interface Banner {
 }
 
 const Hero = () => {
-  const [banners, setBanners] = useState<Banner[]>([]);
+  const defaultBanner: Banner = {
+    id: 'default',
+    title: 'Grace in Every Drape',
+    subtitle: 'The Essence of Indian Elegance',
+    image_url: heroImage,
+    link_url: '/collections',
+    display_order: 0
+  };
+
+  const [banners, setBanners] = useState<Banner[]>([defaultBanner]);
   const [currentBanner, setCurrentBanner] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -33,8 +42,9 @@ const Hero = () => {
 
       if (error) throw error;
       
+      // Always start with default banner, then add database banners
       if (data && data.length > 0) {
-        setBanners(data);
+        setBanners([defaultBanner, ...data]);
       }
     } catch (error) {
       console.error("Error fetching banners:", error);
