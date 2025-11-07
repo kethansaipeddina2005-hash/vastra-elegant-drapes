@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
@@ -21,6 +21,7 @@ import {
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -298,15 +299,17 @@ const ProductDetail = () => {
 
             {/* Action Buttons - Compact and Proportionate */}
             <div className="space-y-2 mt-auto">
-              <Link to="/checkout" className="block">
-                <Button 
-                  size="sm"
-                  className="w-full h-9 text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
-                >
-                  <ShoppingCart className="mr-1.5 h-4 w-4" />
-                  Buy Now
-                </Button>
-              </Link>
+              <Button 
+                size="sm"
+                className="w-full h-9 text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+                onClick={() => {
+                  handleAddToCart();
+                  navigate('/checkout');
+                }}
+              >
+                <ShoppingCart className="mr-1.5 h-4 w-4" />
+                Buy Now
+              </Button>
 
               <div className="flex gap-2">
                 <Button 

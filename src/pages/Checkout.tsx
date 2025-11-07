@@ -33,7 +33,14 @@ interface SavedAddress {
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { cart, cartTotal, clearCart } = useCart();
+  const { 
+    cart, 
+    cartTotal, 
+    clearCart, 
+    promoCode: savedPromoCode, 
+    discountPercent: savedDiscountPercent,
+    clearPromo
+  } = useCart();
   const [step, setStep] = useState(1);
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
@@ -50,10 +57,10 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Coupon states
-  const [promoCode, setPromoCode] = useState("");
-  const [discountPercent, setDiscountPercent] = useState(0);
-  const [couponMessage, setCouponMessage] = useState("");
+  // Coupon states - Load from cart context
+  const [promoCode, setPromoCode] = useState(savedPromoCode);
+  const [discountPercent, setDiscountPercent] = useState(savedDiscountPercent);
+  const [couponMessage, setCouponMessage] = useState(savedPromoCode ? `${savedDiscountPercent}% discount applied ✅` : "");
   const [couponLoading, setCouponLoading] = useState(false);
 
   const shipping = cartTotal > 2000 ? 0 : 200;
@@ -247,6 +254,7 @@ const Checkout = () => {
           description: `Order #${order.id.slice(0, 8)} confirmed. Pay on delivery.`,
         });
         clearCart();
+        clearPromo();
         navigate("/account/orders");
         setIsProcessing(false);
       }

@@ -10,10 +10,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 
 const Cart = () => {
-  const { cart, removeFromCart, updateQuantity, cartTotal, cartCount } = useCart();
+  const { 
+    cart, 
+    removeFromCart, 
+    updateQuantity, 
+    cartTotal, 
+    cartCount,
+    promoCode: savedPromoCode,
+    discountPercent: savedDiscountPercent,
+    setPromoCode: savePromoCode,
+    setDiscountPercent: saveDiscountPercent
+  } = useCart();
 
-  const [promoCode, setPromoCode] = useState("");
-  const [discountPercent, setDiscountPercent] = useState(0);
+  const [promoCode, setPromoCode] = useState(savedPromoCode);
+  const [discountPercent, setDiscountPercent] = useState(savedDiscountPercent);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -47,6 +57,8 @@ const Cart = () => {
     }
 
     setDiscountPercent(data.discount_percent);
+    saveDiscountPercent(data.discount_percent);
+    savePromoCode(promoCode.trim().toUpperCase());
     setMessage(`Success! ${data.discount_percent}% off applied ✅`);
   };
 
