@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Loading } from '@/components/ui/loading';
 import { Plus, Edit, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
+import { MediaCarousel } from '@/components/MediaCarousel';
 
 interface Product {
   id: number;
@@ -387,8 +388,19 @@ const AdminProducts = () => {
                     />
                   </div>
                 </div>
+                {/* Current Media Carousel */}
+                {editingProduct && (editingProduct.images.length > 0 || (editingProduct.videos && editingProduct.videos.length > 0)) && (
+                  <div className="mb-4">
+                    <p className="text-sm font-medium mb-3">Current Media:</p>
+                    <MediaCarousel 
+                      images={editingProduct.images}
+                      videos={editingProduct.videos}
+                    />
+                  </div>
+                )}
+
                 <div>
-                  <Label htmlFor="images">Product Images</Label>
+                  <Label htmlFor="images">Add Product Images</Label>
                   <Input
                     id="images"
                     type="file"
@@ -403,39 +415,15 @@ const AdminProducts = () => {
                   
                   {/* Image Previews */}
                   {imagePreviews.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2 mb-2">
-                      {imagePreviews.map((preview, index) => (
-                        <div key={index} className="relative">
-                          <img 
-                            src={preview} 
-                            alt={`Preview ${index + 1}`}
-                            className="w-full h-24 object-cover rounded border"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {/* Current Images */}
-                  {editingProduct && editingProduct.images.length > 0 && (
-                    <div className="mb-2">
-                      <p className="text-sm font-medium mb-2">Current images:</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {editingProduct.images.map((img, index) => (
-                          <img 
-                            key={index}
-                            src={img} 
-                            alt={`Current ${index + 1}`}
-                            className="w-full h-24 object-cover rounded border"
-                          />
-                        ))}
-                      </div>
+                    <div className="mb-3">
+                      <p className="text-sm font-medium mb-2">New images to upload:</p>
+                      <MediaCarousel images={imagePreviews} />
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="videos">Product Videos</Label>
+                  <Label htmlFor="videos">Add Product Videos</Label>
                   <Input
                     id="videos"
                     type="file"
@@ -450,33 +438,9 @@ const AdminProducts = () => {
                   
                   {/* Video Previews */}
                   {videoPreviews.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2 mb-2">
-                      {videoPreviews.map((preview, index) => (
-                        <div key={index} className="relative">
-                          <video 
-                            src={preview} 
-                            className="w-full h-32 object-cover rounded border"
-                            controls
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {/* Current Videos */}
-                  {editingProduct && editingProduct.videos && editingProduct.videos.length > 0 && (
-                    <div className="mb-2">
-                      <p className="text-sm font-medium mb-2">Current videos:</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {editingProduct.videos.map((video, index) => (
-                          <video 
-                            key={index}
-                            src={video} 
-                            className="w-full h-32 object-cover rounded border"
-                            controls
-                          />
-                        ))}
-                      </div>
+                    <div className="mb-3">
+                      <p className="text-sm font-medium mb-2">New videos to upload:</p>
+                      <MediaCarousel videos={videoPreviews} />
                     </div>
                   )}
                 </div>

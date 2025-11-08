@@ -12,6 +12,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { toast } from "@/hooks/use-toast";
 import { Loading } from "@/components/ui/loading";
+import { MediaCarousel } from "@/components/MediaCarousel";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -179,35 +180,13 @@ const ProductDetail = () => {
         </Breadcrumb>
         
         <div className="grid md:grid-cols-2 gap-4 md:gap-6 mb-6">
-          {/* Product Image & Videos - Compact */}
+          {/* Product Media Carousel */}
           <div className="flex items-center justify-center">
-            <div className="w-full max-w-sm space-y-3">
-              {/* Main Image */}
-              <div className="aspect-[3/4] overflow-hidden rounded-lg shadow-md border border-border/50 bg-muted/20">
-                <img 
-                  src={product.image} 
-                  alt={product.name}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              
-              {/* Videos Section */}
-              {product.videos && product.videos.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground">Product Videos</p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {product.videos.map((video, index) => (
-                      <div key={index} className="overflow-hidden rounded-lg border border-border/50">
-                        <video 
-                          src={video} 
-                          controls
-                          className="w-full aspect-video object-cover"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className="w-full max-w-lg">
+              <MediaCarousel 
+                images={product.images}
+                videos={product.videos}
+              />
             </div>
           </div>
           
