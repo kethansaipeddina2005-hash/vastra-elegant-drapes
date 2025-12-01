@@ -46,7 +46,7 @@ export const MediaCarousel = ({ images = [], videos = [], className }: MediaCaro
   return (
     <div className={cn("relative w-full group", className)}>
       {/* Main Media Container */}
-      <div className="relative w-full aspect-[4/3] bg-black rounded-lg overflow-hidden">
+      <div className="relative w-full aspect-[4/3] bg-muted/20 rounded-lg overflow-hidden">
         <div
           className="absolute inset-0 transition-transform duration-500 ease-out"
           style={{ transform: `translateX(0)` }}
