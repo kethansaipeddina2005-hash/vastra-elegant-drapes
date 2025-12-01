@@ -234,7 +234,13 @@ const AdminProducts = () => {
     try {
       const { error } = await supabase.from('products').delete().eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23503') {
+          toast.error('Cannot delete product that has existing orders');
+          return;
+        }
+        throw error;
+      }
       toast.success('Product deleted successfully');
       fetchProducts();
     } catch (error) {
