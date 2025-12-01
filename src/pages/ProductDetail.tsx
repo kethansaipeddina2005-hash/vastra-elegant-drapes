@@ -181,13 +181,11 @@ const ProductDetail = () => {
         
         <div className="grid md:grid-cols-2 gap-4 md:gap-6 mb-6">
           {/* Product Media Carousel */}
-          <div className="flex items-center justify-center">
-            <div className="w-full max-w-lg">
-              <MediaCarousel 
-                images={product.images}
-                videos={product.videos}
-              />
-            </div>
+          <div className="w-full">
+            <MediaCarousel 
+              images={product.images}
+              videos={product.videos}
+            />
           </div>
           
           {/* Product Details - Compact */}
