@@ -8,6 +8,8 @@ interface MediaCarouselProps {
   images?: string[];
   videos?: string[];
   className?: string;
+  productName?: string;
+  productUrl?: string;
 }
 
 type MediaItem = {
@@ -15,7 +17,7 @@ type MediaItem = {
   url: string;
 };
 
-export const MediaCarousel = ({ images = [], videos = [], className }: MediaCarouselProps) => {
+export const MediaCarousel = ({ images = [], videos = [], className, productName, productUrl }: MediaCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
@@ -171,6 +173,8 @@ export const MediaCarousel = ({ images = [], videos = [], className }: MediaCaro
           const imageOnlyIndex = mediaItems.findIndex((item, i) => item.type === 'image' && images.indexOf(item.url) === index);
           if (imageOnlyIndex !== -1) setCurrentIndex(imageOnlyIndex);
         }}
+        productName={productName}
+        productUrl={productUrl}
       />
     </>
   );
