@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Expand } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ImageLightbox } from './ImageLightbox';
 
 interface MediaCarouselProps {
   images?: string[];
@@ -16,6 +17,7 @@ type MediaItem = {
 
 export const MediaCarousel = ({ images = [], videos = [], className }: MediaCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   // Combine images and videos into a single media array
   const mediaItems: MediaItem[] = [
@@ -43,8 +45,15 @@ export const MediaCarousel = ({ images = [], videos = [], className }: MediaCaro
 
   const currentMedia = mediaItems[currentIndex];
 
+  const handleImageClick = () => {
+    if (currentMedia.type === 'image') {
+      setIsLightboxOpen(true);
+    }
+  };
+
   return (
-    <div className={cn("relative w-full group", className)}>
+    <>
+      <div className={cn("relative w-full group", className)}>
       {/* Main Media Container */}
       <div className="relative w-full aspect-[4/3] bg-muted/20 rounded-lg overflow-hidden">
         <div
@@ -52,11 +61,22 @@ export const MediaCarousel = ({ images = [], videos = [], className }: MediaCaro
           style={{ transform: `translateX(0)` }}
         >
           {currentMedia.type === 'image' ? (
-            <img
-              src={currentMedia.url}
-              alt={`Media ${currentIndex + 1}`}
-              className="w-full h-full object-contain"
-            />
+            <div className="relative w-full h-full group/image">
+              <img
+                src={currentMedia.url}
+                alt={`Media ${currentIndex + 1}`}
+                className="w-full h-full object-contain cursor-pointer"
+                onClick={handleImageClick}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleImageClick}
+                className="absolute top-4 right-4 h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90 opacity-0 group-hover/image:opacity-100 transition-opacity duration-300"
+              >
+                <Expand className="h-5 w-5" />
+              </Button>
+            </div>
           ) : (
             <video
               src={currentMedia.url}
@@ -139,6 +159,19 @@ export const MediaCarousel = ({ images = [], videos = [], className }: MediaCaro
           ))}
         </div>
       )}
-    </div>
+      </div>
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        images={images}
+        currentIndex={images.indexOf(currentMedia.type === 'image' ? currentMedia.url : '')}
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+        onNavigate={(index) => {
+          const imageOnlyIndex = mediaItems.findIndex((item, i) => item.type === 'image' && images.indexOf(item.url) === index);
+          if (imageOnlyIndex !== -1) setCurrentIndex(imageOnlyIndex);
+        }}
+      />
+    </>
   );
 };
