@@ -185,6 +185,8 @@ const ProductDetail = () => {
             <MediaCarousel 
               images={product.images}
               videos={product.videos}
+              productName={product.name}
+              productUrl={window.location.href}
             />
           </div>
           
