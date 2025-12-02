@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
+import { RecentlyViewedProvider } from "@/contexts/RecentlyViewedContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import Index from "./pages/Index";
 import Collections from "./pages/Collections";
@@ -57,10 +58,11 @@ const App = () => {
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
-              {isLoading && <LoadingScreen />}
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
+              <RecentlyViewedProvider>
+                {isLoading && <LoadingScreen />}
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
                 <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/collections" element={<Collections />} />
@@ -86,7 +88,8 @@ const App = () => {
           <Route path="/admin/banners" element={<AdminBanners />} />
           <Route path="*" element={<NotFound />} />
                 </Routes>
-              </BrowserRouter>
+                </BrowserRouter>
+              </RecentlyViewedProvider>
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>

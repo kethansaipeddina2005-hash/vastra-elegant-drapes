@@ -10,9 +10,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, ShoppingCart, Minus, Plus, Share2, Facebook, Twitter, Link2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { useRecentlyViewed } from "@/contexts/RecentlyViewedContext";
 import { toast } from "@/hooks/use-toast";
 import { Loading } from "@/components/ui/loading";
 import { MediaCarousel } from "@/components/MediaCarousel";
+import { RecentlyViewedProducts } from "@/components/RecentlyViewedProducts";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +31,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { addToRecentlyViewed } = useRecentlyViewed();
   
   useEffect(() => {
     fetchProduct();
@@ -64,6 +67,7 @@ const ProductDetail = () => {
       };
 
       setProduct(transformedProduct);
+      addToRecentlyViewed(transformedProduct);
 
       // Fetch related products
       const { data: relatedData } = await supabase
@@ -374,6 +378,9 @@ const ProductDetail = () => {
             </div>
           </div>
         )}
+
+        {/* Recently Viewed Products */}
+        <RecentlyViewedProducts excludeProductId={product.id} maxItems={4} />
       </div>
     </Layout>
   );

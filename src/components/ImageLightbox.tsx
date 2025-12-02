@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Share2, Facebook, Twitter, Link2 } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { X, ChevronLeft, ChevronRight, Share2, Facebook, Twitter, Link2, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
@@ -29,6 +29,83 @@ export const ImageLightbox = ({
   productName = 'this product',
   productUrl = window.location.href,
 }: ImageLightboxProps) => {
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const lastTouchRef = useRef<{ x: number; y: number; distance: number } | null>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  const resetZoom = () => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  const handleZoomIn = () => {
+    setScale((prev) => Math.min(prev + 0.5, 4));
+  };
+
+  const handleZoomOut = () => {
+    setScale((prev) => {
+      const newScale = Math.max(prev - 0.5, 1);
+      if (newScale === 1) setPosition({ x: 0, y: 0 });
+      return newScale;
+    });
+  };
+
+  const getDistance = (touches: React.TouchList) => {
+    if (touches.length < 2) return 0;
+    const touch1 = touches.item(0);
+    const touch2 = touches.item(1);
+    if (!touch1 || !touch2) return 0;
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const distance = getDistance(e.touches);
+      const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      lastTouchRef.current = { x: centerX, y: centerY, distance };
+    } else if (e.touches.length === 1 && scale > 1) {
+      setIsDragging(true);
+      lastTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, distance: 0 };
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && lastTouchRef.current) {
+      e.preventDefault();
+      const newDistance = getDistance(e.touches);
+      const scaleDiff = (newDistance - lastTouchRef.current.distance) * 0.01;
+      setScale((prev) => Math.min(Math.max(prev + scaleDiff, 1), 4));
+      lastTouchRef.current.distance = newDistance;
+    } else if (e.touches.length === 1 && isDragging && lastTouchRef.current && scale > 1) {
+      const dx = e.touches[0].clientX - lastTouchRef.current.x;
+      const dy = e.touches[0].clientY - lastTouchRef.current.y;
+      setPosition((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+      lastTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, distance: 0 };
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    lastTouchRef.current = null;
+    if (scale <= 1) {
+      resetZoom();
+    }
+  };
+
+  const handleDoubleClick = () => {
+    if (scale > 1) {
+      resetZoom();
+    } else {
+      setScale(2);
+    }
+  };
+
   const handleShare = (platform: string) => {
     const url = productUrl;
     const text = `Check out ${productName}`;
@@ -42,7 +119,7 @@ export const ImageLightbox = ({
         shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
         break;
       case 'whatsapp':
-        shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+        shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`;
         break;
       case 'pinterest':
         shareUrl = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&media=${encodeURIComponent(images[currentIndex])}&description=${encodeURIComponent(text)}`;
@@ -74,6 +151,11 @@ export const ImageLightbox = ({
       document.body.style.overflow = 'unset';
     };
   }, [isOpen, currentIndex]);
+
+  // Reset zoom when changing images
+  useEffect(() => {
+    resetZoom();
+  }, [currentIndex]);
 
   if (!isOpen) return null;
 
@@ -137,6 +219,26 @@ export const ImageLightbox = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Zoom Controls */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleZoomOut}
+            disabled={scale <= 1}
+            className="h-12 w-12 rounded-full bg-background/10 hover:bg-background/20 text-white disabled:opacity-30"
+          >
+            <ZoomOut className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleZoomIn}
+            disabled={scale >= 4}
+            className="h-12 w-12 rounded-full bg-background/10 hover:bg-background/20 text-white disabled:opacity-30"
+          >
+            <ZoomIn className="h-5 w-5" />
+          </Button>
+
           {/* Close Button */}
           <Button
             variant="ghost"
@@ -150,12 +252,29 @@ export const ImageLightbox = ({
       </div>
 
       {/* Main Image Container */}
-      <div className="absolute inset-0 flex items-center justify-center p-4 md:p-8">
+      <div 
+        className="absolute inset-0 flex items-center justify-center p-4 md:p-8 touch-none"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onDoubleClick={handleDoubleClick}
+      >
         <img
+          ref={imageRef}
           src={images[currentIndex]}
           alt={`Product image ${currentIndex + 1}`}
-          className="max-w-full max-h-full object-contain animate-scale-in"
+          className="max-w-full max-h-full object-contain animate-scale-in transition-transform duration-100"
+          style={{
+            transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
+            cursor: scale > 1 ? 'grab' : 'zoom-in',
+          }}
+          draggable={false}
         />
+        {scale > 1 && (
+          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-background/80 backdrop-blur-sm rounded-full text-white text-xs">
+            {Math.round(scale * 100)}% - Double tap to reset
+          </div>
+        )}
       </div>
 
       {/* Navigation Arrows */}
