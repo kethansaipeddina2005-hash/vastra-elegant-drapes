@@ -15,6 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { Loading } from "@/components/ui/loading";
 import { MediaCarousel } from "@/components/MediaCarousel";
 import { RecentlyViewedProducts } from "@/components/RecentlyViewedProducts";
+import { ProductReviews } from "@/components/reviews/ProductReviews";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -340,13 +341,21 @@ const ProductDetail = () => {
 
         {/* Tabs - Compact */}
         <Tabs defaultValue="description" className="mb-6">
-          <TabsList className="grid w-full grid-cols-3 max-w-md h-9">
+          <TabsList className="grid w-full grid-cols-4 max-w-lg h-9">
             <TabsTrigger value="description" className="text-xs">Description</TabsTrigger>
+            <TabsTrigger value="reviews" className="text-xs">Reviews ({product.reviews || 0})</TabsTrigger>
             <TabsTrigger value="care" className="text-xs">Care</TabsTrigger>
             <TabsTrigger value="size" className="text-xs">Size</TabsTrigger>
           </TabsList>
           <TabsContent value="description" className="mt-3">
             <p className="text-sm text-muted-foreground leading-relaxed">{product.description}</p>
+          </TabsContent>
+          <TabsContent value="reviews" className="mt-3">
+            <ProductReviews 
+              productId={product.id} 
+              productRating={product.rating}
+              productReviewCount={product.reviews}
+            />
           </TabsContent>
           <TabsContent value="care" className="mt-3">
             <ul className="space-y-1 text-sm text-muted-foreground">
