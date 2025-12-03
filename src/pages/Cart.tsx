@@ -8,6 +8,7 @@ import { useCart } from "@/contexts/CartContext";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import SEO from "@/components/SEO";
 
 const Cart = () => {
   const { 
@@ -73,6 +74,11 @@ const Cart = () => {
   if (cartCount === 0) {
     return (
       <Layout>
+        <SEO 
+          title="Shopping Cart | Vastra"
+          description="Review your shopping cart and proceed to checkout."
+          noIndex={true}
+        />
         <div className="container mx-auto px-6 py-16 text-center">
           <h1 className="text-4xl font-playfair font-bold text-foreground mb-4">Shopping Cart</h1>
           <p className="text-muted-foreground text-lg mb-8">Your cart is empty. Start shopping to add items here.</p>
@@ -90,6 +96,11 @@ const Cart = () => {
 
   return (
     <Layout>
+      <SEO 
+        title="Shopping Cart | Vastra"
+        description="Review your shopping cart and proceed to checkout."
+        noIndex={true}
+      />
       <div className="container mx-auto px-6 py-8">
         <h1 className="text-4xl font-playfair font-bold text-foreground mb-8">Shopping Cart</h1>
         

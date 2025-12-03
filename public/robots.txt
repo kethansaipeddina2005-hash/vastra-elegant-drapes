@@ -1,3 +1,4 @@
+# Vastra E-commerce - robots.txt
 User-agent: Googlebot
 Allow: /
 
@@ -12,3 +13,13 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+# Disallow private/checkout pages
+Disallow: /account/*
+Disallow: /admin/*
+Disallow: /cart
+Disallow: /checkout
+Disallow: /payment/*
+
+# Sitemap location
+Sitemap: https://yoursite.lovable.app/sitemap.xml

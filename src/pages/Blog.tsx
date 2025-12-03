@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import SEO from "@/components/SEO";
 
 const blogPosts = [
   {
@@ -53,6 +54,11 @@ const categories = ["All", "Styling", "Care", "Cultural", "News"];
 const Blog = () => {
   return (
     <Layout>
+      <SEO 
+        title="Blog | Vastra — Saree Styling Tips, Care Guides & Stories"
+        description="Discover saree styling tips, care guides, and cultural stories on the Vastra blog. Learn how to drape, care for silk sarees, and explore regional styles."
+        canonical="/blog"
+      />
       <div className="container mx-auto px-6 py-16">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-5xl font-playfair font-bold text-foreground mb-4 text-center">
