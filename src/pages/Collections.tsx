@@ -10,6 +10,7 @@ import { Loading } from "@/components/ui/loading";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { X, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
+import SEO, { getBreadcrumbSchema } from "@/components/SEO";
 
 const Collections = () => {
   const { products, filters, setFilters, sortBy, setSortBy, loading, maxPrice } = useProducts();
@@ -46,8 +47,19 @@ const Collections = () => {
     );
   }
 
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Collections', url: '/collections' },
+  ]);
+
   return (
     <Layout>
+      <SEO 
+        title="Saree Collections | Vastra — Shop Traditional Indian Sarees"
+        description="Explore our curated collection of handcrafted Indian sarees. Filter by fabric, color, occasion, and region. Free shipping on orders above ₹2000."
+        canonical="/collections"
+        structuredData={breadcrumbSchema}
+      />
       <div className="container mx-auto px-6 py-8">
         <Breadcrumb className="mb-6">
           <BreadcrumbList>

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Mail, Phone, MapPin, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import SEO from "@/components/SEO";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -50,6 +51,11 @@ const Contact = () => {
 
   return (
     <Layout>
+      <SEO 
+        title="Contact Us | Vastra — Get in Touch"
+        description="Have questions about our sarees? Contact Vastra for inquiries about orders, returns, or styling advice. We typically respond within 24 hours."
+        canonical="/contact"
+      />
       <div className="container mx-auto px-6 py-16">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-5xl font-playfair font-bold text-foreground mb-4 text-center">

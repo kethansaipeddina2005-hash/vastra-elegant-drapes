@@ -5,9 +5,23 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import SEO, { getArticleSchema, getBreadcrumbSchema } from "@/components/SEO";
 
 const BlogPost = () => {
   const { slug } = useParams();
+  
+  // TODO: Fetch actual blog post data based on slug
+  const articleSchema = getArticleSchema({
+    title: '5 Different Ways to Drape a Saree',
+    description: 'Master the art of saree draping with these simple techniques for different occasions.',
+    datePublished: '2024-03-15',
+  });
+  
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Blog', url: '/blog' },
+    { name: '5 Different Ways to Drape a Saree', url: `/blog/${slug}` },
+  ]);
 
   const handleShare = () => {
     toast({
@@ -18,6 +32,13 @@ const BlogPost = () => {
 
   return (
     <Layout>
+      <SEO 
+        title="5 Different Ways to Drape a Saree | Vastra Blog"
+        description="Master the art of saree draping with these simple techniques for different occasions. Learn Nivi, Bengali, Gujarati, Maharashtrian, and Lehenga styles."
+        canonical={`/blog/${slug}`}
+        ogType="article"
+        structuredData={[articleSchema, breadcrumbSchema]}
+      />
       <article className="container mx-auto px-6 py-16">
         <div className="max-w-4xl mx-auto">
           {/* Back Button */}

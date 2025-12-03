@@ -1,9 +1,15 @@
 import Layout from "@/components/Layout";
 import { Card } from "@/components/ui/card";
+import SEO from "@/components/SEO";
 
 const About = () => {
   return (
     <Layout>
+      <SEO 
+        title="About Us | Vastra — Preserving Traditional Indian Textile Art"
+        description="Learn about Vastra's mission to preserve traditional Indian textile artistry. We work directly with skilled artisans to bring you authentic handcrafted sarees."
+        canonical="/about"
+      />
       <div className="container mx-auto px-6 py-16">
         {/* Brand Story */}
         <div className="max-w-4xl mx-auto mb-16">

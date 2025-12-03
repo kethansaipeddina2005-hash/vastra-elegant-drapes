@@ -16,6 +16,7 @@ import { Loading } from "@/components/ui/loading";
 import { MediaCarousel } from "@/components/MediaCarousel";
 import { RecentlyViewedProducts } from "@/components/RecentlyViewedProducts";
 import { ProductReviews } from "@/components/reviews/ProductReviews";
+import SEO, { getProductSchema, getBreadcrumbSchema } from "@/components/SEO";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -165,8 +166,32 @@ const ProductDetail = () => {
     }
   };
   
+  const productSchema = getProductSchema({
+    name: product.name,
+    description: product.description,
+    price: product.price,
+    images: product.images,
+    rating: product.rating,
+    reviewCount: product.reviews,
+    inStock: product.stockQuantity > 0,
+  });
+
+  const breadcrumbSchema = getBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Collections', url: '/collections' },
+    { name: product.name, url: `/product/${product.id}` },
+  ]);
+
   return (
     <Layout>
+      <SEO 
+        title={`${product.name} | Vastra — Handcrafted Indian Sarees`}
+        description={product.description.slice(0, 155) + '...'}
+        canonical={`/product/${product.id}`}
+        ogType="product"
+        ogImage={product.images[0]}
+        structuredData={[productSchema, breadcrumbSchema]}
+      />
       <div className="container mx-auto px-4 py-4 max-w-6xl">
         <Breadcrumb className="mb-3">
           <BreadcrumbList>

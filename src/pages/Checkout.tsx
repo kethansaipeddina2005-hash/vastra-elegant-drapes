@@ -13,6 +13,7 @@ import { toast } from "@/hooks/use-toast";
 import { Check, Loader2, Smartphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import UPIPayment from "@/components/UPIPayment";
+import SEO from "@/components/SEO";
 
 declare global {
   interface Window {
@@ -386,6 +387,11 @@ const Checkout = () => {
 
   return (
     <Layout>
+      <SEO 
+        title="Checkout | Vastra"
+        description="Complete your purchase securely at Vastra."
+        noIndex={true}
+      />
       <div className="container mx-auto px-6 py-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-playfair font-bold text-foreground mb-8">Checkout</h1>
