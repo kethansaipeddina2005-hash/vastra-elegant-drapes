@@ -20,6 +20,7 @@ interface Coupon {
   id: string;
   code: string;
   discount_percent: number;
+  min_amount: number;
   expiry_date: string;
   is_active: boolean;
   created_at: string;
@@ -35,6 +36,7 @@ const AdminCoupons = () => {
   const [formData, setFormData] = useState({
     code: '',
     discount_percent: '',
+    min_amount: '',
     expiry_date: '',
     is_active: true,
   });
@@ -76,6 +78,7 @@ const AdminCoupons = () => {
       const couponData = {
         code: formData.code.toUpperCase().trim(),
         discount_percent: parseInt(formData.discount_percent),
+        min_amount: parseFloat(formData.min_amount) || 0,
         expiry_date: new Date(formData.expiry_date).toISOString(),
         is_active: formData.is_active,
       };
@@ -146,6 +149,7 @@ const AdminCoupons = () => {
     setFormData({
       code: coupon.code,
       discount_percent: coupon.discount_percent.toString(),
+      min_amount: coupon.min_amount?.toString() || '0',
       expiry_date: format(new Date(coupon.expiry_date), 'yyyy-MM-dd'),
       is_active: coupon.is_active,
     });
@@ -157,6 +161,7 @@ const AdminCoupons = () => {
     setFormData({
       code: '',
       discount_percent: '',
+      min_amount: '',
       expiry_date: '',
       is_active: true,
     });
@@ -224,6 +229,18 @@ const AdminCoupons = () => {
                   </div>
                 </div>
                 <div>
+                  <Label htmlFor="minAmount">Minimum Order Amount (₹)</Label>
+                  <Input
+                    id="minAmount"
+                    type="number"
+                    min="0"
+                    value={formData.min_amount}
+                    onChange={(e) => setFormData({ ...formData, min_amount: e.target.value })}
+                    placeholder="e.g., 1000 (0 for no minimum)"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Leave 0 for no minimum order requirement</p>
+                </div>
+                <div>
                   <Label htmlFor="expiry">Expiry Date</Label>
                   <Input
                     id="expiry"
@@ -268,6 +285,7 @@ const AdminCoupons = () => {
                   <TableRow>
                     <TableHead>Code</TableHead>
                     <TableHead>Discount</TableHead>
+                    <TableHead>Min. Order</TableHead>
                     <TableHead>Expiry Date</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
@@ -283,6 +301,9 @@ const AdminCoupons = () => {
                       </TableCell>
                       <TableCell>
                         <span className="font-semibold text-primary">{coupon.discount_percent}%</span>
+                      </TableCell>
+                      <TableCell>
+                        {coupon.min_amount > 0 ? `₹${coupon.min_amount.toLocaleString()}` : 'No minimum'}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
