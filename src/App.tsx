@@ -33,6 +33,7 @@ import AdminCustomers from "./pages/admin/Customers";
 import AdminBanners from "./pages/admin/Banners";
 import AdminCoupons from "./pages/admin/Coupons";
 import AdminUsers from "./pages/admin/Users";
+import AdminPayments from "./pages/admin/Payments";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailure from "./pages/PaymentFailure";
 
@@ -94,6 +95,7 @@ const App = () => {
           <Route path="/admin/banners" element={<AdminBanners />} />
           <Route path="/admin/coupons" element={<AdminCoupons />} />
           <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/payments" element={<AdminPayments />} />
           <Route path="*" element={<NotFound />} />
                 </Routes>
                 </BrowserRouter>
