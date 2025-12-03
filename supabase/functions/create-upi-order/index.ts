@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import QRCode from "https://esm.sh/qrcode@1.5.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -56,15 +55,8 @@ serve(async (req) => {
     // Create UPI deep link
     const upiLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount}&tn=${encodeURIComponent(transactionNote)}&cu=INR`;
 
-    // Generate QR code as data URL
-    const qrCodeDataUrl = await QRCode.toDataURL(upiLink, {
-      width: 300,
-      margin: 2,
-      color: {
-        dark: "#000000",
-        light: "#ffffff",
-      },
-    });
+    // Generate QR code using external API service (works in Deno)
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiLink)}`;
 
     // App-specific deep links for better mobile experience
     const phonepeLink = `phonepe://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amount}&tn=${encodeURIComponent(transactionNote)}&cu=INR`;
@@ -98,7 +90,7 @@ serve(async (req) => {
         amount,
         upiId: UPI_ID,
         upiLink,
-        qrCode: qrCodeDataUrl,
+        qrCode: qrCodeUrl,
         deepLinks: {
           phonepe: phonepeLink,
           gpay: gpayLink,
