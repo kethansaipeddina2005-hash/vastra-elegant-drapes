@@ -14,7 +14,7 @@ export const useProducts = () => {
     occasions: [],
     regions: [],
   });
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [sortBy, setSortBy] = useState<SortOption>('none');
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -123,6 +123,10 @@ export const useProducts = () => {
         break;
       case 'newest':
         filtered.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+        break;
+      case 'none':
+      default:
+        // No sorting, keep original order from database
         break;
     }
 

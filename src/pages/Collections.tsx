@@ -110,6 +110,7 @@ const Collections = () => {
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">Default</SelectItem>
                   <SelectItem value="newest">Newest Arrivals</SelectItem>
                   <SelectItem value="popularity">Most Popular</SelectItem>
                   <SelectItem value="price-asc">Price: Low to High</SelectItem>

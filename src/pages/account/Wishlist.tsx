@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useCart } from "@/contexts/CartContext";
 import ProductCard from "@/components/ProductCard";
+import { Trash2 } from "lucide-react";
 
 const Wishlist = () => {
   const { wishlist, removeFromWishlist } = useWishlist();
@@ -40,7 +41,15 @@ const Wishlist = () => {
         </h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {wishlist.map(product => (
-            <div key={product.id}>
+            <div key={product.id} className="relative">
+              <Button
+                variant="destructive"
+                size="icon"
+                className="absolute top-2 right-2 z-10 h-8 w-8"
+                onClick={() => removeFromWishlist(product.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
               <ProductCard {...product} />
               <Button 
                 variant="outline" 
