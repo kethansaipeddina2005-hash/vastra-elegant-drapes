@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
-import { Package, ShoppingCart, Users, DollarSign, Plus, List, UserCog } from 'lucide-react';
+import { Package, ShoppingCart, Users, DollarSign, Plus, List, UserCog, Tag, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Stats {
@@ -149,7 +149,7 @@ const AdminDashboard = () => {
         {/* Quick Actions */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <Button
               onClick={() => navigate('/admin/products')}
               className="h-20 text-lg"
@@ -181,6 +181,22 @@ const AdminDashboard = () => {
             >
               <Package className="mr-2 h-5 w-5" />
               Manage Banners
+            </Button>
+            <Button
+              onClick={() => navigate('/admin/coupons')}
+              className="h-20 text-lg"
+              variant="outline"
+            >
+              <Tag className="mr-2 h-5 w-5" />
+              Manage Coupons
+            </Button>
+            <Button
+              onClick={() => navigate('/admin/users')}
+              className="h-20 text-lg"
+              variant="outline"
+            >
+              <Shield className="mr-2 h-5 w-5" />
+              Manage Admins
             </Button>
           </div>
         </div>
