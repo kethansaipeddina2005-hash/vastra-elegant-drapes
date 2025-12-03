@@ -22,7 +22,7 @@ const ProductCard = (product: Product) => {
   const formattedPrice = `₹${product.price.toLocaleString('en-IN')}`;
 
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
+    <Card className="group relative overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
       <Link to={`/product/${product.id}`}>
         <div className="relative overflow-hidden aspect-[3/4]">
           <img
@@ -42,10 +42,10 @@ const ProductCard = (product: Product) => {
       <Button
         variant="ghost"
         size="icon"
-        className="absolute top-4 right-4 bg-background/80 hover:bg-background opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-2 right-2 z-10 h-8 w-8 bg-background/80 hover:bg-background shadow-sm"
         onClick={toggleWishlist}
       >
-        <Heart className={`h-5 w-5 ${inWishlist ? 'fill-primary text-primary' : ''}`} />
+        <Heart className={`h-4 w-4 transition-all ${inWishlist ? 'fill-primary text-primary' : 'text-muted-foreground hover:text-primary'}`} />
       </Button>
       
       <CardContent className="p-3 md:p-4">
