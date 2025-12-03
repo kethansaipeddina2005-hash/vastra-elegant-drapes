@@ -123,10 +123,19 @@ const UPIPayment = ({ orderId, amount, onSuccess, onFailure }: UPIPaymentProps) 
     return () => clearInterval(pollInterval);
   }, [loading, isExpired, orderId, onSuccess]);
 
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
   const handleAppPayment = (appLink: string, appName: string) => {
-    const link = document.createElement("a");
-    link.href = appLink;
-    link.click();
+    if (!isMobile) {
+      toast({
+        title: "Mobile Only Feature",
+        description: `Please scan the QR code with your phone to pay via ${appName}, or use a mobile device.`,
+      });
+      return;
+    }
+
+    // Try to open the app
+    window.location.href = appLink;
 
     toast({
       title: `Opening ${appName}...`,
@@ -135,6 +144,14 @@ const UPIPayment = ({ orderId, amount, onSuccess, onFailure }: UPIPaymentProps) 
   };
 
   const handleGenericUPI = () => {
+    if (!isMobile) {
+      toast({
+        title: "Mobile Only Feature",
+        description: "UPI apps can only be opened on mobile devices. Please scan the QR code with your phone.",
+      });
+      return;
+    }
+
     if (upiData?.upiLink) {
       window.location.href = upiData.upiLink;
     }
@@ -332,10 +349,22 @@ const UPIPayment = ({ orderId, amount, onSuccess, onFailure }: UPIPaymentProps) 
 
       {/* App Payment Buttons */}
       <div className="space-y-3">
-        <h3 className="font-medium flex items-center gap-2 text-sm">
-          <Smartphone className="h-4 w-4" />
-          Pay with UPI App
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium flex items-center gap-2 text-sm">
+            <Smartphone className="h-4 w-4" />
+            Pay with UPI App
+          </h3>
+          {!isMobile && (
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+              Mobile only
+            </span>
+          )}
+        </div>
+        {!isMobile && (
+          <p className="text-xs text-muted-foreground">
+            These buttons work on mobile devices. On desktop, please scan the QR code above with your phone.
+          </p>
+        )}
         
         <div className="grid grid-cols-3 gap-2">
           <Button
