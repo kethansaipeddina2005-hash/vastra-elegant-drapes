@@ -56,6 +56,14 @@ const Cart = () => {
       return;
     }
 
+    // Check minimum order amount
+    const minAmount = data.min_amount || 0;
+    if (minAmount > 0 && cartTotal < minAmount) {
+      setMessage(`Minimum order ₹${minAmount.toLocaleString()} required ❌`);
+      setDiscountPercent(0);
+      return;
+    }
+
     setDiscountPercent(data.discount_percent);
     saveDiscountPercent(data.discount_percent);
     savePromoCode(promoCode.trim().toUpperCase());
