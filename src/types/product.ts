@@ -25,4 +25,4 @@ export interface Filter {
   regions: string[];
 }
 
-export type SortOption = 'price-asc' | 'price-desc' | 'popularity' | 'newest';
+export type SortOption = 'none' | 'price-asc' | 'price-desc' | 'popularity' | 'newest';
