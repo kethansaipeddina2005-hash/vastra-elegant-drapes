@@ -5,10 +5,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { useWishlist } from "@/contexts/WishlistContext";
+import { Minus, Plus, Trash2, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import SEO from "@/components/SEO";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Product } from "@/types/product";
 
 const Cart = () => {
   const { 
@@ -22,11 +34,38 @@ const Cart = () => {
     setPromoCode: savePromoCode,
     setDiscountPercent: saveDiscountPercent
   } = useCart();
+  const { addToWishlist, isInWishlist } = useWishlist();
 
   const [promoCode, setPromoCode] = useState(savedPromoCode);
   const [discountPercent, setDiscountPercent] = useState(savedDiscountPercent);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<Product | null>(null);
+
+  const handleDeleteClick = (item: Product) => {
+    setItemToDelete(item);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleMoveToWishlist = () => {
+    if (itemToDelete) {
+      if (!isInWishlist(itemToDelete.id)) {
+        addToWishlist(itemToDelete);
+      }
+      removeFromCart(itemToDelete.id);
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    }
+  };
+
+  const handleDelete = () => {
+    if (itemToDelete) {
+      removeFromCart(itemToDelete.id);
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    }
+  };
 
   const handleApplyCode = async () => {
     if (!promoCode.trim()) {
@@ -126,7 +165,7 @@ const Cart = () => {
                             <Plus className="h-4 w-4" />
                           </Button>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(item)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
@@ -197,6 +236,37 @@ const Cart = () => {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove from Cart?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {itemToDelete && (
+                <span>What would you like to do with "{itemToDelete.name}"?</span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button
+              variant="outline"
+              onClick={handleMoveToWishlist}
+              className="gap-2"
+            >
+              <Heart className="h-4 w-4" />
+              Move to Wishlist
+            </Button>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 };
