@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Smartphone, QrCode, CheckCircle, Copy, ExternalLink } from "lucide-react";
+import { Loader2, Smartphone, QrCode, CheckCircle, Copy, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 
 interface UPIPaymentProps {
   orderId: string;
@@ -33,6 +33,7 @@ const UPIPayment = ({ orderId, amount, onSuccess, onFailure }: UPIPaymentProps) 
   const [transactionId, setTransactionId] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
     initializeUPIPayment();
@@ -62,12 +63,10 @@ const UPIPayment = ({ orderId, amount, onSuccess, onFailure }: UPIPaymentProps) 
   };
 
   const handleAppPayment = (appLink: string, appName: string) => {
-    // Try to open the app
     const link = document.createElement("a");
     link.href = appLink;
     link.click();
 
-    // Show toast with instructions
     toast({
       title: `Opening ${appName}...`,
       description: "Complete the payment in the app, then return here to confirm.",
@@ -89,8 +88,8 @@ const UPIPayment = ({ orderId, amount, onSuccess, onFailure }: UPIPaymentProps) 
     }
   };
 
-  const verifyPayment = async () => {
-    if (!transactionId.trim()) {
+  const confirmPayment = async (withTransactionId: boolean = false) => {
+    if (withTransactionId && !transactionId.trim()) {
       toast({
         title: "Transaction ID Required",
         description: "Please enter your UPI transaction ID to verify payment.",
@@ -102,23 +101,26 @@ const UPIPayment = ({ orderId, amount, onSuccess, onFailure }: UPIPaymentProps) 
     setVerifying(true);
     try {
       const { data, error } = await supabase.functions.invoke("verify-upi-payment", {
-        body: { orderId, transactionId: transactionId.trim() },
+        body: { 
+          orderId, 
+          transactionId: withTransactionId ? transactionId.trim() : "USER_CONFIRMED" 
+        },
       });
 
       if (error) throw error;
 
       if (data.success) {
         toast({
-          title: "Payment Verified!",
-          description: "Your order has been confirmed.",
+          title: "Payment Confirmed!",
+          description: "Your order has been placed successfully.",
         });
         onSuccess();
       }
     } catch (error) {
-      console.error("Error verifying payment:", error);
+      console.error("Error confirming payment:", error);
       toast({
-        title: "Verification Failed",
-        description: "Could not verify payment. Please contact support if payment was made.",
+        title: "Confirmation Failed",
+        description: "Could not confirm payment. Please contact support if payment was made.",
         variant: "destructive",
       });
     } finally {
@@ -254,46 +256,83 @@ const UPIPayment = ({ orderId, amount, onSuccess, onFailure }: UPIPaymentProps) 
 
       <Separator />
 
-      {/* Payment Verification */}
-      <Card className="bg-accent/5">
-        <CardHeader>
-          <CardTitle className="text-lg">Confirm Payment</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            After completing payment, enter your UPI Transaction ID to verify
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="transactionId">UPI Transaction ID / Reference Number</Label>
-            <Input
-              id="transactionId"
-              placeholder="Enter 12-digit transaction ID"
-              value={transactionId}
-              onChange={(e) => setTransactionId(e.target.value)}
-              className="mt-1"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              You can find this in your UPI app under payment history
+      {/* Quick Confirmation */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="pt-6 space-y-4">
+          <div className="text-center">
+            <h3 className="font-semibold text-lg">Completed Payment?</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Click below after you've made the payment via UPI
             </p>
           </div>
           
           <Button
-            onClick={verifyPayment}
-            disabled={verifying || !transactionId.trim()}
-            className="w-full"
+            onClick={() => confirmPayment(false)}
+            disabled={verifying}
+            className="w-full h-12 text-base"
+            size="lg"
           >
             {verifying ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Verifying...
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                Confirming...
               </>
             ) : (
               <>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Verify & Complete Order
+                <CheckCircle className="h-5 w-5 mr-2" />
+                I've Completed Payment
               </>
             )}
           </Button>
+
+          {/* Advanced: Transaction ID Entry */}
+          <div className="pt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full text-muted-foreground"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+            >
+              {showAdvanced ? (
+                <>
+                  <ChevronUp className="h-4 w-4 mr-1" />
+                  Hide transaction ID entry
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-4 w-4 mr-1" />
+                  Enter transaction ID (optional)
+                </>
+              )}
+            </Button>
+
+            {showAdvanced && (
+              <div className="mt-3 space-y-3 p-3 bg-background rounded-lg">
+                <div>
+                  <Label htmlFor="transactionId">UPI Transaction ID</Label>
+                  <Input
+                    id="transactionId"
+                    placeholder="Enter transaction ID from UPI app"
+                    value={transactionId}
+                    onChange={(e) => setTransactionId(e.target.value)}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Find this in your UPI app's payment history
+                  </p>
+                </div>
+                
+                <Button
+                  onClick={() => confirmPayment(true)}
+                  disabled={verifying || !transactionId.trim()}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Verify with Transaction ID
+                </Button>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
