@@ -3,10 +3,23 @@ import { Product, Filter, SortOption } from '@/types/product';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export interface FilterOptions {
+  fabricTypes: string[];
+  colors: string[];
+  occasions: string[];
+  regions: string[];
+}
+
 export const useProducts = () => {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [maxPrice, setMaxPrice] = useState(50000);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    fabricTypes: [],
+    colors: [],
+    occasions: [],
+    regions: [],
+  });
   const [filters, setFilters] = useState<Filter>({
     priceRange: [0, 50000],
     fabricTypes: [],
@@ -54,6 +67,20 @@ export const useProducts = () => {
 
       setAllProducts(transformedProducts);
       setMaxPrice(max);
+      
+      // Extract unique filter options from products
+      const uniqueFabricTypes = [...new Set(transformedProducts.map(p => p.fabricType).filter(Boolean))].sort();
+      const uniqueColors = [...new Set(transformedProducts.map(p => p.color).filter(Boolean))].sort();
+      const uniqueOccasions = [...new Set(transformedProducts.map(p => p.occasion).filter(Boolean))].sort();
+      const uniqueRegions = [...new Set(transformedProducts.map(p => p.region.trim()).filter(Boolean))].sort();
+      
+      setFilterOptions({
+        fabricTypes: uniqueFabricTypes,
+        colors: uniqueColors,
+        occasions: uniqueOccasions,
+        regions: uniqueRegions,
+      });
+      
       // Initialize price range to include all products on first load
       setFilters(prev => {
         const [, prevMax] = prev.priceRange;
@@ -135,8 +162,10 @@ export const useProducts = () => {
 
   return {
     products: filteredProducts,
+    allProducts,
     filters,
     setFilters,
+    filterOptions,
     sortBy,
     setSortBy,
     searchQuery,

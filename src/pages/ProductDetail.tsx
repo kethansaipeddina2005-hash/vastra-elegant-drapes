@@ -71,33 +71,50 @@ const ProductDetail = () => {
       setProduct(transformedProduct);
       addToRecentlyViewed(transformedProduct);
 
-      // Fetch related products
+      // Fetch related products based on multiple criteria
       const { data: relatedData } = await supabase
         .from('products')
         .select('*')
         .neq('id', transformedProduct.id)
-        .or(`fabric_type.eq.${transformedProduct.fabricType},occasion.eq.${transformedProduct.occasion}`)
-        .limit(3);
+        .limit(6);
 
-      if (relatedData) {
-        const transformedRelated: Product[] = relatedData.map((p) => ({
-          id: p.id,
-          name: p.name,
-          price: Number(p.price),
-          description: p.description || '',
-          image: p.images?.[0] || '',
-          images: p.images || [],
-          videos: p.videos || [],
-          fabricType: p.fabric_type || '',
-          color: p.color || '',
-          occasion: p.occasion || '',
-          region: p.region || '',
-          stockQuantity: p.stock_quantity || 0,
-          isNew: p.is_new || false,
-          rating: Number(p.rating) || 0,
-          reviews: p.reviews || 0,
-        }));
-        setRelatedProducts(transformedRelated);
+      if (relatedData && relatedData.length > 0) {
+        // Score and sort by relevance
+        const scoredProducts = relatedData.map((p) => {
+          let score = 0;
+          if (p.fabric_type === transformedProduct.fabricType) score += 3;
+          if (p.occasion?.includes(transformedProduct.occasion?.split(',')[0])) score += 2;
+          if (p.region?.trim() === transformedProduct.region?.trim()) score += 2;
+          if (p.color === transformedProduct.color) score += 1;
+          // Price similarity (within 50% range)
+          const priceDiff = Math.abs(Number(p.price) - transformedProduct.price) / transformedProduct.price;
+          if (priceDiff <= 0.5) score += 1;
+          return { product: p, score };
+        });
+
+        // Sort by score and take top 4
+        const sortedProducts = scoredProducts
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 4)
+          .map(({ product: p }) => ({
+            id: p.id,
+            name: p.name,
+            price: Number(p.price),
+            description: p.description || '',
+            image: p.images?.[0] || '',
+            images: p.images || [],
+            videos: p.videos || [],
+            fabricType: p.fabric_type || '',
+            color: p.color || '',
+            occasion: p.occasion || '',
+            region: p.region || '',
+            stockQuantity: p.stock_quantity || 0,
+            isNew: p.is_new || false,
+            rating: Number(p.rating) || 0,
+            reviews: p.reviews || 0,
+          }));
+        
+        setRelatedProducts(sortedProducts);
       }
     } catch (error) {
       console.error('Error fetching product:', error);
@@ -399,13 +416,16 @@ const ProductDetail = () => {
           </TabsContent>
         </Tabs>
 
-        {/* Related Products - Compact */}
+        {/* Similar Products - Smart Suggestions */}
         {relatedProducts.length > 0 && (
-          <div>
+          <div className="mb-6">
             <h2 className="text-lg md:text-xl font-playfair font-bold text-foreground mb-4">
               You Might Also Like
             </h2>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <p className="text-sm text-muted-foreground mb-4">
+              Similar sarees based on fabric, occasion, and style
+            </p>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {relatedProducts.map(product => (
                 <ProductCard key={product.id} {...product} />
               ))}

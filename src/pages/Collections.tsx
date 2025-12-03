@@ -13,7 +13,7 @@ import { useState } from "react";
 import SEO, { getBreadcrumbSchema } from "@/components/SEO";
 
 const Collections = () => {
-  const { products, filters, setFilters, sortBy, setSortBy, loading, maxPrice } = useProducts();
+  const { products, filters, setFilters, filterOptions, sortBy, setSortBy, loading, maxPrice } = useProducts();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const clearFilter = (category: keyof typeof filters, value?: string) => {
@@ -101,7 +101,7 @@ const Collections = () => {
                   <SheetHeader className="mb-6">
                     <SheetTitle>Filters</SheetTitle>
                   </SheetHeader>
-                  <FilterSidebar filters={filters} onFilterChange={setFilters} maxPrice={maxPrice} />
+                  <FilterSidebar filters={filters} onFilterChange={setFilters} maxPrice={maxPrice} filterOptions={filterOptions} />
                 </SheetContent>
               </Sheet>
 
