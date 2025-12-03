@@ -22,6 +22,7 @@ interface Order {
   payment_method: string;
   payment_status: string;
   shipping_id: string | null;
+  shipping_company: string | null;
   order_items: OrderItem[];
 }
 
@@ -114,11 +115,22 @@ const Orders = () => {
                   
                   <Separator />
                   
-                  {order.shipping_id && (
+                  {(order.shipping_company || order.shipping_id) && (
                     <>
-                      <div className="bg-muted p-4 rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-1">Tracking Number</p>
-                        <p className="font-mono font-medium">{order.shipping_id}</p>
+                      <div className="bg-muted p-4 rounded-lg space-y-2">
+                        <p className="text-sm font-medium text-foreground">Shipping Details</p>
+                        {order.shipping_company && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">Shipping Company</p>
+                            <p className="font-medium">{order.shipping_company}</p>
+                          </div>
+                        )}
+                        {order.shipping_id && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">Tracking Number</p>
+                            <p className="font-mono font-medium">{order.shipping_id}</p>
+                          </div>
+                        )}
                       </div>
                       <Separator />
                     </>

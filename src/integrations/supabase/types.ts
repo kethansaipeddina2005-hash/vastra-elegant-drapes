@@ -183,6 +183,7 @@ export type Database = {
           payment_method: string | null
           payment_status: string | null
           shipping_address_id: string | null
+          shipping_company: string | null
           shipping_id: string | null
           status: string
           total_amount: number
@@ -201,6 +202,7 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string | null
           shipping_address_id?: string | null
+          shipping_company?: string | null
           shipping_id?: string | null
           status?: string
           total_amount: number
@@ -219,6 +221,7 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string | null
           shipping_address_id?: string | null
+          shipping_company?: string | null
           shipping_id?: string | null
           status?: string
           total_amount?: number

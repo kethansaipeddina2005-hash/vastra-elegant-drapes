@@ -27,6 +27,7 @@ interface Order {
   payment_status: string;
   payment_method: string;
   shipping_id: string | null;
+  shipping_company: string | null;
   created_at: string;
 }
 
@@ -95,23 +96,23 @@ const AdminOrders = () => {
     }
   };
 
-  const handleShippingIdUpdate = async (orderId: string, shippingId: string) => {
+  const handleShippingUpdate = async (orderId: string, field: 'shipping_id' | 'shipping_company', value: string) => {
     setUpdating(true);
     try {
       const { error } = await supabase
         .from('orders')
-        .update({ shipping_id: shippingId })
+        .update({ [field]: value })
         .eq('id', orderId);
 
       if (error) throw error;
-      toast.success('Shipping ID updated successfully');
+      toast.success(`${field === 'shipping_id' ? 'Tracking ID' : 'Shipping Company'} updated successfully`);
       fetchOrders();
       if (selectedOrder?.id === orderId) {
-        setSelectedOrder({ ...selectedOrder, shipping_id: shippingId });
+        setSelectedOrder({ ...selectedOrder, [field]: value });
       }
     } catch (error) {
-      console.error('Error updating shipping ID:', error);
-      toast.error('Failed to update shipping ID');
+      console.error('Error updating shipping info:', error);
+      toast.error('Failed to update shipping info');
     } finally {
       setUpdating(false);
     }
@@ -272,7 +273,22 @@ const AdminOrders = () => {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="shipping-id">Shipping/Tracking ID</Label>
+                  <Label htmlFor="shipping-company">Shipping Company</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="shipping-company"
+                      defaultValue={selectedOrder.shipping_company || ''}
+                      placeholder="e.g., BlueDart, DTDC, Delhivery"
+                      onBlur={(e) => {
+                        if (e.target.value !== selectedOrder.shipping_company) {
+                          handleShippingUpdate(selectedOrder.id, 'shipping_company', e.target.value);
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="shipping-id">Tracking ID</Label>
                   <div className="flex gap-2">
                     <Input
                       id="shipping-id"
@@ -280,7 +296,7 @@ const AdminOrders = () => {
                       placeholder="Enter tracking number"
                       onBlur={(e) => {
                         if (e.target.value !== selectedOrder.shipping_id) {
-                          handleShippingIdUpdate(selectedOrder.id, e.target.value);
+                          handleShippingUpdate(selectedOrder.id, 'shipping_id', e.target.value);
                         }
                       }}
                     />
