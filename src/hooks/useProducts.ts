@@ -131,7 +131,7 @@ export const useProducts = () => {
     }
 
     return filtered;
-  }, [filters, sortBy, searchQuery]);
+  }, [allProducts, filters, sortBy, searchQuery]);
 
   return {
     products: filteredProducts,
