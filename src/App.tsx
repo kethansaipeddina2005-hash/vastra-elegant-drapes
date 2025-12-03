@@ -31,6 +31,8 @@ import AdminProducts from "./pages/admin/Products";
 import AdminOrders from "./pages/admin/Orders";
 import AdminCustomers from "./pages/admin/Customers";
 import AdminBanners from "./pages/admin/Banners";
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentFailure from "./pages/PaymentFailure";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +71,8 @@ const App = () => {
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/failure" element={<PaymentFailure />} />
           <Route path="/account/login" element={<Login />} />
           <Route path="/account/register" element={<Register />} />
           <Route path="/account/dashboard" element={<Dashboard />} />

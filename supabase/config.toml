@@ -1,1 +1,13 @@
 project_id = "ulvnkrhowedfdyiqeybp"
+
+[functions.create-razorpay-order]
+
+[functions.send-contact-notification]
+
+[functions.send-order-notification]
+
+[functions.verify-razorpay-payment]
+
+[functions.create-upi-order]
+
+[functions.verify-upi-payment]
