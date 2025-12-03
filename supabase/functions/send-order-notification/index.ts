@@ -71,7 +71,7 @@ serve(async (req) => {
     // Send email to admin
     const adminEmail = await resend.emails.send({
       from: "Vastra Orders <onboarding@resend.dev>",
-      to: ["kethansaipeddina2005@gmail.com"],
+      to: ["kethan2311@gmail.com"],
       subject: `New Order Received - #${orderId.slice(0, 8)}`,
       html: `
         <!DOCTYPE html>
