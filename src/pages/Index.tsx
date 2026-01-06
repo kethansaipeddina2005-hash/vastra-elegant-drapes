@@ -4,6 +4,7 @@ import FeaturedSarees from "@/components/FeaturedSarees";
 import About from "@/components/About";
 import Newsletter from "@/components/Newsletter";
 import { RecentlyViewedProducts } from "@/components/RecentlyViewedProducts";
+import CategorySection from "@/components/CategorySection";
 import SEO, { getOrganizationSchema, getWebsiteSchema } from "@/components/SEO";
 
 const Index = () => {
@@ -21,6 +22,7 @@ const Index = () => {
         structuredData={structuredData}
       />
       <Hero />
+      <CategorySection />
       <FeaturedSarees />
       <div className="container mx-auto px-4">
         <RecentlyViewedProducts maxItems={4} />
