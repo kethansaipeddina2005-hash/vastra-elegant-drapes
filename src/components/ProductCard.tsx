@@ -6,7 +6,12 @@ import { Button } from "./ui/button";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { Product } from "@/types/product";
 
-const ProductCard = (product: Product) => {
+interface ProductCardProps extends Product {
+  hideWishlistIcon?: boolean;
+  actionButton?: React.ReactNode;
+}
+
+const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: ProductCardProps) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const inWishlist = isInWishlist(product.id);
 
@@ -39,14 +44,21 @@ const ProductCard = (product: Product) => {
           )}
         </div>
       </Link>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-2 right-2 z-10 h-8 w-8 bg-background/80 hover:bg-background shadow-sm"
-        onClick={toggleWishlist}
-      >
-        <Heart className={`h-4 w-4 transition-all ${inWishlist ? 'fill-primary text-primary' : 'text-muted-foreground hover:text-primary'}`} />
-      </Button>
+      {actionButton && (
+        <div className="absolute top-2 right-2 z-10">
+          {actionButton}
+        </div>
+      )}
+      {!hideWishlistIcon && !actionButton && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-2 right-2 z-10 h-8 w-8 bg-background/80 hover:bg-background shadow-sm"
+          onClick={toggleWishlist}
+        >
+          <Heart className={`h-4 w-4 transition-all ${inWishlist ? 'fill-primary text-primary' : 'text-muted-foreground hover:text-primary'}`} />
+        </Button>
+      )}
       
       <CardContent className="p-3 md:p-4">
         <Link to={`/product/${product.id}`}>
