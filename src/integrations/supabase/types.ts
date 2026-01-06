@@ -105,6 +105,7 @@ export type Database = {
           display_order: number | null
           icon_name: string
           id: string
+          image_url: string | null
           is_active: boolean | null
           name: string
           updated_at: string | null
@@ -115,6 +116,7 @@ export type Database = {
           display_order?: number | null
           icon_name?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           name: string
           updated_at?: string | null
@@ -125,6 +127,7 @@ export type Database = {
           display_order?: number | null
           icon_name?: string
           id?: string
+          image_url?: string | null
           is_active?: boolean | null
           name?: string
           updated_at?: string | null
@@ -270,6 +273,42 @@ export type Database = {
             columns: ["shipping_address_id"]
             isOneToOne: false
             referencedRelation: "addresses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_categories: {
+        Row: {
+          category_id: string
+          created_at: string | null
+          id: string
+          product_id: number
+        }
+        Insert: {
+          category_id: string
+          created_at?: string | null
+          id?: string
+          product_id: number
+        }
+        Update: {
+          category_id?: string
+          created_at?: string | null
+          id?: string
+          product_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_categories_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
