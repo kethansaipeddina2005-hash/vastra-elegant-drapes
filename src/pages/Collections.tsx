@@ -27,6 +27,7 @@ const Collections = () => {
         colors: [],
         occasions: [],
         regions: [],
+        categories: [],
       });
     }
   };
@@ -35,7 +36,8 @@ const Collections = () => {
     filters.fabricTypes.length + 
     filters.colors.length + 
     filters.occasions.length + 
-    filters.regions.length;
+    filters.regions.length +
+    filters.categories.length;
 
   if (loading) {
     return (

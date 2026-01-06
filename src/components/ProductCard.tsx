@@ -62,6 +62,11 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
       
       <CardContent className="p-3 md:p-4">
         <Link to={`/product/${product.id}`}>
+          {product.categoryName && (
+            <span className="text-xs text-muted-foreground uppercase tracking-wide">
+              {product.categoryName}
+            </span>
+          )}
           <h3 className="font-playfair text-sm md:text-lg font-semibold text-foreground mb-1 md:mb-2 line-clamp-2">
             {product.name}
           </h3>

@@ -16,13 +16,13 @@ const FeaturedSarees = () => {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, categories(name)')
         .order('created_at', { ascending: false })
         .limit(6);
 
       if (error) throw error;
 
-      const transformedProducts: Product[] = (data || []).map((product) => ({
+      const transformedProducts: Product[] = (data || []).map((product: any) => ({
         id: product.id,
         name: product.name,
         price: Number(product.price),
@@ -37,6 +37,8 @@ const FeaturedSarees = () => {
         isNew: product.is_new || false,
         rating: Number(product.rating) || 0,
         reviews: product.reviews || 0,
+        categoryId: product.category_id || undefined,
+        categoryName: product.categories?.name || undefined,
       }));
 
       setProducts(transformedProducts);

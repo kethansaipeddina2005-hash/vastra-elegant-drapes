@@ -15,6 +15,8 @@ export interface Product {
   isOnSale?: boolean;
   rating?: number;
   reviews?: number;
+  categoryId?: string;
+  categoryName?: string;
 }
 
 export interface Filter {
@@ -23,6 +25,7 @@ export interface Filter {
   colors: string[];
   occasions: string[];
   regions: string[];
+  categories: string[];
 }
 
 export type SortOption = 'none' | 'price-asc' | 'price-desc' | 'popularity' | 'newest';
