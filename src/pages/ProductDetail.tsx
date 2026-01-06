@@ -44,7 +44,7 @@ const ProductDetail = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, categories(name)')
         .eq('id', parseInt(id || '0'))
         .single();
 
@@ -66,6 +66,8 @@ const ProductDetail = () => {
         isNew: data.is_new || false,
         rating: Number(data.rating) || 0,
         reviews: data.reviews || 0,
+        categoryId: (data as any).category_id || undefined,
+        categoryName: (data as any).categories?.name || undefined,
       };
 
       setProduct(transformedProduct);
@@ -237,14 +239,23 @@ const ProductDetail = () => {
             />
           </div>
           
-          {/* Product Details - Compact */}
           <div className="space-y-3 flex flex-col">
             <div className="space-y-2">
-              {product.isNew && (
-                <span className="inline-block px-2 py-0.5 text-xs font-semibold bg-primary/10 text-primary rounded-full">
-                  New
-                </span>
-              )}
+              <div className="flex items-center gap-2 flex-wrap">
+                {product.categoryName && (
+                  <Link 
+                    to={`/collections?category=${encodeURIComponent(product.categoryName)}`}
+                    className="text-xs text-muted-foreground uppercase tracking-wide hover:text-primary transition-colors"
+                  >
+                    {product.categoryName}
+                  </Link>
+                )}
+                {product.isNew && (
+                  <span className="inline-block px-2 py-0.5 text-xs font-semibold bg-primary/10 text-primary rounded-full">
+                    New
+                  </span>
+                )}
+              </div>
               <h1 className="text-xl md:text-2xl font-playfair font-bold text-foreground leading-tight">
                 {product.name}
               </h1>

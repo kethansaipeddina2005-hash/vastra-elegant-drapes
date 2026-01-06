@@ -8,10 +8,17 @@ export interface FilterOptions {
   colors: string[];
   occasions: string[];
   regions: string[];
+  categories: string[];
+}
+
+interface Category {
+  id: string;
+  name: string;
 }
 
 export const useProducts = () => {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [maxPrice, setMaxPrice] = useState(50000);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
@@ -19,6 +26,7 @@ export const useProducts = () => {
     colors: [],
     occasions: [],
     regions: [],
+    categories: [],
   });
   const [filters, setFilters] = useState<Filter>({
     priceRange: [0, 50000],
@@ -26,6 +34,7 @@ export const useProducts = () => {
     colors: [],
     occasions: [],
     regions: [],
+    categories: [],
   });
   const [sortBy, setSortBy] = useState<SortOption>('none');
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,15 +46,24 @@ export const useProducts = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
+      
+      // Fetch categories first
+      const { data: categoriesData } = await supabase
+        .from('categories')
+        .select('id, name')
+        .eq('is_active', true);
+      
+      setCategories(categoriesData || []);
+      
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, categories(name)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
       // Transform database products to match Product type
-      const transformedProducts: Product[] = (data || []).map((product) => ({
+      const transformedProducts: Product[] = (data || []).map((product: any) => ({
         id: product.id,
         name: product.name,
         price: Number(product.price),
@@ -60,6 +78,8 @@ export const useProducts = () => {
         isNew: product.is_new || false,
         rating: Number(product.rating) || 0,
         reviews: product.reviews || 0,
+        categoryId: product.category_id || undefined,
+        categoryName: product.categories?.name || undefined,
       }));
       const max = transformedProducts.length > 0 
         ? Math.max(50000, ...transformedProducts.map(p => p.price))
@@ -73,12 +93,14 @@ export const useProducts = () => {
       const uniqueColors = [...new Set(transformedProducts.map(p => p.color).filter(Boolean))].sort();
       const uniqueOccasions = [...new Set(transformedProducts.map(p => p.occasion).filter(Boolean))].sort();
       const uniqueRegions = [...new Set(transformedProducts.map(p => p.region.trim()).filter(Boolean))].sort();
+      const uniqueCategories = [...new Set(transformedProducts.map(p => p.categoryName).filter(Boolean) as string[])].sort();
       
       setFilterOptions({
         fabricTypes: uniqueFabricTypes,
         colors: uniqueColors,
         occasions: uniqueOccasions,
         regions: uniqueRegions,
+        categories: uniqueCategories,
       });
       
       // Initialize price range to include all products on first load
@@ -134,6 +156,13 @@ export const useProducts = () => {
     if (filters.regions.length > 0) {
       filtered = filtered.filter(product =>
         filters.regions.includes(product.region)
+      );
+    }
+
+    // Apply category filter
+    if (filters.categories.length > 0) {
+      filtered = filtered.filter(product =>
+        product.categoryName && filters.categories.includes(product.categoryName)
       );
     }
 

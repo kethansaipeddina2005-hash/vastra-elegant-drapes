@@ -29,9 +29,32 @@ const FilterSidebar = ({ filters, onFilterChange, maxPrice = 50000, filterOption
   const colors = filterOptions?.colors || [];
   const occasions = filterOptions?.occasions || [];
   const regions = filterOptions?.regions || [];
+  const categories = filterOptions?.categories || [];
 
   return (
     <div className="space-y-6">
+      {categories.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Category</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {categories.map(category => (
+              <div key={category} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`category-${category}`}
+                  checked={filters.categories.includes(category)}
+                  onCheckedChange={() => handleCheckboxChange('categories', category)}
+                />
+                <Label htmlFor={`category-${category}`} className="cursor-pointer">
+                  {category}
+                </Label>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Price Range</CardTitle>
