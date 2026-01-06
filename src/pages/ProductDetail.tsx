@@ -44,11 +44,22 @@ const ProductDetail = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('products')
-        .select('*, categories(name)')
+        .select('*')
         .eq('id', parseInt(id || '0'))
         .single();
 
       if (error) throw error;
+
+      // Fetch categories for this product
+      const { data: categoryMappings } = await supabase
+        .from('product_categories')
+        .select('category_id, categories(name)')
+        .eq('product_id', data.id);
+
+      const categoryIds = (categoryMappings || []).map((m: any) => m.category_id);
+      const categoryNames = (categoryMappings || [])
+        .map((m: any) => m.categories?.name)
+        .filter(Boolean);
 
       const transformedProduct: Product = {
         id: data.id,
@@ -66,8 +77,8 @@ const ProductDetail = () => {
         isNew: data.is_new || false,
         rating: Number(data.rating) || 0,
         reviews: data.reviews || 0,
-        categoryId: (data as any).category_id || undefined,
-        categoryName: (data as any).categories?.name || undefined,
+        categoryIds,
+        categoryNames,
       };
 
       setProduct(transformedProduct);
@@ -242,12 +253,12 @@ const ProductDetail = () => {
           <div className="space-y-3 flex flex-col">
             <div className="space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
-                {product.categoryName && (
+                {product.categoryNames && product.categoryNames.length > 0 && (
                   <Link 
-                    to={`/collections?category=${encodeURIComponent(product.categoryName)}`}
+                    to={`/collections?category=${encodeURIComponent(product.categoryNames[0])}`}
                     className="text-xs text-muted-foreground uppercase tracking-wide hover:text-primary transition-colors"
                   >
-                    {product.categoryName}
+                    {product.categoryNames.join(', ')}
                   </Link>
                 )}
                 {product.isNew && (

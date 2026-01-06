@@ -14,15 +14,32 @@ const FeaturedSarees = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: productsData, error } = await supabase
         .from('products')
-        .select('*, categories(name)')
+        .select('*')
         .order('created_at', { ascending: false })
         .limit(6);
 
       if (error) throw error;
 
-      const transformedProducts: Product[] = (data || []).map((product: any) => ({
+      // Fetch category mappings for these products
+      const productIds = (productsData || []).map(p => p.id);
+      const { data: mappings } = await supabase
+        .from('product_categories')
+        .select('product_id, categories(name)')
+        .in('product_id', productIds);
+
+      // Create a map of product_id to category names
+      const categoryMap = new Map<number, string[]>();
+      (mappings || []).forEach((m: any) => {
+        const existing = categoryMap.get(m.product_id) || [];
+        if (m.categories?.name) {
+          existing.push(m.categories.name);
+        }
+        categoryMap.set(m.product_id, existing);
+      });
+
+      const transformedProducts: Product[] = (productsData || []).map((product: any) => ({
         id: product.id,
         name: product.name,
         price: Number(product.price),
@@ -37,8 +54,7 @@ const FeaturedSarees = () => {
         isNew: product.is_new || false,
         rating: Number(product.rating) || 0,
         reviews: product.reviews || 0,
-        categoryId: product.category_id || undefined,
-        categoryName: product.categories?.name || undefined,
+        categoryNames: categoryMap.get(product.id) || [],
       }));
 
       setProducts(transformedProducts);

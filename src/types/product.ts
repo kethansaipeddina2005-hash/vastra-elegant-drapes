@@ -15,8 +15,8 @@ export interface Product {
   isOnSale?: boolean;
   rating?: number;
   reviews?: number;
-  categoryId?: string;
-  categoryName?: string;
+  categoryIds?: string[];
+  categoryNames?: string[];
 }
 
 export interface Filter {

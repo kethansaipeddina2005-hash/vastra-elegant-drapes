@@ -54,33 +54,54 @@ export const useProducts = () => {
         .eq('is_active', true);
       
       setCategories(categoriesData || []);
-      
-      const { data, error } = await supabase
+
+      // Fetch products
+      const { data: productsData, error } = await supabase
         .from('products')
-        .select('*, categories(name)')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
+      // Fetch product_categories mappings
+      const { data: mappings } = await supabase
+        .from('product_categories')
+        .select('product_id, category_id, categories(name)');
+
+      // Create a map of product_id to category info
+      const productCategoryMap = new Map<number, { ids: string[], names: string[] }>();
+      (mappings || []).forEach((mapping: any) => {
+        const existing = productCategoryMap.get(mapping.product_id) || { ids: [], names: [] };
+        existing.ids.push(mapping.category_id);
+        if (mapping.categories?.name) {
+          existing.names.push(mapping.categories.name);
+        }
+        productCategoryMap.set(mapping.product_id, existing);
+      });
+
       // Transform database products to match Product type
-      const transformedProducts: Product[] = (data || []).map((product: any) => ({
-        id: product.id,
-        name: product.name,
-        price: Number(product.price),
-        description: product.description || '',
-        image: product.images?.[0] || '',
-        images: product.images || [],
-        fabricType: product.fabric_type || '',
-        color: product.color || '',
-        occasion: product.occasion || '',
-        region: product.region || '',
-        stockQuantity: product.stock_quantity || 0,
-        isNew: product.is_new || false,
-        rating: Number(product.rating) || 0,
-        reviews: product.reviews || 0,
-        categoryId: product.category_id || undefined,
-        categoryName: product.categories?.name || undefined,
-      }));
+      const transformedProducts: Product[] = (productsData || []).map((product: any) => {
+        const cats = productCategoryMap.get(product.id) || { ids: [], names: [] };
+        return {
+          id: product.id,
+          name: product.name,
+          price: Number(product.price),
+          description: product.description || '',
+          image: product.images?.[0] || '',
+          images: product.images || [],
+          fabricType: product.fabric_type || '',
+          color: product.color || '',
+          occasion: product.occasion || '',
+          region: product.region || '',
+          stockQuantity: product.stock_quantity || 0,
+          isNew: product.is_new || false,
+          rating: Number(product.rating) || 0,
+          reviews: product.reviews || 0,
+          categoryIds: cats.ids,
+          categoryNames: cats.names,
+        };
+      });
+
       const max = transformedProducts.length > 0 
         ? Math.max(50000, ...transformedProducts.map(p => p.price))
         : 50000;
@@ -93,7 +114,7 @@ export const useProducts = () => {
       const uniqueColors = [...new Set(transformedProducts.map(p => p.color).filter(Boolean))].sort();
       const uniqueOccasions = [...new Set(transformedProducts.map(p => p.occasion).filter(Boolean))].sort();
       const uniqueRegions = [...new Set(transformedProducts.map(p => p.region.trim()).filter(Boolean))].sort();
-      const uniqueCategories = [...new Set(transformedProducts.map(p => p.categoryName).filter(Boolean) as string[])].sort();
+      const uniqueCategories = [...new Set(transformedProducts.flatMap(p => p.categoryNames || []).filter(Boolean))].sort();
       
       setFilterOptions({
         fabricTypes: uniqueFabricTypes,
@@ -162,7 +183,7 @@ export const useProducts = () => {
     // Apply category filter
     if (filters.categories.length > 0) {
       filtered = filtered.filter(product =>
-        product.categoryName && filters.categories.includes(product.categoryName)
+        product.categoryNames && product.categoryNames.some(name => filters.categories.includes(name))
       );
     }
 

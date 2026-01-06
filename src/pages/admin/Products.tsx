@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loading } from '@/components/ui/loading';
 import { Plus, Edit, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
@@ -33,7 +33,7 @@ interface Product {
   region: string;
   images: string[];
   videos?: string[];
-  category_id?: string;
+  category_ids?: string[];
 }
 
 const AdminProducts = () => {
@@ -58,8 +58,8 @@ const AdminProducts = () => {
     color: '',
     occasion: '',
     region: '',
-    category_id: '',
   });
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
@@ -77,10 +77,28 @@ const AdminProducts = () => {
 
   const fetchProducts = async () => {
     try {
-      const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      // Fetch products with their categories
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      setProducts(data || []);
+      if (productsError) throw productsError;
+
+      // Fetch product_categories mappings
+      const { data: mappings } = await supabase
+        .from('product_categories')
+        .select('product_id, category_id');
+
+      // Map category_ids to each product
+      const productsWithCategories = (productsData || []).map(product => ({
+        ...product,
+        category_ids: (mappings || [])
+          .filter(m => m.product_id === product.id)
+          .map(m => m.category_id)
+      }));
+
+      setProducts(productsWithCategories);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
@@ -218,7 +236,6 @@ const AdminProducts = () => {
         color: formData.color,
         occasion: formData.occasion,
         region: formData.region,
-        category_id: formData.category_id || null,
         price: parseFloat(formData.price),
         stock_quantity: parseInt(formData.stock_quantity),
         images: imageUrls,
@@ -228,6 +245,8 @@ const AdminProducts = () => {
         reviews: 0,
       };
 
+      let productId: number;
+
       if (editingProduct) {
         const { error } = await supabase
           .from('products')
@@ -235,12 +254,35 @@ const AdminProducts = () => {
           .eq('id', editingProduct.id);
 
         if (error) throw error;
+        productId = editingProduct.id;
+
+        // Delete old category mappings
+        await supabase
+          .from('product_categories')
+          .delete()
+          .eq('product_id', productId);
+
         toast.success('Product updated successfully');
       } else {
-        const { error } = await supabase.from('products').insert([productData]);
+        const { data, error } = await supabase
+          .from('products')
+          .insert([productData])
+          .select('id')
+          .single();
 
         if (error) throw error;
+        productId = data.id;
         toast.success('Product created successfully');
+      }
+
+      // Insert new category mappings
+      if (selectedCategories.length > 0) {
+        const categoryMappings = selectedCategories.map(categoryId => ({
+          product_id: productId,
+          category_id: categoryId,
+        }));
+
+        await supabase.from('product_categories').insert(categoryMappings);
       }
 
       setIsDialogOpen(false);
@@ -286,8 +328,8 @@ const AdminProducts = () => {
       color: product.color || '',
       occasion: product.occasion || '',
       region: product.region || '',
-      category_id: product.category_id || '',
     });
+    setSelectedCategories(product.category_ids || []);
     setIsDialogOpen(true);
   };
 
@@ -302,8 +344,8 @@ const AdminProducts = () => {
       color: '',
       occasion: '',
       region: '',
-      category_id: '',
     });
+    setSelectedCategories([]);
     setImageFiles([]);
     setVideoFiles([]);
     setImagePreviews([]);
@@ -423,23 +465,30 @@ const AdminProducts = () => {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="category">Category</Label>
-                  <Select
-                    value={formData.category_id || "none"}
-                    onValueChange={(value) => setFormData({ ...formData, category_id: value === "none" ? "" : value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No Category</SelectItem>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
+                  <Label>Categories</Label>
+                  <div className="grid grid-cols-2 gap-2 mt-2 max-h-40 overflow-y-auto border rounded-md p-3">
+                    {categories.map((category) => (
+                      <div key={category.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`cat-${category.id}`}
+                          checked={selectedCategories.includes(category.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedCategories([...selectedCategories, category.id]);
+                            } else {
+                              setSelectedCategories(selectedCategories.filter(id => id !== category.id));
+                            }
+                          }}
+                        />
+                        <Label htmlFor={`cat-${category.id}`} className="text-sm cursor-pointer">
                           {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                        </Label>
+                      </div>
+                    ))}
+                    {categories.length === 0 && (
+                      <p className="text-sm text-muted-foreground col-span-2">No categories available</p>
+                    )}
+                  </div>
                 </div>
                 {/* Current Media Carousel */}
                 {editingProduct && (editingProduct.images.length > 0 || (editingProduct.videos && editingProduct.videos.length > 0)) && (

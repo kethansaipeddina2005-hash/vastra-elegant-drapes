@@ -13,11 +13,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Loading } from '@/components/ui/loading';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, Image } from 'lucide-react';
 import { toast } from 'sonner';
 import * as LucideIcons from 'lucide-react';
 
-// Available icons for categories
 const AVAILABLE_ICONS = [
   'Sparkles', 'Heart', 'Star', 'Crown', 'Gem', 'Flower2', 'Palette',
   'Gift', 'ShoppingBag', 'Tag', 'Award', 'Ribbon', 'Sun', 'Moon',
@@ -31,6 +30,7 @@ interface Category {
   description: string | null;
   display_order: number;
   is_active: boolean;
+  image_url: string | null;
 }
 
 const AdminCategories = () => {
@@ -40,6 +40,9 @@ const AdminCategories = () => {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     icon_name: 'Sparkles',
@@ -78,16 +81,47 @@ const AdminCategories = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile) return editingCategory?.image_url || null;
+
+    const fileExt = imageFile.name.split('.').pop();
+    const fileName = `category-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('banners')
+      .upload(fileName, imageFile, { cacheControl: '3600', upsert: false });
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('banners')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUploading(true);
 
     try {
+      const imageUrl = await uploadImage();
+
       const categoryData = {
         name: formData.name,
         icon_name: formData.icon_name,
         description: formData.description || null,
         display_order: parseInt(formData.display_order),
         is_active: formData.is_active,
+        image_url: imageUrl,
       };
 
       if (editingCategory) {
@@ -111,6 +145,8 @@ const AdminCategories = () => {
     } catch (error: any) {
       console.error('Error saving category:', error);
       toast.error(error.message || 'Failed to save category');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -138,6 +174,7 @@ const AdminCategories = () => {
       display_order: category.display_order.toString(),
       is_active: category.is_active,
     });
+    setImagePreview(category.image_url);
     setIsDialogOpen(true);
   };
 
@@ -150,6 +187,8 @@ const AdminCategories = () => {
       display_order: '0',
       is_active: true,
     });
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   const renderIcon = (iconName: string) => {
@@ -172,10 +211,10 @@ const AdminCategories = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Category Management</h1>
-            <p className="text-muted-foreground">Organize your products by category</p>
+            <h1 className="text-2xl md:text-4xl font-bold mb-2">Category Management</h1>
+            <p className="text-muted-foreground text-sm md:text-base">Organize your products by category</p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
             <DialogTrigger asChild>
@@ -184,7 +223,7 @@ const AdminCategories = () => {
                 Add Category
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingCategory ? 'Edit Category' : 'Add New Category'}</DialogTitle>
               </DialogHeader>
@@ -225,6 +264,37 @@ const AdminCategories = () => {
                   </Select>
                 </div>
                 <div>
+                  <Label htmlFor="image">Category Image</Label>
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="mb-2"
+                  />
+                  {imagePreview && (
+                    <div className="mt-2 relative">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-32 object-cover rounded-lg"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute top-2 right-2"
+                        onClick={() => {
+                          setImageFile(null);
+                          setImagePreview(null);
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <div>
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
@@ -250,8 +320,8 @@ const AdminCategories = () => {
                   />
                   <Label htmlFor="active">Active</Label>
                 </div>
-                <Button type="submit" className="w-full">
-                  {editingCategory ? 'Update Category' : 'Create Category'}
+                <Button type="submit" className="w-full" disabled={uploading}>
+                  {uploading ? <Loading size="sm" /> : editingCategory ? 'Update Category' : 'Create Category'}
                 </Button>
               </form>
             </DialogContent>
@@ -262,13 +332,14 @@ const AdminCategories = () => {
           <CardHeader>
             <CardTitle>Categories ({categories.length})</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Image</TableHead>
                   <TableHead>Icon</TableHead>
                   <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
+                  <TableHead className="hidden md:table-cell">Description</TableHead>
                   <TableHead>Order</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Actions</TableHead>
@@ -278,12 +349,25 @@ const AdminCategories = () => {
                 {categories.map((category) => (
                   <TableRow key={category.id}>
                     <TableCell>
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                      {category.image_url ? (
+                        <img
+                          src={category.image_url}
+                          alt={category.name}
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+                          <Image className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                         {renderIcon(category.icon_name)}
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">{category.name}</TableCell>
-                    <TableCell className="max-w-xs truncate">{category.description}</TableCell>
+                    <TableCell className="hidden md:table-cell max-w-xs truncate">{category.description}</TableCell>
                     <TableCell>{category.display_order}</TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs ${category.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -304,7 +388,7 @@ const AdminCategories = () => {
                 ))}
                 {categories.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                       No categories found. Create your first category!
                     </TableCell>
                   </TableRow>

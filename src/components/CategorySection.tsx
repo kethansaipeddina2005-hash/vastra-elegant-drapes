@@ -9,6 +9,7 @@ interface Category {
   name: string;
   icon_name: string;
   description: string | null;
+  image_url: string | null;
 }
 
 export const CategorySection = () => {
@@ -38,7 +39,7 @@ export const CategorySection = () => {
 
   const renderIcon = (iconName: string) => {
     const IconComponent = (LucideIcons as any)[iconName];
-    return IconComponent ? <IconComponent className="h-8 w-8" /> : null;
+    return IconComponent ? <IconComponent className="h-6 w-6 md:h-8 md:w-8" /> : null;
   };
 
   if (loading) {
@@ -56,30 +57,42 @@ export const CategorySection = () => {
   }
 
   return (
-    <section className="py-12 px-4 md:px-6 bg-secondary/30">
+    <section className="py-8 md:py-12 px-4 md:px-6 bg-secondary/30">
       <div className="container mx-auto">
-        <div className="text-center mb-10 space-y-3">
-          <h2 className="text-3xl md:text-4xl font-playfair font-bold text-foreground">
+        <div className="text-center mb-6 md:mb-10 space-y-2 md:space-y-3">
+          <h2 className="text-2xl md:text-4xl font-playfair font-bold text-foreground">
             Shop by Category
           </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
             Explore our curated collections
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-6">
           {categories.map((category) => (
             <Link
               key={category.id}
               to={`/collections?category=${encodeURIComponent(category.name)}`}
-              className="group flex flex-col items-center p-4 md:p-6 bg-card rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1"
+              className="group flex flex-col items-center overflow-hidden bg-card rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1"
             >
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300 mb-3">
-                {renderIcon(category.icon_name)}
+              {category.image_url ? (
+                <div className="w-full aspect-square overflow-hidden">
+                  <img
+                    src={category.image_url}
+                    alt={category.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              ) : (
+                <div className="w-full aspect-square bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
+                  {renderIcon(category.icon_name)}
+                </div>
+              )}
+              <div className="p-2 md:p-3 text-center w-full">
+                <h3 className="text-xs md:text-sm font-medium text-foreground line-clamp-1">
+                  {category.name}
+                </h3>
               </div>
-              <h3 className="text-sm md:text-base font-medium text-foreground text-center">
-                {category.name}
-              </h3>
             </Link>
           ))}
         </div>
