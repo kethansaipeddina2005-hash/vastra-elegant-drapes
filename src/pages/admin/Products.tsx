@@ -10,10 +10,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loading } from '@/components/ui/loading';
 import { Plus, Edit, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { MediaCarousel } from '@/components/MediaCarousel';
+
+interface Category {
+  id: string;
+  name: string;
+}
 
 interface Product {
   id: number;
@@ -27,12 +33,14 @@ interface Product {
   region: string;
   images: string[];
   videos?: string[];
+  category_id?: string;
 }
 
 const AdminProducts = () => {
   const navigate = useNavigate();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -50,6 +58,7 @@ const AdminProducts = () => {
     color: '',
     occasion: '',
     region: '',
+    category_id: '',
   });
 
   useEffect(() => {
@@ -62,6 +71,7 @@ const AdminProducts = () => {
   useEffect(() => {
     if (isAdmin) {
       fetchProducts();
+      fetchCategories();
     }
   }, [isAdmin]);
 
@@ -76,6 +86,16 @@ const AdminProducts = () => {
       toast.error('Failed to load products');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase.from('categories').select('id, name').order('name');
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
     }
   };
 
@@ -192,7 +212,13 @@ const AdminProducts = () => {
       }
 
       const productData = {
-        ...formData,
+        name: formData.name,
+        description: formData.description,
+        fabric_type: formData.fabric_type,
+        color: formData.color,
+        occasion: formData.occasion,
+        region: formData.region,
+        category_id: formData.category_id || null,
         price: parseFloat(formData.price),
         stock_quantity: parseInt(formData.stock_quantity),
         images: imageUrls,
@@ -260,6 +286,7 @@ const AdminProducts = () => {
       color: product.color || '',
       occasion: product.occasion || '',
       region: product.region || '',
+      category_id: product.category_id || '',
     });
     setIsDialogOpen(true);
   };
@@ -275,6 +302,7 @@ const AdminProducts = () => {
       color: '',
       occasion: '',
       region: '',
+      category_id: '',
     });
     setImageFiles([]);
     setVideoFiles([]);
@@ -393,6 +421,25 @@ const AdminProducts = () => {
                       onChange={(e) => setFormData({ ...formData, region: e.target.value })}
                     />
                   </div>
+                </div>
+                <div>
+                  <Label htmlFor="category">Category</Label>
+                  <Select
+                    value={formData.category_id}
+                    onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No Category</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 {/* Current Media Carousel */}
                 {editingProduct && (editingProduct.images.length > 0 || (editingProduct.videos && editingProduct.videos.length > 0)) && (
