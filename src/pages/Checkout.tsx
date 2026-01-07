@@ -10,9 +10,9 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Check, Loader2, Smartphone } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import UPIPayment from "@/components/UPIPayment";
+
 import SEO from "@/components/SEO";
 
 declare global {
@@ -58,8 +58,6 @@ const Checkout = () => {
   });
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showUPIPayment, setShowUPIPayment] = useState(false);
-  const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
 
   // Coupon states - Load from cart context
   const [promoCode, setPromoCode] = useState(savedPromoCode);
@@ -252,11 +250,6 @@ const Checkout = () => {
       // Handle payment
       if (paymentMethod === "razorpay") {
         await handleRazorpayPayment(order.id, total);
-      } else if (paymentMethod === "upi") {
-        // Set order ID and show UPI payment component
-        setCurrentOrderId(order.id);
-        setShowUPIPayment(true);
-        setIsProcessing(false);
       } else if (paymentMethod === "cod") {
         toast({
           title: "Order Placed Successfully!",
@@ -575,16 +568,6 @@ const Checkout = () => {
 
                     <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
                       <div className="flex items-center space-x-2 border rounded-lg p-4 bg-card hover:bg-accent/5 transition-colors">
-                        <RadioGroupItem value="upi" id="upi" />
-                        <Label htmlFor="upi" className="flex-1 cursor-pointer">
-                          <div className="font-medium flex items-center gap-2">
-                            <Smartphone className="h-4 w-4" />
-                            UPI Payment
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-1">PhonePe, Google Pay, Paytm, or any UPI app</div>
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2 border rounded-lg p-4 bg-card hover:bg-accent/5 transition-colors">
                         <RadioGroupItem value="razorpay" id="razorpay" />
                         <Label htmlFor="razorpay" className="flex-1 cursor-pointer">
                           <div className="font-medium">Pay with Razorpay</div>
@@ -620,7 +603,7 @@ const Checkout = () => {
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Processing...
                           </>
-                        ) : paymentMethod === "razorpay" || paymentMethod === "upi" ? (
+                        ) : paymentMethod === "razorpay" ? (
                           "Pay Now"
                         ) : (
                           "Place Order"
@@ -631,31 +614,6 @@ const Checkout = () => {
                 </Card>
               )}
 
-              {/* UPI Payment Step */}
-              {step === 2 && showUPIPayment && currentOrderId && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Smartphone className="h-5 w-5" />
-                      Complete UPI Payment
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <UPIPayment
-                      orderId={currentOrderId}
-                      amount={total}
-                      onSuccess={() => {
-                        clearCart();
-                        clearPromo();
-                        navigate(`/payment/success?orderId=${currentOrderId}`);
-                      }}
-                      onFailure={() => {
-                        navigate(`/payment/failure?orderId=${currentOrderId}`);
-                      }}
-                    />
-                  </CardContent>
-                </Card>
-              )}
             </div>
 
             {/* Order Summary */}
