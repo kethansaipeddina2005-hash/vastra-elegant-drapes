@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
-import { Package, ShoppingCart, Users, DollarSign, Plus, List, UserCog, Tag, Shield, CreditCard, FolderOpen } from 'lucide-react';
+import { Package, ShoppingCart, Users, DollarSign, Plus, List, UserCog, Tag, Shield, CreditCard, FolderOpen, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Stats {
@@ -213,6 +213,14 @@ const AdminDashboard = () => {
             >
               <FolderOpen className="mr-2 h-5 w-5" />
               Manage Categories
+            </Button>
+            <Button
+              onClick={() => navigate('/admin/subscriptions')}
+              className="h-20 text-lg"
+              variant="outline"
+            >
+              <Mail className="mr-2 h-5 w-5" />
+              Manage Subscriptions
             </Button>
           </div>
         </div>

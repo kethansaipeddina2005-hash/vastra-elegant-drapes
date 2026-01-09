@@ -11,3 +11,5 @@ project_id = "ulvnkrhowedfdyiqeybp"
 [functions.create-upi-order]
 
 [functions.verify-upi-payment]
+
+[functions.send-subscription-email]
