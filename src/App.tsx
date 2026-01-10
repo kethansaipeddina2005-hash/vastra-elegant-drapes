@@ -17,6 +17,8 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Login from "./pages/account/Login";
 import Register from "./pages/account/Register";
+import ForgotPassword from "./pages/account/ForgotPassword";
+import ResetPassword from "./pages/account/ResetPassword";
 import Dashboard from "./pages/account/Dashboard";
 import Orders from "./pages/account/Orders";
 import Wishlist from "./pages/account/Wishlist";
@@ -82,6 +84,8 @@ const App = () => {
           <Route path="/payment/failure" element={<PaymentFailure />} />
           <Route path="/account/login" element={<Login />} />
           <Route path="/account/register" element={<Register />} />
+          <Route path="/account/forgot-password" element={<ForgotPassword />} />
+          <Route path="/account/reset-password" element={<ResetPassword />} />
           <Route path="/account/dashboard" element={<Dashboard />} />
           <Route path="/account/orders" element={<Orders />} />
           <Route path="/account/wishlist" element={<Wishlist />} />
