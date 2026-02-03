@@ -28,6 +28,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import Reels from "./pages/Reels";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminProducts from "./pages/admin/Products";
@@ -95,6 +96,7 @@ const App = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/reels" element={<Reels />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/products" element={<AdminProducts />} />
