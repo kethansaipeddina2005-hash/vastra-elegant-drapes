@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Heart, MessageCircle, Share2, ShoppingBag, Volume2, VolumeX, ChevronUp, ChevronDown, Play } from 'lucide-react';
+import { Heart, Share2, ShoppingBag, Volume2, VolumeX, ChevronUp, ChevronDown, Play, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
@@ -25,6 +25,7 @@ const Reels = () => {
   const [isPlaying, setIsPlaying] = useState<{ [key: number]: boolean }>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({});
+  const navigate = useNavigate();
   
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
@@ -157,6 +158,11 @@ const Reels = () => {
   const handleAddToCart = (product: Product) => {
     addToCart(product, 1);
     toast.success('Added to cart');
+  };
+
+  const handleBuyNow = (product: Product) => {
+    addToCart(product, 1);
+    navigate('/checkout');
   };
 
   const handleShare = async (product: Product) => {
@@ -330,10 +336,20 @@ const Reels = () => {
                     onClick={() => handleAddToCart(reel.product)}
                     className="flex flex-col items-center gap-1"
                   >
-                    <div className="p-2 rounded-full bg-primary backdrop-blur-sm">
-                      <ShoppingBag className="h-6 w-6 text-primary-foreground" />
+                    <div className="p-2 rounded-full bg-white/20 backdrop-blur-sm">
+                      <ShoppingBag className="h-6 w-6 text-white" />
                     </div>
-                    <span className="text-white text-xs">Buy</span>
+                    <span className="text-white text-xs">Cart</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleBuyNow(reel.product)}
+                    className="flex flex-col items-center gap-1"
+                  >
+                    <div className="p-2 rounded-full bg-primary backdrop-blur-sm">
+                      <Zap className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                    <span className="text-white text-xs">Buy Now</span>
                   </button>
 
                   <Link to={`/product/${reel.product.id}`}>

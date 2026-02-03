@@ -50,10 +50,6 @@ const Header = () => {
             <Link to="/blog" className="text-foreground hover:text-primary transition-colors font-medium">
               Blog
             </Link>
-            <Link to="/reels" className="text-foreground hover:text-primary transition-colors font-medium flex items-center gap-1">
-              <Play className="h-4 w-4" />
-              Reels
-            </Link>
           </nav>
           
           <div className="flex items-center gap-1 md:gap-3">
@@ -117,6 +113,12 @@ const Header = () => {
               </Link>
             )}
             
+            <Link to="/reels" className="flex-shrink-0">
+              <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10">
+                <Play className="h-4 w-4 md:h-5 md:w-5" />
+              </Button>
+            </Link>
+
             <Link to="/cart" className="flex-shrink-0">
               <Button variant="ghost" size="icon" className="relative h-9 w-9 md:h-10 md:w-10">
                 <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
@@ -191,7 +193,7 @@ const Header = () => {
               className="text-foreground hover:text-primary transition-colors font-medium flex items-center gap-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <Play className="h-4 w-4" />
+              <Play className="h-4 w-4 fill-current" />
               Reels
             </Link>
           </nav>
