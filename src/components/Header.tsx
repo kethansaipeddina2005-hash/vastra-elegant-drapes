@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { Search, ShoppingCart, User, Menu, X, Heart, LogOut, Shield } from "lucide-react";
+import { Search, ShoppingCart, User, Menu, X, Heart, LogOut, Shield, Play } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -49,6 +49,10 @@ const Header = () => {
             </Link>
             <Link to="/blog" className="text-foreground hover:text-primary transition-colors font-medium">
               Blog
+            </Link>
+            <Link to="/reels" className="text-foreground hover:text-primary transition-colors font-medium flex items-center gap-1">
+              <Play className="h-4 w-4" />
+              Reels
             </Link>
           </nav>
           
@@ -181,6 +185,14 @@ const Header = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Blog
+            </Link>
+            <Link
+              to="/reels"
+              className="text-foreground hover:text-primary transition-colors font-medium flex items-center gap-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <Play className="h-4 w-4" />
+              Reels
             </Link>
           </nav>
         )}
