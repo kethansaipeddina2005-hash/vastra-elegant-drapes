@@ -117,6 +117,7 @@ const Reels = () => {
     Object.entries(videoRefs.current).forEach(([index, video]) => {
       if (video) {
         if (parseInt(index) === currentIndex) {
+          video.muted = isMuted;
           video.play().catch(() => {});
           setIsPlaying(prev => ({ ...prev, [parseInt(index)]: true }));
         } else {
@@ -126,7 +127,7 @@ const Reels = () => {
         }
       }
     });
-  }, [currentIndex]);
+  }, [currentIndex, isMuted]);
 
   const scrollToIndex = (index: number) => {
     if (containerRef.current && index >= 0 && index < reels.length) {
@@ -303,9 +304,16 @@ const Reels = () => {
               src={reel.videoUrl}
               className="h-full w-full object-contain bg-black cursor-pointer"
               loop
-              muted={isMuted}
+              muted
               playsInline
+              autoPlay={index === 0}
               onClick={() => handleVideoClick(index)}
+              onLoadedData={(e) => {
+                if (index === currentIndex) {
+                  e.currentTarget.play().catch(() => {});
+                  setIsPlaying(prev => ({ ...prev, [index]: true }));
+                }
+              }}
             />
 
             {/* Play/Pause Indicator */}
