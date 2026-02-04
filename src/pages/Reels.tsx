@@ -237,24 +237,25 @@ const Reels = () => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black z-50">
+    <div className="fixed inset-0 bg-background z-50">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-black/60 to-transparent">
+      <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-background via-background/80 to-transparent">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-white font-playfair text-xl font-semibold">
+          <Link to="/" className="text-foreground font-playfair text-xl font-semibold flex items-center gap-2">
+            <Play className="h-5 w-5 fill-primary text-primary" />
             Vastra Reels
           </Link>
           <div className="flex items-center gap-2">
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
               onClick={() => setIsMuted(!isMuted)}
-              className="text-white hover:bg-white/20"
+              className="border-primary/30 hover:bg-primary/10"
             >
               {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
             </Button>
             <Link to="/">
-              <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+              <Button variant="outline" size="sm" className="border-primary/30 hover:bg-primary/10">
                 Close
               </Button>
             </Link>
@@ -265,20 +266,20 @@ const Reels = () => {
       {/* Navigation Arrows */}
       <div className="absolute right-4 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-2">
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon"
           onClick={() => scrollToIndex(currentIndex - 1)}
           disabled={currentIndex === 0}
-          className="text-white hover:bg-white/20 disabled:opacity-30"
+          className="border-primary/30 bg-card/80 backdrop-blur-sm hover:bg-primary/10 disabled:opacity-30"
         >
           <ChevronUp className="h-6 w-6" />
         </Button>
         <Button
-          variant="ghost"
+          variant="outline"
           size="icon"
           onClick={() => scrollToIndex(currentIndex + 1)}
           disabled={currentIndex === reels.length - 1}
-          className="text-white hover:bg-white/20 disabled:opacity-30"
+          className="border-primary/30 bg-card/80 backdrop-blur-sm hover:bg-primary/10 disabled:opacity-30"
         >
           <ChevronDown className="h-6 w-6" />
         </Button>
@@ -287,7 +288,7 @@ const Reels = () => {
       {/* Reels Container */}
       <div
         ref={containerRef}
-        className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide touch-pan-y"
+        className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide touch-pan-y pt-16"
         style={{ scrollSnapType: 'y mandatory' }}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
@@ -296,13 +297,13 @@ const Reels = () => {
         {reels.map((reel, index) => (
           <div
             key={`${reel.id}-${index}`}
-            className="h-full w-full snap-start snap-always relative flex items-center justify-center"
+            className="h-full w-full snap-start snap-always relative flex items-center justify-center bg-muted/30"
           >
             {/* Video */}
             <video
               ref={(el) => { videoRefs.current[index] = el; }}
               src={reel.videoUrl}
-              className="h-full w-full object-contain bg-black cursor-pointer"
+              className="h-full w-full object-contain bg-muted/20 cursor-pointer rounded-lg shadow-lg"
               loop
               muted
               playsInline
@@ -319,17 +320,17 @@ const Reels = () => {
             {/* Play/Pause Indicator */}
             {!isPlaying[index] && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="bg-black/40 rounded-full p-4">
-                  <Play className="h-12 w-12 text-white fill-white" />
+                <div className="bg-card/80 backdrop-blur-sm rounded-full p-4 shadow-lg">
+                  <Play className="h-12 w-12 text-primary fill-primary" />
                 </div>
               </div>
             )}
 
             {/* Product Info & Actions */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background/80 to-transparent">
               <div className="flex items-end justify-between gap-4">
                 {/* Product Details */}
-                <div className="flex-1 text-white">
+                <div className="flex-1 text-foreground">
                   <Link 
                     to={`/product/${reel.product.id}`}
                     className="block hover:underline"
@@ -338,10 +339,10 @@ const Reels = () => {
                       {reel.product.name}
                     </h3>
                   </Link>
-                  <p className="text-white/80 text-sm line-clamp-2 mb-2">
+                  <p className="text-muted-foreground text-sm line-clamp-2 mb-2">
                     {reel.product.description}
                   </p>
-                  <p className="text-xl font-semibold">
+                  <p className="text-xl font-semibold text-primary">
                     ₹{reel.product.price.toLocaleString()}
                   </p>
                 </div>
@@ -353,53 +354,52 @@ const Reels = () => {
                     className="flex flex-col items-center gap-1"
                   >
                     <div className={cn(
-                      "p-2 rounded-full bg-white/20 backdrop-blur-sm transition-colors",
-                      isInWishlist(reel.product.id) && "bg-red-500"
+                      "p-2 rounded-full bg-card/80 backdrop-blur-sm transition-colors border border-border shadow-sm",
+                      isInWishlist(reel.product.id) && "bg-destructive border-destructive"
                     )}>
                       <Heart 
                         className={cn(
-                          "h-6 w-6 text-white",
-                          isInWishlist(reel.product.id) && "fill-white"
+                          "h-6 w-6 text-foreground",
+                          isInWishlist(reel.product.id) && "text-destructive-foreground fill-destructive-foreground"
                         )} 
                       />
                     </div>
-                    <span className="text-white text-xs">Like</span>
+                    <span className="text-foreground text-xs">Like</span>
                   </button>
 
                   <button
                     onClick={() => handleShare(reel.product)}
                     className="flex flex-col items-center gap-1"
                   >
-                    <div className="p-2 rounded-full bg-white/20 backdrop-blur-sm">
-                      <Share2 className="h-6 w-6 text-white" />
+                    <div className="p-2 rounded-full bg-card/80 backdrop-blur-sm border border-border shadow-sm">
+                      <Share2 className="h-6 w-6 text-foreground" />
                     </div>
-                    <span className="text-white text-xs">Share</span>
+                    <span className="text-foreground text-xs">Share</span>
                   </button>
 
                   <button
                     onClick={() => handleAddToCart(reel.product)}
                     className="flex flex-col items-center gap-1"
                   >
-                    <div className="p-2 rounded-full bg-white/20 backdrop-blur-sm">
-                      <ShoppingBag className="h-6 w-6 text-white" />
+                    <div className="p-2 rounded-full bg-card/80 backdrop-blur-sm border border-border shadow-sm">
+                      <ShoppingBag className="h-6 w-6 text-foreground" />
                     </div>
-                    <span className="text-white text-xs">Cart</span>
+                    <span className="text-foreground text-xs">Cart</span>
                   </button>
 
                   <button
                     onClick={() => handleBuyNow(reel.product)}
                     className="flex flex-col items-center gap-1"
                   >
-                    <div className="p-2 rounded-full bg-primary backdrop-blur-sm">
+                    <div className="p-2 rounded-full bg-primary backdrop-blur-sm shadow-sm">
                       <Zap className="h-6 w-6 text-primary-foreground" />
                     </div>
-                    <span className="text-white text-xs">Buy Now</span>
+                    <span className="text-foreground text-xs">Buy Now</span>
                   </button>
 
                   <Link to={`/product/${reel.product.id}`}>
                     <Button 
                       size="sm" 
-                      variant="secondary"
                       className="text-xs px-3"
                     >
                       View
@@ -417,8 +417,8 @@ const Reels = () => {
                   className={cn(
                     "w-1 rounded-full transition-all duration-300",
                     i === currentIndex 
-                      ? "h-6 bg-white" 
-                      : "h-2 bg-white/40"
+                      ? "h-6 bg-primary" 
+                      : "h-2 bg-muted"
                   )}
                 />
               ))}
@@ -428,8 +428,8 @@ const Reels = () => {
       </div>
 
       {/* Reel Counter */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full">
-        <span className="text-white text-sm">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-card/90 backdrop-blur-sm px-3 py-1 rounded-full border border-border shadow-sm">
+        <span className="text-foreground text-sm">
           {currentIndex + 1} / {reels.length}
         </span>
       </div>
