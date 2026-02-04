@@ -27,6 +27,11 @@ const Reels = () => {
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({});
   const navigate = useNavigate();
   
+  // Touch/swipe handling
+  const touchStartY = useRef<number | null>(null);
+  const touchEndY = useRef<number | null>(null);
+  const minSwipeDistance = 50;
+  
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
 
@@ -130,6 +135,34 @@ const Reels = () => {
         behavior: 'smooth',
       });
     }
+  };
+
+  // Touch event handlers for swipe gestures
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchEndY.current = null;
+    touchStartY.current = e.targetTouches[0].clientY;
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEndY.current = e.targetTouches[0].clientY;
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStartY.current || !touchEndY.current) return;
+    
+    const distance = touchStartY.current - touchEndY.current;
+    const isSwipeUp = distance > minSwipeDistance;
+    const isSwipeDown = distance < -minSwipeDistance;
+    
+    if (isSwipeUp && currentIndex < reels.length - 1) {
+      scrollToIndex(currentIndex + 1);
+    } else if (isSwipeDown && currentIndex > 0) {
+      scrollToIndex(currentIndex - 1);
+    }
+    
+    // Reset
+    touchStartY.current = null;
+    touchEndY.current = null;
   };
 
   const handleVideoClick = (index: number) => {
@@ -253,8 +286,11 @@ const Reels = () => {
       {/* Reels Container */}
       <div
         ref={containerRef}
-        className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
+        className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide touch-pan-y"
         style={{ scrollSnapType: 'y mandatory' }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
         {reels.map((reel, index) => (
           <div
