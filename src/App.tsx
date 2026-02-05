@@ -40,6 +40,7 @@ import AdminUsers from "./pages/admin/Users";
 import AdminPayments from "./pages/admin/Payments";
 import AdminCategories from "./pages/admin/Categories";
 import AdminSubscriptions from "./pages/admin/Subscriptions";
+import AdminChat from "./pages/admin/Chat";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailure from "./pages/PaymentFailure";
 
@@ -108,6 +109,7 @@ const App = () => {
           <Route path="/admin/payments" element={<AdminPayments />} />
           <Route path="/admin/categories" element={<AdminCategories />} />
           <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
+          <Route path="/admin/chat" element={<AdminChat />} />
           <Route path="*" element={<NotFound />} />
                   </Routes>
                   </BrowserRouter>
