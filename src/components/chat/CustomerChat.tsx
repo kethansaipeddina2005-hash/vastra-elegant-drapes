@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Loader2, ImagePlus, XCircle } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, ImagePlus, XCircle, Check, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -14,18 +14,19 @@ interface Message {
   sender_type: string;
   created_at: string;
   images?: string[];
+  is_read?: boolean;
 }
 
 interface Conversation {
   id: string;
   status: string | null;
 }
- 
- interface CustomerChatProps {
-   productId?: number;
-   productName?: string;
- }
- 
+
+interface CustomerChatProps {
+  productId?: number;
+  productName?: string;
+}
+
 const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -36,121 +37,198 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
-   const { toast } = useToast();
- 
-   useEffect(() => {
-     if (isOpen && user) {
-       loadOrCreateConversation();
-     }
-   }, [isOpen, user]);
- 
-   useEffect(() => {
-     if (!conversation) return;
- 
-     const channel = supabase
-       .channel(`chat-${conversation.id}`)
-       .on(
-         'postgres_changes',
-         {
-           event: 'INSERT',
-           schema: 'public',
-           table: 'chat_messages',
-           filter: `conversation_id=eq.${conversation.id}`,
-         },
-         (payload) => {
-           const newMsg = payload.new as Message;
-           setMessages((prev) => [...prev, newMsg]);
-         }
-       )
-       .subscribe();
- 
-     return () => {
-       supabase.removeChannel(channel);
-     };
-   }, [conversation]);
- 
-   useEffect(() => {
-     scrollToBottom();
-   }, [messages]);
- 
-   const scrollToBottom = () => {
-     if (scrollRef.current) {
-       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-     }
-   };
- 
-   const loadOrCreateConversation = async () => {
-     if (!user) return;
-     setLoading(true);
- 
-     try {
-       // Try to find existing open conversation
-       const { data: existingConv } = await supabase
-         .from('conversations')
-         .select('*')
-         .eq('customer_id', user.id)
-         .eq('status', 'open')
-         .maybeSingle();
- 
-       if (existingConv) {
-         setConversation(existingConv);
-         await loadMessages(existingConv.id);
-       } else {
-         // Create new conversation
-         const { data: newConv, error } = await supabase
-           .from('conversations')
-           .insert({
-             customer_id: user.id,
-             customer_name: user.user_metadata?.full_name || user.email,
-             customer_email: user.email,
-             product_id: productId || null,
-             subject: productName ? `Customization for ${productName}` : 'Saree Customization',
-           })
-           .select()
-           .single();
- 
-         if (error) throw error;
-         setConversation(newConv);
-       }
-     } catch (error) {
-       console.error('Error loading conversation:', error);
-       toast({
-         title: 'Error',
-         description: 'Failed to load chat. Please try again.',
-         variant: 'destructive',
-       });
-     } finally {
-       setLoading(false);
-     }
-   };
- 
-   const loadMessages = async (conversationId: string) => {
-     const { data, error } = await supabase
-       .from('chat_messages')
-       .select('*')
-       .eq('conversation_id', conversationId)
-       .order('created_at', { ascending: true });
- 
-     if (error) {
-       console.error('Error loading messages:', error);
-       return;
-     }
- 
-     setMessages(data || []);
-   };
- 
+  const { toast } = useToast();
+
+  // Listen for new admin messages even when chat is closed
+  useEffect(() => {
+    if (!user) return;
+
+    // Find existing conversation to listen for new messages
+    const findAndSubscribe = async () => {
+      const { data: existingConv } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('customer_id', user.id)
+        .eq('status', 'open')
+        .maybeSingle();
+
+      if (!existingConv) return;
+
+      // Count unread admin messages
+      const { count } = await supabase
+        .from('chat_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('conversation_id', existingConv.id)
+        .eq('sender_type', 'admin')
+        .eq('is_read', false);
+
+      setUnreadCount(count || 0);
+
+      // Subscribe to new messages
+      const channel = supabase
+        .channel(`customer-notify-${existingConv.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'chat_messages',
+            filter: `conversation_id=eq.${existingConv.id}`,
+          },
+          (payload) => {
+            const newMsg = payload.new as Message;
+            if (newMsg.sender_type === 'admin' && !isOpen) {
+              setUnreadCount((prev) => prev + 1);
+              toast({
+                title: 'New message from Vastra',
+                description: newMsg.message?.slice(0, 50) || 'You have a new reply',
+              });
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    };
+
+    findAndSubscribe();
+  }, [user]);
+
+  useEffect(() => {
+    if (isOpen && user) {
+      loadOrCreateConversation();
+      setUnreadCount(0);
+    }
+  }, [isOpen, user]);
+
+  useEffect(() => {
+    if (!conversation) return;
+
+    const channel = supabase
+      .channel(`chat-${conversation.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `conversation_id=eq.${conversation.id}`,
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newMsg = payload.new as Message;
+            setMessages((prev) => [...prev, newMsg]);
+            // Mark admin messages as read when chat is open
+            if (newMsg.sender_type === 'admin' && isOpen) {
+              markAdminMessagesAsRead(conversation.id);
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            // Update read status of messages
+            const updatedMsg = payload.new as Message;
+            setMessages((prev) =>
+              prev.map((m) => (m.id === updatedMsg.id ? { ...m, is_read: updatedMsg.is_read } : m))
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversation, isOpen]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  };
+
+  const markAdminMessagesAsRead = async (conversationId: string) => {
+    await supabase
+      .from('chat_messages')
+      .update({ is_read: true })
+      .eq('conversation_id', conversationId)
+      .eq('sender_type', 'admin')
+      .eq('is_read', false);
+  };
+
+  const loadOrCreateConversation = async () => {
+    if (!user) return;
+    setLoading(true);
+
+    try {
+      const { data: existingConv } = await supabase
+        .from('conversations')
+        .select('*')
+        .eq('customer_id', user.id)
+        .eq('status', 'open')
+        .maybeSingle();
+
+      if (existingConv) {
+        setConversation(existingConv);
+        await loadMessages(existingConv.id);
+        await markAdminMessagesAsRead(existingConv.id);
+      } else {
+        const { data: newConv, error } = await supabase
+          .from('conversations')
+          .insert({
+            customer_id: user.id,
+            customer_name: user.user_metadata?.full_name || user.email,
+            customer_email: user.email,
+            product_id: productId || null,
+            subject: productName ? `Customization for ${productName}` : 'Saree Customization',
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        setConversation(newConv);
+      }
+    } catch (error) {
+      console.error('Error loading conversation:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load chat. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMessages = async (conversationId: string) => {
+    const { data, error } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error loading messages:', error);
+      return;
+    }
+
+    setMessages(data || []);
+  };
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    // Limit to 3 images
     const newFiles = files.slice(0, 3 - selectedImages.length);
     setSelectedImages((prev) => [...prev, ...newFiles]);
 
-    // Create preview URLs
     newFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -159,7 +237,6 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
       reader.readAsDataURL(file);
     });
 
-    // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -212,7 +289,6 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
 
     setSending(true);
     try {
-      // Upload images first if any
       const imageUrls = await uploadImages();
 
       const { error } = await supabase.from('chat_messages').insert({
@@ -224,6 +300,13 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
       });
 
       if (error) throw error;
+
+      // Update conversation timestamp
+      await supabase
+        .from('conversations')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', conversation.id);
+
       setNewMessage('');
       setSelectedImages([]);
       setImagePreviewUrls([]);
@@ -238,14 +321,14 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
       setSending(false);
     }
   };
- 
-   const handleKeyPress = (e: React.KeyboardEvent) => {
-     if (e.key === 'Enter' && !e.shiftKey) {
-       e.preventDefault();
-       sendMessage();
-     }
-   };
- 
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
   const handleOpenChat = () => {
     if (!user) {
       toast({
@@ -256,144 +339,162 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
     }
     setIsOpen(true);
   };
- 
-   return (
-     <>
-       {/* Chat Button */}
-        <Button
-          onClick={handleOpenChat}
-          className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg"
-          size="icon"
-        >
-          <MessageCircle className="h-6 w-6" />
-        </Button>
- 
-       {/* Chat Window */}
-       {isOpen && (
-         <div className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-card shadow-xl">
-           {/* Header */}
-           <div className="flex items-center justify-between border-b border-border bg-primary px-4 py-3 rounded-t-lg">
-             <div>
-               <h3 className="font-semibold text-primary-foreground">Customize Your Saree</h3>
-               <p className="text-xs text-primary-foreground/80">Chat with our team</p>
-             </div>
-             <Button
-               variant="ghost"
-               size="icon"
-               onClick={() => setIsOpen(false)}
-               className="text-primary-foreground hover:bg-primary-foreground/10"
-             >
-               <X className="h-5 w-5" />
-             </Button>
-           </div>
- 
-           {/* Messages */}
-           <ScrollArea className="h-[350px] p-4" ref={scrollRef}>
-             {loading ? (
-               <div className="flex h-full items-center justify-center">
-                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
-               </div>
-             ) : messages.length === 0 ? (
-               <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
-                 <MessageCircle className="mb-2 h-12 w-12 opacity-50" />
-                 <p className="text-sm">Start a conversation!</p>
-                 <p className="text-xs mt-1">Tell us how you'd like to customize your saree.</p>
-               </div>
-             ) : (
-              <div className="space-y-3">
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={cn(
-                        'max-w-[80%] rounded-lg px-3 py-2 text-sm',
-                        msg.sender_type === 'customer'
-                          ? 'ml-auto bg-primary text-primary-foreground'
-                          : 'bg-muted text-foreground'
-                      )}
-                    >
-                      {msg.images && msg.images.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-2">
-                          {msg.images.map((img, idx) => (
-                            <a key={idx} href={img} target="_blank" rel="noopener noreferrer">
-                              <img
-                                src={img}
-                                alt={`Attachment ${idx + 1}`}
-                                className="w-20 h-20 object-cover rounded border border-border/50 hover:opacity-90 transition-opacity"
-                              />
-                            </a>
-                          ))}
-                        </div>
-                      )}
-                      {msg.message && msg.message !== '📷 Sent images' && <p>{msg.message}</p>}
-                      <p className={cn(
-                        "text-[10px] mt-1",
-                        msg.sender_type === 'customer' ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                      )}>
-                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
- 
-            {/* Input */}
-            <div className="border-t border-border p-3 space-y-2">
-              {/* Image Previews */}
-              {imagePreviewUrls.length > 0 && (
-                <div className="flex gap-2 flex-wrap">
-                  {imagePreviewUrls.map((url, idx) => (
-                    <div key={idx} className="relative">
-                      <img src={url} alt={`Preview ${idx + 1}`} className="w-12 h-12 object-cover rounded border border-border" />
-                      <button
-                        onClick={() => removeImage(idx)}
-                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
-                      >
-                        <XCircle className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="flex gap-2">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageSelect}
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={sending || loading || selectedImages.length >= 3}
-                  className="shrink-0"
-                >
-                  <ImagePlus className="h-4 w-4" />
-                </Button>
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type your message..."
-                  disabled={sending || loading}
-                  className="flex-1"
-                />
-                <Button 
-                  onClick={sendMessage} 
-                  disabled={sending || uploadingImages || (!newMessage.trim() && selectedImages.length === 0)} 
-                  size="icon"
-                >
-                  {sending || uploadingImages ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
+
+  const ReadReceipt = ({ msg }: { msg: Message }) => {
+    if (msg.sender_type !== 'customer') return null;
+    return msg.is_read ? (
+      <CheckCheck className="h-3 w-3 text-primary-foreground/70 inline ml-1" />
+    ) : (
+      <Check className="h-3 w-3 text-primary-foreground/70 inline ml-1" />
+    );
+  };
+
+  return (
+    <>
+      {/* Chat Button */}
+      <Button
+        onClick={handleOpenChat}
+        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg"
+        size="icon"
+      >
+        <MessageCircle className="h-6 w-6" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+            {unreadCount}
+          </span>
+        )}
+      </Button>
+
+      {/* Chat Window */}
+      {isOpen && (
+        <div className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-card shadow-xl">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-border bg-primary px-4 py-3 rounded-t-lg">
+            <div>
+              <h3 className="font-semibold text-primary-foreground">Customize Your Saree</h3>
+              <p className="text-xs text-primary-foreground/80">Chat with our team</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen(false)}
+              className="text-primary-foreground hover:bg-primary-foreground/10"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+
+          {/* Messages */}
+          <ScrollArea className="h-[350px] p-4" ref={scrollRef}>
+            {loading ? (
+              <div className="flex h-full items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
               </div>
+            ) : messages.length === 0 ? (
+              <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
+                <MessageCircle className="mb-2 h-12 w-12 opacity-50" />
+                <p className="text-sm">Start a conversation!</p>
+                <p className="text-xs mt-1">Tell us how you'd like to customize your saree.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={cn(
+                      'max-w-[80%] rounded-lg px-3 py-2 text-sm',
+                      msg.sender_type === 'customer'
+                        ? 'ml-auto bg-primary text-primary-foreground'
+                        : 'bg-muted text-foreground'
+                    )}
+                  >
+                    {msg.sender_type === 'admin' && (
+                      <p className="text-[10px] font-medium mb-1 opacity-70">Vastra Team</p>
+                    )}
+                    {msg.images && msg.images.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {msg.images.map((img, idx) => (
+                          <a key={idx} href={img} target="_blank" rel="noopener noreferrer">
+                            <img
+                              src={img}
+                              alt={`Attachment ${idx + 1}`}
+                              className="w-20 h-20 object-cover rounded border border-border/50 hover:opacity-90 transition-opacity"
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                    {msg.message && msg.message !== '📷 Sent images' && <p>{msg.message}</p>}
+                    <p className={cn(
+                      "text-[10px] mt-1 flex items-center gap-0.5",
+                      msg.sender_type === 'customer' ? 'text-primary-foreground/70 justify-end' : 'text-muted-foreground'
+                    )}>
+                      {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      <ReadReceipt msg={msg} />
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+
+          {/* Input */}
+          <div className="border-t border-border p-3 space-y-2">
+            {/* Image Previews */}
+            {imagePreviewUrls.length > 0 && (
+              <div className="flex gap-2 flex-wrap">
+                {imagePreviewUrls.map((url, idx) => (
+                  <div key={idx} className="relative">
+                    <img src={url} alt={`Preview ${idx + 1}`} className="w-12 h-12 object-cover rounded border border-border" />
+                    <button
+                      onClick={() => removeImage(idx)}
+                      className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                    >
+                      <XCircle className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageSelect}
+                accept="image/*"
+                multiple
+                className="hidden"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={sending || loading || selectedImages.length >= 3}
+                className="shrink-0"
+              >
+                <ImagePlus className="h-4 w-4" />
+              </Button>
+              <Input
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your message..."
+                disabled={sending || loading}
+                className="flex-1"
+              />
+              <Button
+                onClick={sendMessage}
+                disabled={sending || uploadingImages || (!newMessage.trim() && selectedImages.length === 0)}
+                size="icon"
+              >
+                {sending || uploadingImages ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
-       )}
-     </>
-   );
- };
- 
- export default CustomerChat;
+        </div>
+      )}
+    </>
+  );
+};
+
+export default CustomerChat;
