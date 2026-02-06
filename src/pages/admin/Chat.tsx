@@ -407,32 +407,46 @@ interface Conversation extends Tables<'conversations'> {
                  </div>
  
                  {/* Messages */}
-                 <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-                   <div className="space-y-3">
-                     {messages.map((msg) => (
-                       <div
-                         key={msg.id}
-                         className={cn(
-                           'max-w-[70%] rounded-lg px-4 py-2',
-                           msg.sender_type === 'admin'
-                             ? 'ml-auto bg-primary text-primary-foreground'
-                             : 'bg-muted text-foreground'
-                         )}
-                       >
-                         <p className="text-sm">{msg.message}</p>
-                         <p
-                           className={cn(
-                             'text-xs mt-1',
-                             msg.sender_type === 'admin' ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                           )}
-                         >
-                           {new Date(msg.created_at).toLocaleTimeString([], {
-                             hour: '2-digit',
-                             minute: '2-digit',
-                           })}
-                         </p>
-                       </div>
-                     ))}
+                  <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+                    <div className="space-y-3">
+                      {messages.map((msg) => (
+                        <div
+                          key={msg.id}
+                          className={cn(
+                            'max-w-[70%] rounded-lg px-4 py-2',
+                            msg.sender_type === 'admin'
+                              ? 'ml-auto bg-primary text-primary-foreground'
+                              : 'bg-muted text-foreground'
+                          )}
+                        >
+                          {/* Display Images */}
+                          {msg.images && msg.images.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {msg.images.map((img, idx) => (
+                                <a key={idx} href={img} target="_blank" rel="noopener noreferrer">
+                                  <img
+                                    src={img}
+                                    alt={`Customer attachment ${idx + 1}`}
+                                    className="w-24 h-24 object-cover rounded border border-border/50 hover:opacity-90 transition-opacity"
+                                  />
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                          {msg.message && msg.message !== '📷 Sent images' && <p className="text-sm">{msg.message}</p>}
+                          <p
+                            className={cn(
+                              'text-xs mt-1',
+                              msg.sender_type === 'admin' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                            )}
+                          >
+                            {new Date(msg.created_at).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </p>
+                        </div>
+                      ))}
                    </div>
                  </ScrollArea>
  
