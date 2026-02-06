@@ -246,20 +246,27 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
      }
    };
  
-   if (!user) {
-     return null;
-   }
+  const handleOpenChat = () => {
+    if (!user) {
+      toast({
+        title: 'Login Required',
+        description: 'Please log in to start a chat.',
+      });
+      return;
+    }
+    setIsOpen(true);
+  };
  
    return (
      <>
        {/* Chat Button */}
-       <Button
-         onClick={() => setIsOpen(true)}
-         className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg"
-         size="icon"
-       >
-         <MessageCircle className="h-6 w-6" />
-       </Button>
+        <Button
+          onClick={handleOpenChat}
+          className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg"
+          size="icon"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </Button>
  
        {/* Chat Window */}
        {isOpen && (
