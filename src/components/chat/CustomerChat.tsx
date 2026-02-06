@@ -246,9 +246,16 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
      }
    };
  
-   if (!user) {
-     return null;
-   }
+  const handleOpenChat = () => {
+    if (!user) {
+      toast({
+        title: 'Login Required',
+        description: 'Please log in to start a chat.',
+      });
+      return;
+    }
+    setIsOpen(true);
+  };
  
    return (
      <>
