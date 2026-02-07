@@ -64,11 +64,11 @@ const Header = () => {
               <Search className="h-5 w-5" />
             </Button>
 
-            <Link to="/account/wishlist" className="flex-shrink-0">
-              <Button variant="ghost" size="icon" className="relative h-9 w-9 md:h-10 md:w-10">
-                <Heart className="h-4 w-4 md:h-5 md:w-5" />
+            <Link to="/account/wishlist" className="hidden lg:block flex-shrink-0">
+              <Button variant="ghost" size="icon" className="relative h-10 w-10">
+                <Heart className="h-5 w-5" />
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 md:h-5 md:w-5 flex items-center justify-center text-[10px] md:text-xs">
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {wishlistCount}
                   </span>
                 )}
@@ -78,8 +78,8 @@ const Header = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10 flex-shrink-0">
-                    <User className="h-4 w-4 md:h-5 md:w-5" />
+                  <Button variant="ghost" size="icon" className="hidden lg:flex h-10 w-10 flex-shrink-0">
+                    <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -108,24 +108,24 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link to="/account/login" className="flex-shrink-0">
-                <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10">
-                  <User className="h-4 w-4 md:h-5 md:w-5" />
+              <Link to="/account/login" className="hidden lg:block flex-shrink-0">
+                <Button variant="ghost" size="icon" className="h-10 w-10">
+                  <User className="h-5 w-5" />
                 </Button>
               </Link>
             )}
             
-            <Link to="/reels" className="flex-shrink-0">
-              <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10">
-                <Play className="h-4 w-4 md:h-5 md:w-5" />
+            <Link to="/reels" className="hidden lg:block flex-shrink-0">
+              <Button variant="ghost" size="icon" className="h-10 w-10">
+                <Play className="h-5 w-5" />
               </Button>
             </Link>
 
-            <Link to="/cart" className="flex-shrink-0">
-              <Button variant="ghost" size="icon" className="relative h-9 w-9 md:h-10 md:w-10">
-                <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
+            <Link to="/cart" className="hidden lg:block flex-shrink-0">
+              <Button variant="ghost" size="icon" className="relative h-10 w-10">
+                <ShoppingCart className="h-5 w-5" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 md:h-5 md:w-5 flex items-center justify-center text-[10px] md:text-xs">
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {cartCount}
                   </span>
                 )}
@@ -135,10 +135,10 @@ const Header = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden h-9 w-9 md:h-10 md:w-10 flex-shrink-0"
+              className="lg:hidden h-9 w-9 flex-shrink-0"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              {isMobileMenuOpen ? <X className="h-5 w-5 md:h-6 md:w-6" /> : <Menu className="h-5 w-5 md:h-6 md:w-6" />}
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
