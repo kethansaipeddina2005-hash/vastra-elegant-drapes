@@ -9,12 +9,28 @@ import { Button } from "@/components/ui/button";
 import { Loading } from "@/components/ui/loading";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { X, SlidersHorizontal } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import SEO, { getBreadcrumbSchema } from "@/components/SEO";
+import { ProductGridSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 
 const Collections = () => {
-  const { products, filters, setFilters, filterOptions, sortBy, setSortBy, loading, maxPrice } = useProducts();
+  const { products, filters, setFilters, filterOptions, sortBy, setSortBy, searchQuery, setSearchQuery, loading, maxPrice } = useProducts();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  // Sync URL search params with hook
+  useEffect(() => {
+    const search = searchParams.get('search') || '';
+    const category = searchParams.get('category') || '';
+    if (search) setSearchQuery(search);
+    if (category) {
+      setFilters(prev => ({
+        ...prev,
+        categories: [category],
+      }));
+    }
+  }, [searchParams]);
 
   const clearFilter = (category: keyof typeof filters, value?: string) => {
     if (value) {
@@ -42,8 +58,8 @@ const Collections = () => {
   if (loading) {
     return (
       <Layout>
-        <div className="container mx-auto px-6 py-8 flex justify-center items-center min-h-[60vh]">
-          <Loading />
+        <div className="container mx-auto px-6 py-8">
+          <ProductGridSkeleton count={8} />
         </div>
       </Layout>
     );

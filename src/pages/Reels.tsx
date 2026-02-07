@@ -201,12 +201,9 @@ const Reels = () => {
 
   const handleShare = async (product: Product) => {
     const url = `${window.location.origin}/product/${product.id}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success('Link copied to clipboard');
-    } catch {
-      toast.error('Failed to copy link');
-    }
+    const text = `Check out ${product.name} on Vastra!`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   if (loading) {
