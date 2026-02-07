@@ -2,7 +2,7 @@ import ProductCard from "./ProductCard";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types/product";
-import { Loading } from "./ui/loading";
+import { ProductGridSkeleton } from "./skeletons/ProductCardSkeleton";
 
 const FeaturedSarees = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -67,9 +67,9 @@ const FeaturedSarees = () => {
 
   if (loading) {
     return (
-      <section id="collections" className="py-20 px-6">
-        <div className="container mx-auto flex justify-center">
-          <Loading />
+      <section id="collections" className="py-20">
+        <div className="container mx-auto px-4">
+          <ProductGridSkeleton count={6} />
         </div>
       </section>
     );

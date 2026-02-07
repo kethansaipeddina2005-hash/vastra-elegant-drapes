@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Search, ShoppingCart, User, Menu, X, Heart, LogOut, Shield, Play } from "lucide-react";
 import logo from "@/assets/logo.jpg";
@@ -18,6 +18,8 @@ import {
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+  const navigate = useNavigate();
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
   const { user, signOut } = useAuth();
@@ -142,13 +144,26 @@ const Header = () => {
         </div>
         
         {isSearchOpen && (
-          <div className="mt-4 animate-fade-in">
+          <form
+            className="mt-4 animate-fade-in"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (searchValue.trim()) {
+                navigate(`/collections?search=${encodeURIComponent(searchValue.trim())}`);
+                setIsSearchOpen(false);
+                setSearchValue('');
+              }
+            }}
+          >
             <Input
               type="search"
               placeholder="Search for sarees..."
               className="max-w-md"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              autoFocus
             />
-          </div>
+          </form>
         )}
         
         {isMobileMenuOpen && (

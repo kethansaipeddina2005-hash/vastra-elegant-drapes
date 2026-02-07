@@ -1,8 +1,8 @@
 import { Instagram, Facebook } from "lucide-react";
 
-const Footer = () => {
+const Footer = ({ className }: { className?: string }) => {
   return (
-    <footer id="contact" className="bg-secondary border-t border-border py-12 px-6">
+    <footer id="contact" className={`bg-secondary border-t border-border py-12 px-6 ${className || ''}`}>
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-center md:text-left">

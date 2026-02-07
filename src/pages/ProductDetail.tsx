@@ -7,7 +7,8 @@ import { Product } from "@/types/product";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, ShoppingCart, Minus, Plus, Share2, Facebook, Twitter, Link2 } from "lucide-react";
+import { Heart, ShoppingCart, Minus, Plus, Share2, Facebook, Twitter, Link2, MessageCircle } from "lucide-react";
+import ProductDetailSkeleton from "@/components/skeletons/ProductDetailSkeleton";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useRecentlyViewed } from "@/contexts/RecentlyViewedContext";
@@ -139,9 +140,7 @@ const ProductDetail = () => {
   if (loading) {
     return (
       <Layout>
-        <div className="container mx-auto px-6 py-8 flex justify-center items-center min-h-[60vh]">
-          <Loading />
-        </div>
+        <ProductDetailSkeleton />
       </Layout>
     );
   }
@@ -184,6 +183,9 @@ const ProductDetail = () => {
         break;
       case 'twitter':
         shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+        break;
+      case 'whatsapp':
+        shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
         break;
       case 'copy':
         navigator.clipboard.writeText(url);
@@ -391,6 +393,10 @@ const ProductDetail = () => {
                     <DropdownMenuItem onClick={() => handleShare('twitter')} className="cursor-pointer text-xs">
                       <Twitter className="mr-2 h-3.5 w-3.5" />
                       Twitter
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleShare('whatsapp')} className="cursor-pointer text-xs">
+                      <MessageCircle className="mr-2 h-3.5 w-3.5" />
+                      WhatsApp
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleShare('copy')} className="cursor-pointer text-xs">
                       <Link2 className="mr-2 h-3.5 w-3.5" />
