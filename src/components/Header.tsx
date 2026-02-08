@@ -17,7 +17,6 @@ import {
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const navigate = useNavigate();
   const { cartCount } = useCart();
@@ -36,33 +35,37 @@ const Header = () => {
             </h1>
           </Link>
           
+          <form
+            className="hidden md:flex flex-1 max-w-md mx-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (searchValue.trim()) {
+                navigate(`/collections?search=${encodeURIComponent(searchValue.trim())}`);
+                setSearchValue('');
+              }
+            }}
+          >
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search for sarees..."
+                className="w-full pl-9 pr-4 rounded-full border-border bg-muted/50"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+              />
+            </div>
+          </form>
+
           <nav className="hidden lg:flex gap-8">
-            <Link to="/" className="text-foreground hover:text-primary transition-colors font-medium">
-              Home
-            </Link>
-            <Link to="/collections" className="text-foreground hover:text-primary transition-colors font-medium">
-              Collections
-            </Link>
-            <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">
-              About
-            </Link>
-            <Link to="/contact" className="text-foreground hover:text-primary transition-colors font-medium">
-              Contact
-            </Link>
-            <Link to="/blog" className="text-foreground hover:text-primary transition-colors font-medium">
-              Blog
-            </Link>
+            <Link to="/" className="text-foreground hover:text-primary transition-colors font-medium">Home</Link>
+            <Link to="/collections" className="text-foreground hover:text-primary transition-colors font-medium">Collections</Link>
+            <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">About</Link>
+            <Link to="/contact" className="text-foreground hover:text-primary transition-colors font-medium">Contact</Link>
+            <Link to="/blog" className="text-foreground hover:text-primary transition-colors font-medium">Blog</Link>
           </nav>
           
           <div className="flex items-center gap-1 md:gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-
             <Link to="/reels" className="flex-shrink-0">
               <Button variant="ghost" size="icon" className="h-9 w-9 lg:h-10 lg:w-10">
                 <Play className="h-5 w-5" />
@@ -143,28 +146,28 @@ const Header = () => {
           </div>
         </div>
         
-        {isSearchOpen && (
-          <form
-            className="mt-4 animate-fade-in"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (searchValue.trim()) {
-                navigate(`/collections?search=${encodeURIComponent(searchValue.trim())}`);
-                setIsSearchOpen(false);
-                setSearchValue('');
-              }
-            }}
-          >
+        {/* Mobile search bar */}
+        <form
+          className="md:hidden mt-3 animate-fade-in"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (searchValue.trim()) {
+              navigate(`/collections?search=${encodeURIComponent(searchValue.trim())}`);
+              setSearchValue('');
+            }
+          }}
+        >
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search for sarees..."
-              className="max-w-md"
+              className="w-full pl-9 pr-4 rounded-full border-border bg-muted/50"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              autoFocus
             />
-          </form>
-        )}
+          </div>
+        </form>
         
         {isMobileMenuOpen && (
           <nav className="lg:hidden mt-4 pb-4 flex flex-col gap-4 animate-fade-in">
