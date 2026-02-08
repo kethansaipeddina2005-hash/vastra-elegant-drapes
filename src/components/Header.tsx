@@ -59,10 +59,15 @@ const Header = () => {
               variant="ghost"
               size="icon"
               onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="hidden md:flex"
             >
               <Search className="h-5 w-5" />
             </Button>
+
+            <Link to="/reels" className="flex-shrink-0">
+              <Button variant="ghost" size="icon" className="h-9 w-9 lg:h-10 lg:w-10">
+                <Play className="h-5 w-5" />
+              </Button>
+            </Link>
 
             <Link to="/account/wishlist" className="hidden lg:block flex-shrink-0">
               <Button variant="ghost" size="icon" className="relative h-10 w-10">
@@ -115,11 +120,6 @@ const Header = () => {
               </Link>
             )}
             
-            <Link to="/reels" className="hidden lg:block flex-shrink-0">
-              <Button variant="ghost" size="icon" className="h-10 w-10">
-                <Play className="h-5 w-5" />
-              </Button>
-            </Link>
 
             <Link to="/cart" className="hidden lg:block flex-shrink-0">
               <Button variant="ghost" size="icon" className="relative h-10 w-10">
@@ -168,49 +168,17 @@ const Header = () => {
         
         {isMobileMenuOpen && (
           <nav className="lg:hidden mt-4 pb-4 flex flex-col gap-4 animate-fade-in">
-            <Link
-              to="/"
-              className="text-foreground hover:text-primary transition-colors font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link
-              to="/collections"
-              className="text-foreground hover:text-primary transition-colors font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Collections
-            </Link>
-            <Link
-              to="/about"
-              className="text-foreground hover:text-primary transition-colors font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              About
-            </Link>
-            <Link
-              to="/contact"
-              className="text-foreground hover:text-primary transition-colors font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Contact
-            </Link>
-            <Link
-              to="/blog"
-              className="text-foreground hover:text-primary transition-colors font-medium"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Blog
-            </Link>
-            <Link
-              to="/reels"
-              className="text-foreground hover:text-primary transition-colors font-medium flex items-center gap-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <Play className="h-4 w-4 fill-current" />
-              Reels
-            </Link>
+            <Link to="/" className="text-foreground hover:text-primary transition-colors font-medium" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+            <Link to="/collections" className="text-foreground hover:text-primary transition-colors font-medium" onClick={() => setIsMobileMenuOpen(false)}>Collections</Link>
+            <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium" onClick={() => setIsMobileMenuOpen(false)}>About</Link>
+            <Link to="/contact" className="text-foreground hover:text-primary transition-colors font-medium" onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
+            <Link to="/blog" className="text-foreground hover:text-primary transition-colors font-medium" onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
+            {isAdmin && (
+              <Link to="/admin/dashboard" className="text-foreground hover:text-primary transition-colors font-medium flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
+                <Shield className="h-4 w-4" />
+                Admin Panel
+              </Link>
+            )}
           </nav>
         )}
       </div>
