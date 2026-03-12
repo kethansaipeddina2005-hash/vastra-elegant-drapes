@@ -146,28 +146,6 @@ const Header = () => {
           </div>
         </div>
         
-        {/* Mobile search bar */}
-        <form
-          className="md:hidden mt-3 animate-fade-in"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (searchValue.trim()) {
-              navigate(`/collections?search=${encodeURIComponent(searchValue.trim())}`);
-              setSearchValue('');
-            }
-          }}
-        >
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search for sarees..."
-              className="w-full pl-9 pr-4 rounded-full border-border bg-muted/50"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-            />
-          </div>
-        </form>
         
         {isMobileMenuOpen && (
           <nav className="lg:hidden mt-4 pb-4 flex flex-col gap-4 animate-fade-in">
