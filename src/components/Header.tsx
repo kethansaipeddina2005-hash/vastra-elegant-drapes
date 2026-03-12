@@ -36,7 +36,7 @@ const Header = () => {
           </Link>
           
           <form
-            className="hidden md:flex flex-1 max-w-md mx-4"
+            className="flex flex-1 max-w-md mx-2 md:mx-4"
             onSubmit={(e) => {
               e.preventDefault();
               if (searchValue.trim()) {
