@@ -17,7 +17,7 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
         setIsVisible(false);
         onLoadingComplete?.();
       }, 600); // Match fade-out duration
-    }, 1500); // Show for at least 1.5s
+    }, 800); // Show for at least 0.8s
 
     return () => clearTimeout(timer);
   }, [onLoadingComplete]);
