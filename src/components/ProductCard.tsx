@@ -81,7 +81,19 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
             {product.name}
           </h3>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
-            <p className="text-base md:text-xl font-semibold text-primary">{formattedPrice}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-base md:text-xl font-semibold text-primary">{formattedPrice}</p>
+              {product.isOnSale && (
+                <>
+                  <p className="text-xs md:text-sm text-muted-foreground line-through">
+                    ₹{Math.round(product.price * 1.25).toLocaleString('en-IN')}
+                  </p>
+                  <Badge className="bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0">
+                    20% OFF
+                  </Badge>
+                </>
+              )}
+            </div>
             {product.rating && (
               <div className="flex items-center gap-1">
                 <span className="text-gold text-sm">★</span>
