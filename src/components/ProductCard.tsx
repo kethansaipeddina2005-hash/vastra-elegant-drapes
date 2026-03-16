@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { Heart } from "lucide-react";
+import { Heart, ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { useCart } from "@/contexts/CartContext";
 import { Product } from "@/types/product";
 
 interface ProductCardProps extends Product {
@@ -13,6 +14,7 @@ interface ProductCardProps extends Product {
 
 const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: ProductCardProps) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
   const inWishlist = isInWishlist(product.id);
 
   const toggleWishlist = (e: React.MouseEvent) => {
@@ -42,6 +44,14 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
               {product.isOnSale && <Badge className="bg-destructive text-destructive-foreground">Sale</Badge>}
             </div>
           )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute bottom-2 right-2 z-10 h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md opacity-0 group-hover:opacity-100 md:opacity-0 max-md:opacity-100 transition-opacity"
+            onClick={(e) => { e.preventDefault(); addToCart(product); }}
+          >
+            <ShoppingCart className="h-4 w-4" />
+          </Button>
         </div>
       </Link>
       {actionButton && (
