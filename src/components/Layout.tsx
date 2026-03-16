@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import CustomerChat from './chat/CustomerChat';
+import WhatsAppButton from './WhatsAppButton';
 import MobileBottomNav from './MobileBottomNav';
 
 interface LayoutProps {
