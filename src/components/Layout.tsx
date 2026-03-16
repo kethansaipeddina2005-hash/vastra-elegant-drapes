@@ -16,6 +16,7 @@ const Layout = ({ children }: LayoutProps) => {
       <main className="flex-1 pb-14 lg:pb-0">{children}</main>
       <Footer className="hidden lg:block" />
       <CustomerChat />
+      <WhatsAppButton />
       <MobileBottomNav />
     </div>
   );
