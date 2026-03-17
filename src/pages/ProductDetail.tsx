@@ -467,6 +467,12 @@ const ProductDetail = () => {
         <RecentlyViewedProducts excludeProductId={product.id} maxItems={4} />
       </div>
     </Layout>
+    <WhatsAppButton
+      productName={product.name}
+      productPrice={product.price}
+      productUrl={`${window.location.origin}/product/${product.id}`}
+    />
+    </>
   );
 };
 
