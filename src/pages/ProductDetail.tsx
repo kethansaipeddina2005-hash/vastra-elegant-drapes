@@ -8,6 +8,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, ShoppingCart, Minus, Plus, Share2, Facebook, Twitter, Link2, MessageCircle } from "lucide-react";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import ProductDetailSkeleton from "@/components/skeletons/ProductDetailSkeleton";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
@@ -215,6 +216,7 @@ const ProductDetail = () => {
   ]);
 
   return (
+    <>
     <Layout>
       <SEO 
         title={`${product.name} | Vastra — Handcrafted Indian Sarees`}
@@ -465,6 +467,12 @@ const ProductDetail = () => {
         <RecentlyViewedProducts excludeProductId={product.id} maxItems={4} />
       </div>
     </Layout>
+    <WhatsAppButton
+      productName={product.name}
+      productPrice={product.price}
+      productUrl={`${window.location.origin}/product/${product.id}`}
+    />
+    </>
   );
 };
 

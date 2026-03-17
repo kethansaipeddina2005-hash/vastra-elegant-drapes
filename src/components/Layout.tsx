@@ -2,7 +2,6 @@ import { ReactNode } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import CustomerChat from './chat/CustomerChat';
-import WhatsAppButton from './WhatsAppButton';
 import MobileBottomNav from './MobileBottomNav';
 
 interface LayoutProps {
@@ -16,7 +15,6 @@ const Layout = ({ children }: LayoutProps) => {
       <main className="flex-1 pb-14 lg:pb-0">{children}</main>
       <Footer className="hidden lg:block" />
       <CustomerChat />
-      <WhatsAppButton />
       <MobileBottomNav />
     </div>
   );
