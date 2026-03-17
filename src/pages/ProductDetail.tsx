@@ -216,6 +216,7 @@ const ProductDetail = () => {
   ]);
 
   return (
+    <>
     <Layout>
       <SEO 
         title={`${product.name} | Vastra — Handcrafted Indian Sarees`}
