@@ -354,10 +354,10 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
       {/* Chat Button */}
       <Button
         onClick={handleOpenChat}
-        className="fixed bottom-20 lg:bottom-6 right-4 z-50 h-12 w-12 rounded-full shadow-lg"
-        size="icon"
+        className="group fixed bottom-20 lg:bottom-6 right-4 z-50 h-12 rounded-full shadow-lg gap-2 px-3"
       >
-        <MessageCircle className="h-5 w-5" />
+        <MessageCircle className="h-5 w-5 shrink-0" />
+        <span className="max-w-0 overflow-hidden group-hover:max-w-[6rem] transition-all duration-300 text-xs font-semibold whitespace-nowrap">Live Chat</span>
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
             {unreadCount}
