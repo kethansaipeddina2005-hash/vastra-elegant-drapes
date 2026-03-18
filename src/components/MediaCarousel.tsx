@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Expand } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ImageLightbox } from './ImageLightbox';
+import FitCheckSlide from './FitCheckSlide';
 
 interface MediaCarouselProps {
   images?: string[];
@@ -10,21 +11,23 @@ interface MediaCarouselProps {
   className?: string;
   productName?: string;
   productUrl?: string;
+  showFitCheck?: boolean;
 }
 
 type MediaItem = {
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'fitcheck';
   url: string;
 };
 
-export const MediaCarousel = ({ images = [], videos = [], className, productName, productUrl }: MediaCarouselProps) => {
+export const MediaCarousel = ({ images = [], videos = [], className, productName, productUrl, showFitCheck = true }: MediaCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-  // Combine images and videos into a single media array
+  // Combine images, videos, and fit check into a single media array
   const mediaItems: MediaItem[] = [
     ...images.map(url => ({ type: 'image' as const, url })),
-    ...videos.map(url => ({ type: 'video' as const, url }))
+    ...videos.map(url => ({ type: 'video' as const, url })),
+    ...(showFitCheck ? [{ type: 'fitcheck' as const, url: '' }] : []),
   ];
 
   const totalItems = mediaItems.length;
