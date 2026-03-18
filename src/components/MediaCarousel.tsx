@@ -82,6 +82,12 @@ export const MediaCarousel = ({ images = [], videos = [], className, productName
                 <Expand className="h-5 w-5" />
               </Button>
             </div>
+          ) : currentMedia.type === 'fitcheck' ? (
+            <FitCheckSlide
+              sareeImageUrl={images[0] || ''}
+              sareeName={productName || 'this saree'}
+              className="w-full h-full"
+            />
           ) : (
             <video
               src={currentMedia.url}
