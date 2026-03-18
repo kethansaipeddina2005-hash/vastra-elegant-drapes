@@ -8,11 +8,13 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import FitCheckUpload from "@/components/FitCheckUpload";
 
 const Profile = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+  const [fitCheckPhoto, setFitCheckPhoto] = useState<string | null>(null);
   const [profile, setProfile] = useState({
     full_name: "",
     phone: "",
