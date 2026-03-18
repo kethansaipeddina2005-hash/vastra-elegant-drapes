@@ -153,6 +153,10 @@ export const MediaCarousel = ({ images = [], videos = [], className, productName
                   alt={`Thumbnail ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
+              ) : item.type === 'fitcheck' ? (
+                <div className="relative w-full h-full bg-gradient-to-br from-primary/10 to-accent/20 flex items-center justify-center">
+                  <span className="text-lg">✨</span>
+                </div>
               ) : (
                 <div className="relative w-full h-full bg-black">
                   <video
