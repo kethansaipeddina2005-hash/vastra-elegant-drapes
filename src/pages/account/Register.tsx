@@ -150,6 +150,24 @@ const Register = () => {
               {loading ? "Creating account..." : "Create Account"}
             </Button>
           </form>
+
+          {/* Show fit check upload after registration if user is logged in */}
+          {user && (
+            <div className="mt-6 p-4 border border-border rounded-lg bg-muted/20">
+              <FitCheckUpload
+                userId={user.id}
+                variant="full"
+                onPhotoUploaded={() => {}}
+              />
+              <Button
+                variant="outline"
+                className="w-full mt-4"
+                onClick={() => navigate("/")}
+              >
+                Continue to Shopping →
+              </Button>
+            </div>
+          )}
           
           <p className="mt-6 text-center text-muted-foreground">
             Already have an account?{" "}

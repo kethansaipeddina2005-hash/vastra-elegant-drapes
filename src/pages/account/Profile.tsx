@@ -145,6 +145,25 @@ const Profile = () => {
               </Button>
             </form>
           </Card>
+
+          {/* Fit Check / Style Avatar Section */}
+          {user && (
+            <Card className="p-8 mt-6">
+              <FitCheckUpload
+                userId={user.id}
+                currentPhotoUrl={fitCheckPhoto}
+                variant="full"
+                onPhotoUploaded={(url) => setFitCheckPhoto(url || null)}
+              />
+            </Card>
+          )}
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default Profile;
         </div>
       </div>
     </Layout>
