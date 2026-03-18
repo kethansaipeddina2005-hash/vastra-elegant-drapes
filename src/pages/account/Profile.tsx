@@ -8,11 +8,13 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import FitCheckUpload from "@/components/FitCheckUpload";
 
 const Profile = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+  const [fitCheckPhoto, setFitCheckPhoto] = useState<string | null>(null);
   const [profile, setProfile] = useState({
     full_name: "",
     phone: "",
@@ -44,6 +46,7 @@ const Profile = () => {
           full_name: data.full_name || "",
           phone: data.phone || "",
         });
+        setFitCheckPhoto((data as any).fit_check_photo || null);
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -142,6 +145,18 @@ const Profile = () => {
               </Button>
             </form>
           </Card>
+
+          {/* Fit Check / Style Avatar Section */}
+          {user && (
+            <Card className="p-8 mt-6">
+              <FitCheckUpload
+                userId={user.id}
+                currentPhotoUrl={fitCheckPhoto}
+                variant="full"
+                onPhotoUploaded={(url) => setFitCheckPhoto(url || null)}
+              />
+            </Card>
+          )}
         </div>
       </div>
     </Layout>

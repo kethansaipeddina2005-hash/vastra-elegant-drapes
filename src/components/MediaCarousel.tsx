@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Expand } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ImageLightbox } from './ImageLightbox';
+import FitCheckSlide from './FitCheckSlide';
 
 interface MediaCarouselProps {
   images?: string[];
@@ -10,21 +11,23 @@ interface MediaCarouselProps {
   className?: string;
   productName?: string;
   productUrl?: string;
+  showFitCheck?: boolean;
 }
 
 type MediaItem = {
-  type: 'image' | 'video';
+  type: 'image' | 'video' | 'fitcheck';
   url: string;
 };
 
-export const MediaCarousel = ({ images = [], videos = [], className, productName, productUrl }: MediaCarouselProps) => {
+export const MediaCarousel = ({ images = [], videos = [], className, productName, productUrl, showFitCheck = true }: MediaCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-  // Combine images and videos into a single media array
+  // Combine images, videos, and fit check into a single media array
   const mediaItems: MediaItem[] = [
     ...images.map(url => ({ type: 'image' as const, url })),
-    ...videos.map(url => ({ type: 'video' as const, url }))
+    ...videos.map(url => ({ type: 'video' as const, url })),
+    ...(showFitCheck ? [{ type: 'fitcheck' as const, url: '' }] : []),
   ];
 
   const totalItems = mediaItems.length;
@@ -79,6 +82,12 @@ export const MediaCarousel = ({ images = [], videos = [], className, productName
                 <Expand className="h-5 w-5" />
               </Button>
             </div>
+          ) : currentMedia.type === 'fitcheck' ? (
+            <FitCheckSlide
+              sareeImageUrl={images[0] || ''}
+              sareeName={productName || 'this saree'}
+              className="w-full h-full"
+            />
           ) : (
             <video
               src={currentMedia.url}
@@ -120,7 +129,7 @@ export const MediaCarousel = ({ images = [], videos = [], className, productName
 
         {/* Media Type Badge */}
         <div className="absolute top-4 left-4 px-2 py-1 bg-background/80 backdrop-blur-sm rounded text-xs font-medium">
-          {currentMedia.type === 'image' ? 'Photo' : 'Video'}
+          {currentMedia.type === 'image' ? 'Photo' : currentMedia.type === 'fitcheck' ? '✨ Try-On' : 'Video'}
         </div>
       </div>
 
@@ -144,6 +153,10 @@ export const MediaCarousel = ({ images = [], videos = [], className, productName
                   alt={`Thumbnail ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
+              ) : item.type === 'fitcheck' ? (
+                <div className="relative w-full h-full bg-gradient-to-br from-primary/10 to-accent/20 flex items-center justify-center">
+                  <span className="text-lg">✨</span>
+                </div>
               ) : (
                 <div className="relative w-full h-full bg-black">
                   <video
