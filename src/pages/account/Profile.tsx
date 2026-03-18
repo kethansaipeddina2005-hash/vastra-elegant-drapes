@@ -46,6 +46,7 @@ const Profile = () => {
           full_name: data.full_name || "",
           phone: data.phone || "",
         });
+        setFitCheckPhoto((data as any).fit_check_photo || null);
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
