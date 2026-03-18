@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { Eye, EyeOff } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import FitCheckUpload from "@/components/FitCheckUpload";
 
 const Register = () => {
   const [fullName, setFullName] = useState("");
@@ -15,14 +16,15 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [registeredUserId, setRegisteredUserId] = useState<string | null>(null);
   const { signUp, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) {
+    if (user && !registeredUserId) {
       navigate("/");
     }
-  }, [user, navigate]);
+  }, [user, navigate, registeredUserId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +32,9 @@ const Register = () => {
     
     const { error } = await signUp(email, password, fullName);
     
-    if (!error) {
+    if (!error && user) {
+      setRegisteredUserId(user.id);
+    } else if (!error) {
       navigate("/");
     }
     
