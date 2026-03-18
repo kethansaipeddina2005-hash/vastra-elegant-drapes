@@ -129,7 +129,7 @@ export const MediaCarousel = ({ images = [], videos = [], className, productName
 
         {/* Media Type Badge */}
         <div className="absolute top-4 left-4 px-2 py-1 bg-background/80 backdrop-blur-sm rounded text-xs font-medium">
-          {currentMedia.type === 'image' ? 'Photo' : 'Video'}
+          {currentMedia.type === 'image' ? 'Photo' : currentMedia.type === 'fitcheck' ? '✨ Try-On' : 'Video'}
         </div>
       </div>
 
