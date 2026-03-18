@@ -164,10 +164,3 @@ const Profile = () => {
 };
 
 export default Profile;
-        </div>
-      </div>
-    </Layout>
-  );
-};
-
-export default Profile;
