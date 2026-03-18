@@ -13,3 +13,6 @@ project_id = "ulvnkrhowedfdyiqeybp"
 [functions.verify-upi-payment]
 
 [functions.send-subscription-email]
+
+[functions.virtual-tryon]
+verify_jwt = false
