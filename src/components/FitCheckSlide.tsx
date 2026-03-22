@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Camera, Sparkles, Loader2, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,7 +19,7 @@ const FitCheckSlide = ({ sareeImageUrl, sareeName, className }: FitCheckSlidePro
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [profileChecked, setProfileChecked] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadInputId = useId();
 
   // Check if user has a fit check photo
   const checkProfilePhoto = async () => {
