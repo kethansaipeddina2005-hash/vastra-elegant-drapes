@@ -214,14 +214,6 @@ const FitCheckSlide = ({ sareeImageUrl, sareeName, className }: FitCheckSlidePro
       onTouchMove={(e) => e.stopPropagation()}
       onTouchEnd={(e) => e.stopPropagation()}
     >
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onChange={handleUpload}
-        className="hidden"
-      />
       <Camera className="h-10 w-10 text-primary/40" />
       <div className="text-center">
         <p className="text-sm font-semibold text-foreground">Virtual Try-On</p>
@@ -229,19 +221,28 @@ const FitCheckSlide = ({ sareeImageUrl, sareeName, className }: FitCheckSlidePro
           Upload your photo to see how this saree looks on you
         </p>
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        className="text-xs"
-        onClick={(e) => {
-          e.stopPropagation();
-          fileInputRef.current?.click();
-        }}
-        disabled={uploading}
+      <label
+        htmlFor={uploadInputId}
+        className={cn(
+          "relative inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-xs font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+          uploading && "pointer-events-none opacity-50"
+        )}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
-        <Upload className="h-3.5 w-3.5 mr-1.5" />
+        <input
+          id={uploadInputId}
+          type="file"
+          accept="image/*"
+          onChange={handleUpload}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          disabled={uploading}
+        />
+        <Upload className="h-3.5 w-3.5" />
         {uploading ? "Uploading..." : "Upload Your Photo"}
-      </Button>
+      </label>
     </div>
   );
 };
