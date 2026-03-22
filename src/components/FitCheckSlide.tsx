@@ -153,7 +153,12 @@ const FitCheckSlide = ({ sareeImageUrl, sareeName, className }: FitCheckSlidePro
   // No user logged in
   if (!user) {
     return (
-      <div className={cn("w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-accent/10 p-6 gap-4", className)}>
+      <div
+        className={cn("w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-accent/10 p-6 gap-4", className)}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+      >
         <Sparkles className="h-10 w-10 text-primary/40" />
         <div className="text-center">
           <p className="text-sm font-semibold text-foreground">Virtual Try-On</p>
