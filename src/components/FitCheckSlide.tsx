@@ -176,7 +176,12 @@ const FitCheckSlide = ({ sareeImageUrl, sareeName, className }: FitCheckSlidePro
   // User has photo — show try-on CTA
   if (fitCheckPhoto) {
     return (
-      <div className={cn("w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-accent/10 p-6 gap-4", className)}>
+      <div
+        className={cn("w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-accent/10 p-6 gap-4", className)}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+      >
         <div className="relative">
           <div className="h-20 w-20 rounded-full overflow-hidden border-2 border-primary/30 shadow-md">
             <img src={fitCheckPhoto} alt="Your Style Avatar" className="h-full w-full object-cover" />
