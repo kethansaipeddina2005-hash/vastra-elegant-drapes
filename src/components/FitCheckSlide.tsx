@@ -198,11 +198,17 @@ const FitCheckSlide = ({ sareeImageUrl, sareeName, className }: FitCheckSlidePro
 
   // No photo — upload prompt
   return (
-    <div className={cn("w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-accent/10 p-6 gap-4", className)}>
+    <div
+      className={cn("w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-accent/10 p-6 gap-4", className)}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+    >
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        capture="environment"
         onChange={handleUpload}
         className="hidden"
       />
@@ -217,7 +223,10 @@ const FitCheckSlide = ({ sareeImageUrl, sareeName, className }: FitCheckSlidePro
         variant="outline"
         size="sm"
         className="text-xs"
-        onClick={() => fileInputRef.current?.click()}
+        onClick={(e) => {
+          e.stopPropagation();
+          fileInputRef.current?.click();
+        }}
         disabled={uploading}
       >
         <Upload className="h-3.5 w-3.5 mr-1.5" />
