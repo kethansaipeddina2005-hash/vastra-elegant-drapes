@@ -12,9 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loading } from '@/components/ui/loading';
-import { Plus, Edit, Trash2, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { MediaCarousel } from '@/components/MediaCarousel';
 
 interface Category {
   id: string;
@@ -60,6 +59,8 @@ const AdminProducts = () => {
     region: '',
   });
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [existingVideos, setExistingVideos] = useState<string[]>([]);
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
@@ -219,6 +220,11 @@ const AdminProducts = () => {
       let imageUrls: string[] = editingProduct?.images || [];
       let videoUrls: string[] = editingProduct?.videos || [];
 
+      if (editingProduct) {
+        imageUrls = existingImages;
+        videoUrls = existingVideos;
+      }
+
       if (imageFiles.length > 0) {
         const newUrls = await uploadImages();
         imageUrls = [...imageUrls, ...newUrls];
@@ -330,6 +336,8 @@ const AdminProducts = () => {
       region: product.region || '',
     });
     setSelectedCategories(product.category_ids || []);
+    setExistingImages(product.images || []);
+    setExistingVideos(product.videos || []);
     setIsDialogOpen(true);
   };
 
@@ -350,6 +358,8 @@ const AdminProducts = () => {
     setVideoFiles([]);
     setImagePreviews([]);
     setVideoPreviews([]);
+    setExistingImages([]);
+    setExistingVideos([]);
     // Clean up preview URLs
     imagePreviews.forEach(url => URL.revokeObjectURL(url));
     videoPreviews.forEach(url => URL.revokeObjectURL(url));
@@ -490,14 +500,45 @@ const AdminProducts = () => {
                     )}
                   </div>
                 </div>
-                {/* Current Media Carousel */}
-                {editingProduct && (editingProduct.images.length > 0 || (editingProduct.videos && editingProduct.videos.length > 0)) && (
-                  <div className="mb-4">
-                    <p className="text-sm font-medium mb-3">Current Media:</p>
-                    <MediaCarousel 
-                      images={editingProduct.images}
-                      videos={editingProduct.videos}
-                    />
+                {/* Current Images with delete */}
+                {editingProduct && existingImages.length > 0 && (
+                  <div className="mb-4 space-y-2">
+                    <p className="text-sm font-medium">Current Images:</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {existingImages.map((url, index) => (
+                        <div key={url} className="relative group rounded-md overflow-hidden border">
+                          <img src={url} alt={`Image ${index + 1}`} className="w-full aspect-square object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setExistingImages(prev => prev.filter((_, i) => i !== index))}
+                            className="absolute top-1 right-1 h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Current Videos with delete */}
+                {editingProduct && existingVideos.length > 0 && (
+                  <div className="mb-4 space-y-2">
+                    <p className="text-sm font-medium">Current Videos:</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {existingVideos.map((url, index) => (
+                        <div key={url} className="relative group rounded-md overflow-hidden border">
+                          <video src={url} className="w-full aspect-video object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setExistingVideos(prev => prev.filter((_, i) => i !== index))}
+                            className="absolute top-1 right-1 h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
