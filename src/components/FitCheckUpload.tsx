@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Camera, Upload, X, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,7 @@ const FitCheckUpload = ({ userId, currentPhotoUrl, onPhotoUploaded, variant = "f
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentPhotoUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,10 +48,8 @@ const FitCheckUpload = ({ userId, currentPhotoUrl, onPhotoUploaded, variant = "f
         .from("fit-check-photos")
         .getPublicUrl(filePath);
 
-      // Add cache buster
       const url = `${publicUrl}?t=${Date.now()}`;
 
-      // Save to profile
       await supabase
         .from("profiles")
         .update({ fit_check_photo: url })
@@ -64,6 +63,7 @@ const FitCheckUpload = ({ userId, currentPhotoUrl, onPhotoUploaded, variant = "f
       toast({ title: "Upload failed", description: error.message, variant: "destructive" });
     } finally {
       setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -84,16 +84,21 @@ const FitCheckUpload = ({ userId, currentPhotoUrl, onPhotoUploaded, variant = "f
     }
   };
 
+  const fileInput = (
+    <input
+      ref={fileInputRef}
+      id={inputId}
+      type="file"
+      accept="image/*"
+      onChange={handleFileSelect}
+      className="sr-only"
+    />
+  );
+
   if (variant === "compact") {
     return (
       <div className={cn("space-y-2", className)}>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileSelect}
-          className="hidden"
-        />
+        {fileInput}
         {preview ? (
           <div className="flex items-center gap-3">
             <div className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-primary/30">
@@ -108,16 +113,16 @@ const FitCheckUpload = ({ userId, currentPhotoUrl, onPhotoUploaded, variant = "f
             </Button>
           </div>
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="w-full text-xs h-8"
+          <label
+            htmlFor={inputId}
+            className={cn(
+              "flex items-center justify-center gap-1.5 w-full text-xs h-8 rounded-md border border-input bg-background px-3 cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors",
+              uploading && "pointer-events-none opacity-50"
+            )}
           >
-            <Camera className="h-3.5 w-3.5 mr-1.5" />
+            <Camera className="h-3.5 w-3.5" />
             {uploading ? "Uploading..." : "Upload Style Avatar"}
-          </Button>
+          </label>
         )}
       </div>
     );
@@ -125,13 +130,7 @@ const FitCheckUpload = ({ userId, currentPhotoUrl, onPhotoUploaded, variant = "f
 
   return (
     <div className={cn("space-y-4", className)}>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileSelect}
-        className="hidden"
-      />
+      {fileInput}
       
       <div className="flex items-start gap-2">
         <Sparkles className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
@@ -149,10 +148,16 @@ const FitCheckUpload = ({ userId, currentPhotoUrl, onPhotoUploaded, variant = "f
             <img src={preview} alt="Style Avatar" className="h-full w-full object-cover" />
           </div>
           <div className="flex justify-center gap-2 mt-3">
-            <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
-              <Upload className="h-3.5 w-3.5 mr-1.5" />
+            <label
+              htmlFor={inputId}
+              className={cn(
+                "inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background px-3 h-8 text-xs font-medium cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors",
+                uploading && "pointer-events-none opacity-50"
+              )}
+            >
+              <Upload className="h-3.5 w-3.5" />
               Change
-            </Button>
+            </label>
             <Button variant="ghost" size="sm" onClick={handleRemove} className="text-destructive">
               <X className="h-3.5 w-3.5 mr-1.5" />
               Remove
@@ -160,16 +165,18 @@ const FitCheckUpload = ({ userId, currentPhotoUrl, onPhotoUploaded, variant = "f
           </div>
         </div>
       ) : (
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className="w-full h-32 border-2 border-dashed border-muted-foreground/30 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 cursor-pointer"
+        <label
+          htmlFor={inputId}
+          className={cn(
+            "w-full h-32 border-2 border-dashed border-muted-foreground/30 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 cursor-pointer",
+            uploading && "pointer-events-none opacity-50"
+          )}
         >
           <Camera className="h-8 w-8 text-muted-foreground/50" />
           <span className="text-xs text-muted-foreground">
             {uploading ? "Uploading..." : "Tap to upload your photo"}
           </span>
-        </button>
+        </label>
       )}
     </div>
   );
