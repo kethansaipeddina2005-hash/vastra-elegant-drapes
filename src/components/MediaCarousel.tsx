@@ -1,4 +1,4 @@
-import { useState, useRef, TouchEvent } from 'react';
+import { useEffect, useState, useRef, TouchEvent } from 'react';
 import { ChevronLeft, ChevronRight, Expand } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -26,14 +26,19 @@ export const MediaCarousel = ({ images = [], videos = [], className, productName
   const isMobile = useIsMobile();
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
+  const enableFitCheck = showFitCheck && !isMobile;
 
   const mediaItems: MediaItem[] = [
     ...images.map(url => ({ type: 'image' as const, url })),
     ...videos.map(url => ({ type: 'video' as const, url })),
-    ...(showFitCheck ? [{ type: 'fitcheck' as const, url: '' }] : []),
+    ...(enableFitCheck ? [{ type: 'fitcheck' as const, url: '' }] : []),
   ];
 
   const totalItems = mediaItems.length;
+
+  useEffect(() => {
+    setCurrentIndex((prev) => Math.min(prev, Math.max(totalItems - 1, 0)));
+  }, [totalItems]);
 
   if (totalItems === 0) {
     return (
