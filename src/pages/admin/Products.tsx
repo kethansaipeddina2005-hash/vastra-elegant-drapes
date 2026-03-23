@@ -560,7 +560,11 @@ const AdminProducts = () => {
                   {imagePreviews.length > 0 && (
                     <div className="mb-3">
                       <p className="text-sm font-medium mb-2">New images to upload:</p>
-                      <MediaCarousel images={imagePreviews} />
+                      <div className="grid grid-cols-4 gap-2">
+                        {imagePreviews.map((url, i) => (
+                          <img key={i} src={url} alt={`Preview ${i + 1}`} className="w-full aspect-square object-cover rounded-md border" />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -583,7 +587,11 @@ const AdminProducts = () => {
                   {videoPreviews.length > 0 && (
                     <div className="mb-3">
                       <p className="text-sm font-medium mb-2">New videos to upload:</p>
-                      <MediaCarousel videos={videoPreviews} />
+                      <div className="grid grid-cols-3 gap-2">
+                        {videoPreviews.map((url, i) => (
+                          <video key={i} src={url} className="w-full aspect-video object-cover rounded-md border" />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
