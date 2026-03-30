@@ -26,16 +26,7 @@ export const MediaCarousel = ({ images = [], videos = [], className, productName
   const isMobile = useIsMobile();
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsSmallScreen(window.innerWidth < 1024);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-
-  const enableFitCheck = showFitCheck && !isMobile && !isSmallScreen;
+  const enableFitCheck = false;
 
   const mediaItems: MediaItem[] = [
     ...images.map(url => ({ type: 'image' as const, url })),
