@@ -131,9 +131,13 @@ const Cart = () => {
     );
   }
 
-  const shipping = cartTotal > 2000 ? 0 : 200;
-  const discountAmount = Math.floor((discountPercent / 100) * cartTotal);
-  const total = cartTotal + shipping - discountAmount;
+  // Calculate display totals based on pricing region
+  const displayTotal = cart.reduce((total, item) => {
+    return total + getDisplayPrice(item.price, item.foreignPrice) * item.quantity;
+  }, 0);
+  const shipping = displayTotal > 2000 ? 0 : 200;
+  const discountAmount = Math.floor((discountPercent / 100) * displayTotal);
+  const total = displayTotal + shipping - discountAmount;
 
   return (
     <Layout>
