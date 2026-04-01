@@ -31,6 +31,8 @@ interface Category {
   display_order: number;
   is_active: boolean;
   image_url: string | null;
+  is_featured: boolean | null;
+  featured_label: string | null;
 }
 
 const AdminCategories = () => {
@@ -49,6 +51,8 @@ const AdminCategories = () => {
     description: '',
     display_order: '0',
     is_active: true,
+    is_featured: false,
+    featured_label: '',
   });
 
   useEffect(() => {
@@ -121,6 +125,8 @@ const AdminCategories = () => {
         description: formData.description || null,
         display_order: parseInt(formData.display_order),
         is_active: formData.is_active,
+        is_featured: formData.is_featured,
+        featured_label: formData.featured_label || null,
         image_url: imageUrl,
       };
 
@@ -173,6 +179,8 @@ const AdminCategories = () => {
       description: category.description || '',
       display_order: category.display_order.toString(),
       is_active: category.is_active,
+      is_featured: category.is_featured || false,
+      featured_label: category.featured_label || '',
     });
     setImagePreview(category.image_url);
     setIsDialogOpen(true);
@@ -186,6 +194,8 @@ const AdminCategories = () => {
       description: '',
       display_order: '0',
       is_active: true,
+      is_featured: false,
+      featured_label: '',
     });
     setImageFile(null);
     setImagePreview(null);
@@ -320,6 +330,25 @@ const AdminCategories = () => {
                   />
                   <Label htmlFor="active">Active</Label>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="featured"
+                    checked={formData.is_featured}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
+                  />
+                  <Label htmlFor="featured">Featured (appears first in Shop by Category)</Label>
+                </div>
+                {formData.is_featured && (
+                  <div>
+                    <Label htmlFor="featured_label">Featured Label (e.g. "Vastra Special")</Label>
+                    <Input
+                      id="featured_label"
+                      value={formData.featured_label}
+                      onChange={(e) => setFormData({ ...formData, featured_label: e.target.value })}
+                      placeholder="Vastra Special"
+                    />
+                  </div>
+                )}
                 <Button type="submit" className="w-full" disabled={uploading}>
                   {uploading ? <Loading size="sm" /> : editingCategory ? 'Update Category' : 'Create Category'}
                 </Button>
@@ -366,7 +395,14 @@ const AdminCategories = () => {
                         {renderIcon(category.icon_name)}
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">{category.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {category.name}
+                      {category.is_featured && (
+                        <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-800 font-semibold">
+                          ★ {category.featured_label || 'Featured'}
+                        </span>
+                      )}
+                    </TableCell>
                     <TableCell className="hidden md:table-cell max-w-xs truncate">{category.description}</TableCell>
                     <TableCell>{category.display_order}</TableCell>
                     <TableCell>
