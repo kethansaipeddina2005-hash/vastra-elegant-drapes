@@ -33,7 +33,12 @@ export const CategorySection = () => {
         .order('display_order', { ascending: true });
 
       if (error) throw error;
-      setCategories(data || []);
+      const sorted = (data || []).sort((a: any, b: any) => {
+        if (a.is_featured && !b.is_featured) return -1;
+        if (!a.is_featured && b.is_featured) return 1;
+        return 0;
+      });
+      setCategories(sorted);
     } catch (error) {
       console.error('Error fetching categories:', error);
     } finally {
