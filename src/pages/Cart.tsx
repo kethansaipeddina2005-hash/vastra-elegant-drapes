@@ -159,7 +159,7 @@ const Cart = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start gap-2">
                         <h3 className="font-semibold text-sm sm:text-lg leading-tight truncate">{item.name}</h3>
-                        <p className="font-semibold text-sm sm:text-lg whitespace-nowrap flex-shrink-0">₹{(item.price * item.quantity).toLocaleString()}</p>
+                        <p className="font-semibold text-sm sm:text-lg whitespace-nowrap flex-shrink-0">{formatPrice(item.price * item.quantity, item.foreignPrice ? item.foreignPrice * item.quantity : null)}</p>
                       </div>
                       <p className="text-xs sm:text-sm text-muted-foreground mb-3">
                         {item.fabricType} • {item.color}
