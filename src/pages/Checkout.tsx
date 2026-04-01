@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePricing } from "@/contexts/PricingContext";
 import { toast } from "@/hooks/use-toast";
 import { Check, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +31,7 @@ interface SavedAddress {
   city: string;
   state: string;
   postal_code: string;
+  country?: string;
   is_default: boolean;
 }
 
@@ -65,11 +67,28 @@ const Checkout = () => {
   const [couponMessage, setCouponMessage] = useState(savedPromoCode ? `${savedDiscountPercent}% discount applied ✅` : "");
   const [couponLoading, setCouponLoading] = useState(false);
 
-  const shipping = cartTotal > 2000 ? 0 : 200;
-  const discountAmount = Math.floor((discountPercent / 100) * cartTotal);
-  const total = cartTotal + shipping - discountAmount;
+  const { pricingRegion, setPricingRegion, currencySymbol, getDisplayPrice } = usePricing();
+
+  // Calculate display totals based on pricing region
+  const displayTotal = cart.reduce((total, item) => {
+    return total + getDisplayPrice(item.price, (item as any).foreignPrice) * item.quantity;
+  }, 0);
+  const shipping = displayTotal > 2000 ? 0 : 200;
+  const discountAmount = Math.floor((discountPercent / 100) * displayTotal);
+  const total = displayTotal + shipping - discountAmount;
 
   const { user } = useAuth();
+
+  // Switch pricing when address country changes
+  const handleAddressSelect = (addressId: string) => {
+    setSelectedAddressId(addressId);
+    const addr = savedAddresses.find(a => a.id === addressId);
+    if (addr?.country && addr.country.toLowerCase() !== 'india') {
+      setPricingRegion('foreign');
+    } else {
+      setPricingRegion('india');
+    }
+  };
 
   // Fetch saved addresses
   useEffect(() => {
@@ -89,10 +108,10 @@ const Checkout = () => {
       if (error) throw error;
       setSavedAddresses(data || []);
       
-      // Auto-select default address
+      // Auto-select default address and set pricing
       const defaultAddr = data?.find(addr => addr.is_default);
       if (defaultAddr) {
-        setSelectedAddressId(defaultAddr.id);
+        handleAddressSelect(defaultAddr.id);
       }
     } catch (error) {
       console.error("Error fetching addresses:", error);
@@ -433,7 +452,7 @@ const Checkout = () => {
                           </div>
                           
                           {!useNewAddress && (
-                            <RadioGroup value={selectedAddressId || ""} onValueChange={setSelectedAddressId}>
+                            <RadioGroup value={selectedAddressId || ""} onValueChange={handleAddressSelect}>
                               {savedAddresses.map((address) => (
                                 <div key={address.id} className="flex items-start space-x-2 border rounded-lg p-4 hover:bg-accent/5 transition-colors">
                                   <RadioGroupItem value={address.id} id={address.id} className="mt-1" />

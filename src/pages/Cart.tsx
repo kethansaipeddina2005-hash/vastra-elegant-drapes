@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { usePricing } from "@/contexts/PricingContext";
 import { Minus, Plus, Trash2, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
@@ -35,6 +36,7 @@ const Cart = () => {
     setDiscountPercent: saveDiscountPercent
   } = useCart();
   const { addToWishlist, isInWishlist } = useWishlist();
+  const { formatPrice, getDisplayPrice, currencySymbol } = usePricing();
 
   const [promoCode, setPromoCode] = useState(savedPromoCode);
   const [discountPercent, setDiscountPercent] = useState(savedDiscountPercent);
@@ -129,9 +131,13 @@ const Cart = () => {
     );
   }
 
-  const shipping = cartTotal > 2000 ? 0 : 200;
-  const discountAmount = Math.floor((discountPercent / 100) * cartTotal);
-  const total = cartTotal + shipping - discountAmount;
+  // Calculate display totals based on pricing region
+  const displayTotal = cart.reduce((total, item) => {
+    return total + getDisplayPrice(item.price, item.foreignPrice) * item.quantity;
+  }, 0);
+  const shipping = displayTotal > 2000 ? 0 : 200;
+  const discountAmount = Math.floor((discountPercent / 100) * displayTotal);
+  const total = displayTotal + shipping - discountAmount;
 
   return (
     <Layout>
@@ -153,7 +159,7 @@ const Cart = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start gap-2">
                         <h3 className="font-semibold text-sm sm:text-lg leading-tight truncate">{item.name}</h3>
-                        <p className="font-semibold text-sm sm:text-lg whitespace-nowrap flex-shrink-0">₹{(item.price * item.quantity).toLocaleString()}</p>
+                        <p className="font-semibold text-sm sm:text-lg whitespace-nowrap flex-shrink-0">{formatPrice(item.price * item.quantity, item.foreignPrice ? item.foreignPrice * item.quantity : null)}</p>
                       </div>
                       <p className="text-xs sm:text-sm text-muted-foreground mb-3">
                         {item.fabricType} • {item.color}
@@ -187,22 +193,22 @@ const Cart = () => {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal ({cartCount} items)</span>
-                    <span className="font-medium">₹{cartTotal.toLocaleString()}</span>
+                    <span className="font-medium">{currencySymbol}{displayTotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Shipping</span>
-                    <span className="font-medium">{shipping === 0 ? "FREE" : `₹${shipping}`}</span>
+                    <span className="font-medium">{shipping === 0 ? "FREE" : `${currencySymbol}${shipping}`}</span>
                   </div>
                   {discountPercent > 0 && (
                     <div className="flex justify-between text-green-600 font-medium">
                       <span>Discount ({discountPercent}%)</span>
-                      <span>-₹{discountAmount.toLocaleString()}</span>
+                      <span>-{currencySymbol}{discountAmount.toLocaleString()}</span>
                     </div>
                   )}
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span>₹{total.toLocaleString()}</span>
+                    <span>{currencySymbol}{total.toLocaleString()}</span>
                   </div>
                 </div>
 
@@ -226,9 +232,9 @@ const Cart = () => {
                   <Button variant="outline" className="w-full">Continue Shopping</Button>
                 </Link>
 
-                {cartTotal < 2000 && (
+                {displayTotal < 2000 && (
                   <p className="text-sm text-center text-muted-foreground">
-                    Add ₹{(2000 - cartTotal).toLocaleString()} more for free shipping!
+                    Add {currencySymbol}{(2000 - displayTotal).toLocaleString()} more for free shipping!
                   </p>
                 )}
               </CardContent>

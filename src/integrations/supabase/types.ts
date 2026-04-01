@@ -411,6 +411,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           fabric_type: string | null
+          foreign_price: number | null
           id: number
           images: string[] | null
           is_new: boolean | null
@@ -430,6 +431,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           fabric_type?: string | null
+          foreign_price?: number | null
           id?: number
           images?: string[] | null
           is_new?: boolean | null
@@ -449,6 +451,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           fabric_type?: string | null
+          foreign_price?: number | null
           id?: number
           images?: string[] | null
           is_new?: boolean | null
@@ -474,6 +477,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          country_type: string | null
           created_at: string | null
           fit_check_photo: string | null
           full_name: string | null
@@ -482,6 +486,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          country_type?: string | null
           created_at?: string | null
           fit_check_photo?: string | null
           full_name?: string | null
@@ -490,6 +495,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          country_type?: string | null
           created_at?: string | null
           fit_check_photo?: string | null
           full_name?: string | null

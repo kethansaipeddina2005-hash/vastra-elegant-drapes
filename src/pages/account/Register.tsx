@@ -5,14 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Globe, MapPin } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { supabase } from "@/integrations/supabase/client";
 import FitCheckUpload from "@/components/FitCheckUpload";
 
 const Register = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [countryType, setCountryType] = useState<"india" | "foreign">("india");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -33,6 +36,8 @@ const Register = () => {
     const { error } = await signUp(email, password, fullName);
     
     if (!error && user) {
+      // Update profile with country type
+      await supabase.from('profiles').update({ country_type: countryType }).eq('id', user.id);
       setRegisteredUserId(user.id);
     } else if (!error) {
       navigate("/");
@@ -109,6 +114,30 @@ const Register = () => {
                 onChange={(e) => setFullName(e.target.value)}
                 required
               />
+            </div>
+
+            <div>
+              <Label className="mb-3 block">Where are you from?</Label>
+              <RadioGroup
+                value={countryType}
+                onValueChange={(val) => setCountryType(val as "india" | "foreign")}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2 border rounded-lg px-4 py-3 flex-1 cursor-pointer hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="india" id="india" />
+                  <Label htmlFor="india" className="flex items-center gap-2 cursor-pointer">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    India
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 border rounded-lg px-4 py-3 flex-1 cursor-pointer hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="foreign" id="foreign" />
+                  <Label htmlFor="foreign" className="flex items-center gap-2 cursor-pointer">
+                    <Globe className="h-4 w-4 text-primary" />
+                    International
+                  </Label>
+                </div>
+              </RadioGroup>
             </div>
             
             <div>

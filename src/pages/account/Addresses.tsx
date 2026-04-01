@@ -19,6 +19,7 @@ interface Address {
   city: string;
   state: string;
   postal_code: string;
+  country?: string;
   is_default: boolean;
 }
 
@@ -35,6 +36,7 @@ const Addresses = () => {
     city: "",
     state: "",
     postal_code: "",
+    country: "India",
     is_default: false,
   });
 
@@ -90,6 +92,7 @@ const Addresses = () => {
         city: "",
         state: "",
         postal_code: "",
+        country: "India",
         is_default: false,
       });
       fetchAddresses();
@@ -232,6 +235,25 @@ const Addresses = () => {
                       required
                     />
                   </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="country">Country</Label>
+                  <select
+                    id="country"
+                    value={newAddress.country}
+                    onChange={(e) => setNewAddress({ ...newAddress, country: e.target.value })}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    <option value="India">India</option>
+                    <option value="United States">United States</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="Canada">Canada</option>
+                    <option value="Australia">Australia</option>
+                    <option value="UAE">UAE</option>
+                    <option value="Singapore">Singapore</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
 
                 <div className="flex gap-4">

@@ -11,6 +11,7 @@ import { Heart, ShoppingCart, Minus, Plus, Share2, Facebook, Twitter, Link2, Mes
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ProductDetailSkeleton from "@/components/skeletons/ProductDetailSkeleton";
 import { useCart } from "@/contexts/CartContext";
+import { usePricing } from "@/contexts/PricingContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useRecentlyViewed } from "@/contexts/RecentlyViewedContext";
 import { toast } from "@/hooks/use-toast";
@@ -34,6 +35,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const { formatPrice } = usePricing();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToRecentlyViewed } = useRecentlyViewed();
   
@@ -67,6 +69,7 @@ const ProductDetail = () => {
         id: data.id,
         name: data.name,
         price: Number(data.price),
+        foreignPrice: data.foreign_price ? Number(data.foreign_price) : null,
         description: data.description || '',
         image: data.images?.[0] || '',
         images: data.images || [],
@@ -115,6 +118,7 @@ const ProductDetail = () => {
             id: p.id,
             name: p.name,
             price: Number(p.price),
+            foreignPrice: p.foreign_price ? Number(p.foreign_price) : null,
             description: p.description || '',
             image: p.images?.[0] || '',
             images: p.images || [],
@@ -276,7 +280,7 @@ const ProductDetail = () => {
               </h1>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold text-primary">
-                  ₹{product.price.toLocaleString('en-IN')}
+                  {formatPrice(product.price, product.foreignPrice)}
                 </p>
                 {product.rating && (
                   <div className="flex items-center gap-1">

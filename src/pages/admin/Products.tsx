@@ -25,6 +25,7 @@ interface Product {
   name: string;
   description: string;
   price: number;
+  foreign_price: number | null;
   stock_quantity: number;
   fabric_type: string;
   color: string;
@@ -52,6 +53,7 @@ const AdminProducts = () => {
     name: '',
     description: '',
     price: '',
+    foreign_price: '',
     stock_quantity: '',
     fabric_type: '',
     color: '',
@@ -243,6 +245,7 @@ const AdminProducts = () => {
         occasion: formData.occasion,
         region: formData.region,
         price: parseFloat(formData.price),
+        foreign_price: formData.foreign_price ? parseFloat(formData.foreign_price) : null,
         stock_quantity: parseInt(formData.stock_quantity),
         images: imageUrls,
         videos: videoUrls,
@@ -329,6 +332,7 @@ const AdminProducts = () => {
       name: product.name,
       description: product.description || '',
       price: product.price.toString(),
+      foreign_price: product.foreign_price?.toString() || '',
       stock_quantity: product.stock_quantity.toString(),
       fabric_type: product.fabric_type || '',
       color: product.color || '',
@@ -347,6 +351,7 @@ const AdminProducts = () => {
       name: '',
       description: '',
       price: '',
+      foreign_price: '',
       stock_quantity: '',
       fabric_type: '',
       color: '',
@@ -415,9 +420,9 @@ const AdminProducts = () => {
                     rows={4}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="price">Price (₹)</Label>
+                    <Label htmlFor="price">Price (₹ INR)</Label>
                     <Input
                       id="price"
                       type="number"
@@ -428,7 +433,18 @@ const AdminProducts = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="stock">Stock Quantity</Label>
+                    <Label htmlFor="foreign_price">Price ($ USD)</Label>
+                    <Input
+                      id="foreign_price"
+                      type="number"
+                      step="0.01"
+                      placeholder="Optional"
+                      value={formData.foreign_price}
+                      onChange={(e) => setFormData({ ...formData, foreign_price: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="stock">Stock Qty</Label>
                     <Input
                       id="stock"
                       type="number"
@@ -632,7 +648,7 @@ const AdminProducts = () => {
                       )}
                     </TableCell>
                     <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>₹{product.price}</TableCell>
+                    <TableCell>₹{product.price}{product.foreign_price ? ` / $${product.foreign_price}` : ''}</TableCell>
                     <TableCell>{product.stock_quantity}</TableCell>
                     <TableCell>{product.fabric_type}</TableCell>
                     <TableCell>

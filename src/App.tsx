@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { RecentlyViewedProvider } from "@/contexts/RecentlyViewedContext";
+import { PricingProvider } from "@/contexts/PricingContext";
 import LoadingScreen from "@/components/LoadingScreen";
 
 // Eagerly load the home page for fastest initial render
@@ -86,6 +87,7 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <AuthProvider>
+            <PricingProvider>
             <CartProvider>
               <WishlistProvider>
                 <RecentlyViewedProvider>
@@ -135,6 +137,7 @@ const App = () => {
                 </RecentlyViewedProvider>
               </WishlistProvider>
             </CartProvider>
+            </PricingProvider>
           </AuthProvider>
         </TooltipProvider>
       </QueryClientProvider>

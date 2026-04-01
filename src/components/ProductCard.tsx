@@ -5,6 +5,7 @@ import { Heart, ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useCart } from "@/contexts/CartContext";
+import { usePricing } from "@/contexts/PricingContext";
 import { Product } from "@/types/product";
 
 interface ProductCardProps extends Product {
@@ -15,6 +16,7 @@ interface ProductCardProps extends Product {
 const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: ProductCardProps) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { formatPrice, getDisplayPrice, currencySymbol } = usePricing();
   const inWishlist = isInWishlist(product.id);
 
   const toggleWishlist = (e: React.MouseEvent) => {
@@ -26,7 +28,7 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
     }
   };
 
-  const formattedPrice = `₹${product.price.toLocaleString('en-IN')}`;
+  const formattedPrice = formatPrice(product.price, product.foreignPrice);
 
   return (
     <Card className="group relative overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
@@ -86,7 +88,7 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
               {product.isOnSale && (
                 <>
                   <p className="text-xs md:text-sm text-muted-foreground line-through">
-                    ₹{Math.round(product.price * 1.25).toLocaleString('en-IN')}
+                    {currencySymbol}{Math.round(getDisplayPrice(product.price, product.foreignPrice) * 1.25).toLocaleString('en-IN')}
                   </p>
                   <Badge className="bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0">
                     20% OFF
