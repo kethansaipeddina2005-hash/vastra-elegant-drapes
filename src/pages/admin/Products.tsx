@@ -420,9 +420,9 @@ const AdminProducts = () => {
                     rows={4}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="price">Price (₹)</Label>
+                    <Label htmlFor="price">Price (₹ INR)</Label>
                     <Input
                       id="price"
                       type="number"
@@ -433,7 +433,18 @@ const AdminProducts = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="stock">Stock Quantity</Label>
+                    <Label htmlFor="foreign_price">Price ($ USD)</Label>
+                    <Input
+                      id="foreign_price"
+                      type="number"
+                      step="0.01"
+                      placeholder="Optional"
+                      value={formData.foreign_price}
+                      onChange={(e) => setFormData({ ...formData, foreign_price: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="stock">Stock Qty</Label>
                     <Input
                       id="stock"
                       type="number"
