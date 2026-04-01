@@ -36,6 +36,7 @@ const Cart = () => {
     setDiscountPercent: saveDiscountPercent
   } = useCart();
   const { addToWishlist, isInWishlist } = useWishlist();
+  const { formatPrice, getDisplayPrice, currencySymbol } = usePricing();
 
   const [promoCode, setPromoCode] = useState(savedPromoCode);
   const [discountPercent, setDiscountPercent] = useState(savedDiscountPercent);
