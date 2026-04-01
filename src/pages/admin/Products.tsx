@@ -25,6 +25,7 @@ interface Product {
   name: string;
   description: string;
   price: number;
+  foreign_price: number | null;
   stock_quantity: number;
   fabric_type: string;
   color: string;
