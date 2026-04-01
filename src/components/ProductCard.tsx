@@ -88,7 +88,7 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
               {product.isOnSale && (
                 <>
                   <p className="text-xs md:text-sm text-muted-foreground line-through">
-                    ₹{Math.round(product.price * 1.25).toLocaleString('en-IN')}
+                    {currencySymbol}{Math.round(getDisplayPrice(product.price, product.foreignPrice) * 1.25).toLocaleString('en-IN')}
                   </p>
                   <Badge className="bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0">
                     20% OFF

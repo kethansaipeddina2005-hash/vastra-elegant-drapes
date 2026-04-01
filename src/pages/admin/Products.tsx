@@ -648,7 +648,7 @@ const AdminProducts = () => {
                       )}
                     </TableCell>
                     <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>₹{product.price}</TableCell>
+                    <TableCell>₹{product.price}{product.foreign_price ? ` / $${product.foreign_price}` : ''}</TableCell>
                     <TableCell>{product.stock_quantity}</TableCell>
                     <TableCell>{product.fabric_type}</TableCell>
                     <TableCell>
