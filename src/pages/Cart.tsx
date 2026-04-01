@@ -193,22 +193,22 @@ const Cart = () => {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal ({cartCount} items)</span>
-                    <span className="font-medium">₹{cartTotal.toLocaleString()}</span>
+                    <span className="font-medium">{currencySymbol}{displayTotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Shipping</span>
-                    <span className="font-medium">{shipping === 0 ? "FREE" : `₹${shipping}`}</span>
+                    <span className="font-medium">{shipping === 0 ? "FREE" : `${currencySymbol}${shipping}`}</span>
                   </div>
                   {discountPercent > 0 && (
                     <div className="flex justify-between text-green-600 font-medium">
                       <span>Discount ({discountPercent}%)</span>
-                      <span>-₹{discountAmount.toLocaleString()}</span>
+                      <span>-{currencySymbol}{discountAmount.toLocaleString()}</span>
                     </div>
                   )}
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span>₹{total.toLocaleString()}</span>
+                    <span>{currencySymbol}{total.toLocaleString()}</span>
                   </div>
                 </div>
 
