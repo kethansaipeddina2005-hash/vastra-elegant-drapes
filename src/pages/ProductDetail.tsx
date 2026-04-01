@@ -11,6 +11,7 @@ import { Heart, ShoppingCart, Minus, Plus, Share2, Facebook, Twitter, Link2, Mes
 import WhatsAppButton from "@/components/WhatsAppButton";
 import ProductDetailSkeleton from "@/components/skeletons/ProductDetailSkeleton";
 import { useCart } from "@/contexts/CartContext";
+import { usePricing } from "@/contexts/PricingContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useRecentlyViewed } from "@/contexts/RecentlyViewedContext";
 import { toast } from "@/hooks/use-toast";
