@@ -194,6 +194,8 @@ const AdminCategories = () => {
       description: '',
       display_order: '0',
       is_active: true,
+      is_featured: false,
+      featured_label: '',
     });
     setImageFile(null);
     setImagePreview(null);
