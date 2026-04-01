@@ -28,7 +28,7 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
     }
   };
 
-  const formattedPrice = `₹${product.price.toLocaleString('en-IN')}`;
+  const formattedPrice = formatPrice(product.price, product.foreignPrice);
 
   return (
     <Card className="group relative overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
