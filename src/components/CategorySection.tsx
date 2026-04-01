@@ -107,6 +107,11 @@ export const CategorySection = () => {
               {/* Content */}
               <div className="absolute inset-x-0 bottom-0 p-4 md:p-6 flex items-end justify-between">
                 <div className="space-y-1">
+                  {category.is_featured && category.featured_label && (
+                    <span className="inline-block text-[10px] md:text-xs tracking-widest uppercase text-accent font-medium mb-1">
+                      {category.featured_label}
+                    </span>
+                  )}
                   <h3 className={cn(
                     "font-playfair font-semibold text-white drop-shadow-lg",
                     index === 0 ? "text-xl md:text-3xl" : "text-sm md:text-lg"
