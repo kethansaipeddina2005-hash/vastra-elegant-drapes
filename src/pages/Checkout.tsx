@@ -452,7 +452,7 @@ const Checkout = () => {
                           </div>
                           
                           {!useNewAddress && (
-                            <RadioGroup value={selectedAddressId || ""} onValueChange={setSelectedAddressId}>
+                            <RadioGroup value={selectedAddressId || ""} onValueChange={handleAddressSelect}>
                               {savedAddresses.map((address) => (
                                 <div key={address.id} className="flex items-start space-x-2 border rounded-lg p-4 hover:bg-accent/5 transition-colors">
                                   <RadioGroupItem value={address.id} id={address.id} className="mt-1" />
