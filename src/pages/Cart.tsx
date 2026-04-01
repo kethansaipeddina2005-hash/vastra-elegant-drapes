@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { usePricing } from "@/contexts/PricingContext";
 import { Minus, Plus, Trash2, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
