@@ -140,38 +140,38 @@ const Cart = () => {
         description="Review your shopping cart and proceed to checkout."
         noIndex={true}
       />
-      <div className="container mx-auto px-6 py-8">
-        <h1 className="text-4xl font-playfair font-bold text-foreground mb-8">Shopping Cart</h1>
+      <div className="container mx-auto px-3 sm:px-6 py-8">
+        <h1 className="text-2xl sm:text-4xl font-playfair font-bold text-foreground mb-8">Shopping Cart</h1>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
             {cart.map(item => (
               <Card key={item.id}>
-                <CardContent className="p-6">
-                  <div className="flex gap-6">
-                    <img src={item.image} alt={item.name} className="w-24 h-24 object-cover rounded" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-2">{item.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="flex gap-3 sm:gap-6">
+                    <img src={item.image} alt={item.name} className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start gap-2">
+                        <h3 className="font-semibold text-sm sm:text-lg leading-tight truncate">{item.name}</h3>
+                        <p className="font-semibold text-sm sm:text-lg whitespace-nowrap flex-shrink-0">₹{(item.price * item.quantity).toLocaleString()}</p>
+                      </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-3">
                         {item.fabricType} • {item.color}
                       </p>
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
                         <div className="flex items-center border rounded">
-                          <Button variant="ghost" size="icon" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                            <Minus className="h-4 w-4" />
+                          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-9 sm:w-9" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                            <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
-                          <span className="px-4 text-sm font-medium">{item.quantity}</span>
-                          <Button variant="ghost" size="icon" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                            <Plus className="h-4 w-4" />
+                          <span className="px-2 sm:px-4 text-xs sm:text-sm font-medium">{item.quantity}</span>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-9 sm:w-9" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                            <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(item)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                        <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-9 sm:w-9" onClick={() => handleDeleteClick(item)}>
+                          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive" />
                         </Button>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-lg">₹{(item.price * item.quantity).toLocaleString()}</p>
                     </div>
                   </div>
                 </CardContent>
