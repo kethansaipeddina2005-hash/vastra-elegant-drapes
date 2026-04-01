@@ -35,6 +35,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const { formatPrice } = usePricing();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToRecentlyViewed } = useRecentlyViewed();
   
