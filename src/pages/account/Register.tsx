@@ -115,6 +115,30 @@ const Register = () => {
                 required
               />
             </div>
+
+            <div>
+              <Label className="mb-3 block">Where are you from?</Label>
+              <RadioGroup
+                value={countryType}
+                onValueChange={(val) => setCountryType(val as "india" | "foreign")}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2 border rounded-lg px-4 py-3 flex-1 cursor-pointer hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="india" id="india" />
+                  <Label htmlFor="india" className="flex items-center gap-2 cursor-pointer">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    India
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 border rounded-lg px-4 py-3 flex-1 cursor-pointer hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="foreign" id="foreign" />
+                  <Label htmlFor="foreign" className="flex items-center gap-2 cursor-pointer">
+                    <Globe className="h-4 w-4 text-primary" />
+                    International
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
             
             <div>
               <Label htmlFor="email">Email</Label>
