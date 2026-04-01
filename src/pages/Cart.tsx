@@ -232,9 +232,9 @@ const Cart = () => {
                   <Button variant="outline" className="w-full">Continue Shopping</Button>
                 </Link>
 
-                {cartTotal < 2000 && (
+                {displayTotal < 2000 && (
                   <p className="text-sm text-center text-muted-foreground">
-                    Add ₹{(2000 - cartTotal).toLocaleString()} more for free shipping!
+                    Add {currencySymbol}{(2000 - displayTotal).toLocaleString()} more for free shipping!
                   </p>
                 )}
               </CardContent>
