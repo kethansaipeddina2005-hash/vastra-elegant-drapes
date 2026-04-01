@@ -12,6 +12,8 @@ interface Category {
   icon_name: string;
   description: string | null;
   image_url: string | null;
+  is_featured: boolean | null;
+  featured_label: string | null;
 }
 
 export const CategorySection = () => {
