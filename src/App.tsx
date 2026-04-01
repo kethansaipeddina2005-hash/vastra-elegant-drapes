@@ -137,6 +137,7 @@ const App = () => {
                 </RecentlyViewedProvider>
               </WishlistProvider>
             </CartProvider>
+            </PricingProvider>
           </AuthProvider>
         </TooltipProvider>
       </QueryClientProvider>

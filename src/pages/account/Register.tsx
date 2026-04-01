@@ -36,6 +36,8 @@ const Register = () => {
     const { error } = await signUp(email, password, fullName);
     
     if (!error && user) {
+      // Update profile with country type
+      await supabase.from('profiles').update({ country_type: countryType }).eq('id', user.id);
       setRegisteredUserId(user.id);
     } else if (!error) {
       navigate("/");
