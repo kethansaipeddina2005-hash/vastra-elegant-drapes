@@ -5,6 +5,7 @@ import { Heart, ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useCart } from "@/contexts/CartContext";
+import { usePricing } from "@/contexts/PricingContext";
 import { Product } from "@/types/product";
 
 interface ProductCardProps extends Product {
