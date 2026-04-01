@@ -179,6 +179,8 @@ const AdminCategories = () => {
       description: category.description || '',
       display_order: category.display_order.toString(),
       is_active: category.is_active,
+      is_featured: category.is_featured || false,
+      featured_label: category.featured_label || '',
     });
     setImagePreview(category.image_url);
     setIsDialogOpen(true);
