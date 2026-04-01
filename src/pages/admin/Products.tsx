@@ -245,6 +245,7 @@ const AdminProducts = () => {
         occasion: formData.occasion,
         region: formData.region,
         price: parseFloat(formData.price),
+        foreign_price: formData.foreign_price ? parseFloat(formData.foreign_price) : null,
         stock_quantity: parseInt(formData.stock_quantity),
         images: imageUrls,
         videos: videoUrls,
