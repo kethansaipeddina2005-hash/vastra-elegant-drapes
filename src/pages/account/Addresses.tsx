@@ -36,6 +36,7 @@ const Addresses = () => {
     city: "",
     state: "",
     postal_code: "",
+    country: "India",
     is_default: false,
   });
 
