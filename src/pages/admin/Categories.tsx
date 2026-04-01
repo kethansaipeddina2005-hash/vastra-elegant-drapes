@@ -395,7 +395,14 @@ const AdminCategories = () => {
                         {renderIcon(category.icon_name)}
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium">{category.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {category.name}
+                      {category.is_featured && (
+                        <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-800 font-semibold">
+                          ★ {category.featured_label || 'Featured'}
+                        </span>
+                      )}
+                    </TableCell>
                     <TableCell className="hidden md:table-cell max-w-xs truncate">{category.description}</TableCell>
                     <TableCell>{category.display_order}</TableCell>
                     <TableCell>
