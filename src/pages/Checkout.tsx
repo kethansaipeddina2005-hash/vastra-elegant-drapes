@@ -67,11 +67,28 @@ const Checkout = () => {
   const [couponMessage, setCouponMessage] = useState(savedPromoCode ? `${savedDiscountPercent}% discount applied ✅` : "");
   const [couponLoading, setCouponLoading] = useState(false);
 
-  const shipping = cartTotal > 2000 ? 0 : 200;
-  const discountAmount = Math.floor((discountPercent / 100) * cartTotal);
-  const total = cartTotal + shipping - discountAmount;
+  const { pricingRegion, setPricingRegion, currencySymbol, getDisplayPrice } = usePricing();
+
+  // Calculate display totals based on pricing region
+  const displayTotal = cart.reduce((total, item) => {
+    return total + getDisplayPrice(item.price, (item as any).foreignPrice) * item.quantity;
+  }, 0);
+  const shipping = displayTotal > 2000 ? 0 : 200;
+  const discountAmount = Math.floor((discountPercent / 100) * displayTotal);
+  const total = displayTotal + shipping - discountAmount;
 
   const { user } = useAuth();
+
+  // Switch pricing when address country changes
+  const handleAddressSelect = (addressId: string) => {
+    setSelectedAddressId(addressId);
+    const addr = savedAddresses.find(a => a.id === addressId);
+    if (addr?.country && addr.country.toLowerCase() !== 'india') {
+      setPricingRegion('foreign');
+    } else {
+      setPricingRegion('india');
+    }
+  };
 
   // Fetch saved addresses
   useEffect(() => {
