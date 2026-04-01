@@ -108,10 +108,10 @@ const Checkout = () => {
       if (error) throw error;
       setSavedAddresses(data || []);
       
-      // Auto-select default address
+      // Auto-select default address and set pricing
       const defaultAddr = data?.find(addr => addr.is_default);
       if (defaultAddr) {
-        setSelectedAddressId(defaultAddr.id);
+        handleAddressSelect(defaultAddr.id);
       }
     } catch (error) {
       console.error("Error fetching addresses:", error);
