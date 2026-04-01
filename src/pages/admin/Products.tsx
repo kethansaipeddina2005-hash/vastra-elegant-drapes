@@ -351,6 +351,7 @@ const AdminProducts = () => {
       name: '',
       description: '',
       price: '',
+      foreign_price: '',
       stock_quantity: '',
       fabric_type: '',
       color: '',
