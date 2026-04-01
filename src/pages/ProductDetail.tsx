@@ -279,7 +279,7 @@ const ProductDetail = () => {
               </h1>
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold text-primary">
-                  ₹{product.price.toLocaleString('en-IN')}
+                  {formatPrice(product.price, product.foreignPrice)}
                 </p>
                 {product.rating && (
                   <div className="flex items-center gap-1">
