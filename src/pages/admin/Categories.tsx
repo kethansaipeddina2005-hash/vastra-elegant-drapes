@@ -125,6 +125,8 @@ const AdminCategories = () => {
         description: formData.description || null,
         display_order: parseInt(formData.display_order),
         is_active: formData.is_active,
+        is_featured: formData.is_featured,
+        featured_label: formData.featured_label || null,
         image_url: imageUrl,
       };
 
