@@ -31,6 +31,8 @@ interface Category {
   display_order: number;
   is_active: boolean;
   image_url: string | null;
+  is_featured: boolean | null;
+  featured_label: string | null;
 }
 
 const AdminCategories = () => {
