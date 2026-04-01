@@ -16,6 +16,7 @@ interface ProductCardProps extends Product {
 const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: ProductCardProps) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { formatPrice, getDisplayPrice, currencySymbol } = usePricing();
   const inWishlist = isInWishlist(product.id);
 
   const toggleWishlist = (e: React.MouseEvent) => {
