@@ -93,6 +93,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return total + item.price * item.quantity;
   }, 0);
 
+  const cartTotalForeign = cart.reduce((total, item) => {
+    const fp = item.foreignPrice;
+    return total + (fp != null && fp > 0 ? fp : item.price) * item.quantity;
+  }, 0);
+
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0);
 
   return (
