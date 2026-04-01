@@ -332,6 +332,7 @@ const AdminProducts = () => {
       name: product.name,
       description: product.description || '',
       price: product.price.toString(),
+      foreign_price: product.foreign_price?.toString() || '',
       stock_quantity: product.stock_quantity.toString(),
       fabric_type: product.fabric_type || '',
       color: product.color || '',
