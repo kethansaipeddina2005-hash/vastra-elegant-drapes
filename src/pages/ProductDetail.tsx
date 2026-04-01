@@ -118,6 +118,7 @@ const ProductDetail = () => {
             id: p.id,
             name: p.name,
             price: Number(p.price),
+            foreignPrice: p.foreign_price ? Number(p.foreign_price) : null,
             description: p.description || '',
             image: p.images?.[0] || '',
             images: p.images || [],
