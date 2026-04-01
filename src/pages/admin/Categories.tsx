@@ -330,6 +330,25 @@ const AdminCategories = () => {
                   />
                   <Label htmlFor="active">Active</Label>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="featured"
+                    checked={formData.is_featured}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
+                  />
+                  <Label htmlFor="featured">Featured (appears first in Shop by Category)</Label>
+                </div>
+                {formData.is_featured && (
+                  <div>
+                    <Label htmlFor="featured_label">Featured Label (e.g. "Vastra Special")</Label>
+                    <Input
+                      id="featured_label"
+                      value={formData.featured_label}
+                      onChange={(e) => setFormData({ ...formData, featured_label: e.target.value })}
+                      placeholder="Vastra Special"
+                    />
+                  </div>
+                )}
                 <Button type="submit" className="w-full" disabled={uploading}>
                   {uploading ? <Loading size="sm" /> : editingCategory ? 'Update Category' : 'Create Category'}
                 </Button>
