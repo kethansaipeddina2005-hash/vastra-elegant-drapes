@@ -33,7 +33,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(0);
   const { addToCart } = useCart();
   const { formatPrice } = usePricing();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -165,8 +165,9 @@ const ProductDetail = () => {
 
   const inWishlist = isInWishlist(product.id);
 
-  const handleAddToCart = () => {
-    addToCart(product, quantity);
+  const handleAddToCart = (qty?: number) => {
+    const addQty = qty || quantity || 1;
+    addToCart(product, addQty);
   };
 
   const handleWishlist = () => {
@@ -282,7 +283,7 @@ const ProductDetail = () => {
                 <p className="text-2xl font-bold text-primary">
                   {formatPrice(product.price, product.foreignPrice)}
                 </p>
-                {product.rating && (
+                {product.rating != null && product.rating > 0 && (
                   <div className="flex items-center gap-1">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
@@ -336,8 +337,9 @@ const ProductDetail = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() => setQuantity(Math.max(0, quantity - 1))}
                   className="h-8 w-8 p-0 rounded-none hover:bg-muted"
+                  disabled={quantity <= 0}
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
@@ -345,8 +347,15 @@ const ProductDetail = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setQuantity(Math.min(product.stockQuantity, quantity + 1))}
+                  onClick={() => {
+                    const newQty = quantity + 1;
+                    if (newQty <= product.stockQuantity) {
+                      setQuantity(newQty);
+                      addToCart(product, 1);
+                    }
+                  }}
                   className="h-8 w-8 p-0 rounded-none hover:bg-muted"
+                  disabled={quantity >= product.stockQuantity}
                 >
                   <Plus className="h-3 w-3" />
                 </Button>
@@ -372,7 +381,7 @@ const ProductDetail = () => {
                   size="sm"
                   variant="outline" 
                   className="flex-1 h-9 text-sm rounded-lg" 
-                  onClick={handleAddToCart}
+                  onClick={() => handleAddToCart()}
                 >
                   <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
                   Add to Cart

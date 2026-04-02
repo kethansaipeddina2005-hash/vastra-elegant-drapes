@@ -96,7 +96,7 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
                 </>
               )}
             </div>
-            {product.rating && (
+            {product.rating != null && product.rating > 0 && (
               <div className="flex items-center gap-1">
                 <span className="text-gold text-sm">★</span>
                 <span className="text-xs md:text-sm text-muted-foreground">{product.rating}</span>
