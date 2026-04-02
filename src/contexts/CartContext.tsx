@@ -51,6 +51,26 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const addToCart = (product: Product, quantity = 1) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
+      const currentQty = existingItem ? existingItem.quantity : 0;
+      const maxQty = product.stockQuantity || 0;
+
+      if (maxQty <= 0) {
+        toast({ title: 'Out of stock', description: `${product.name} is currently out of stock`, variant: 'destructive' });
+        return prevCart;
+      }
+
+      if (currentQty + quantity > maxQty) {
+        toast({ title: 'Stock limit reached', description: `Only ${maxQty} available for ${product.name}`, variant: 'destructive' });
+        if (currentQty >= maxQty) return prevCart;
+        const addableQty = maxQty - currentQty;
+        if (existingItem) {
+          return prevCart.map(item =>
+            item.id === product.id ? { ...item, quantity: maxQty } : item
+          );
+        }
+        return [...prevCart, { ...product, quantity: addableQty }];
+      }
+
       if (existingItem) {
         toast({ title: 'Updated cart', description: `${product.name} quantity updated` });
         return prevCart.map(item =>
@@ -73,7 +93,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     setCart(prevCart =>
-      prevCart.map(item => (item.id === productId ? { ...item, quantity } : item))
+      prevCart.map(item => {
+        if (item.id === productId) {
+          const maxQty = item.stockQuantity || 0;
+          const clampedQty = maxQty > 0 ? Math.min(quantity, maxQty) : quantity;
+          if (quantity > maxQty && maxQty > 0) {
+            toast({ title: 'Stock limit', description: `Only ${maxQty} available`, variant: 'destructive' });
+          }
+          return { ...item, quantity: clampedQty };
+        }
+        return item;
+      })
     );
   };
 
