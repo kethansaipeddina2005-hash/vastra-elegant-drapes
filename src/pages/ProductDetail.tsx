@@ -165,8 +165,9 @@ const ProductDetail = () => {
 
   const inWishlist = isInWishlist(product.id);
 
-  const handleAddToCart = () => {
-    addToCart(product, quantity);
+  const handleAddToCart = (qty?: number) => {
+    const addQty = qty || quantity || 1;
+    addToCart(product, addQty);
   };
 
   const handleWishlist = () => {
