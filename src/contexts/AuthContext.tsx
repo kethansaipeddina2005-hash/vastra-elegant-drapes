@@ -40,9 +40,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string, countryType: string = 'india') => {
-    const redirectUrl = 'https://vastra-elegant-drapes-murex.vercel.app/';
-    
+const signUp = async (
+  email: string,
+  password: string,
+  fullName: string,
+  countryType: string = 'india'
+) => {
+  const redirectUrl = 'https://vastra-elegant-drapes-murex.vercel.app/auth/callback';
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
