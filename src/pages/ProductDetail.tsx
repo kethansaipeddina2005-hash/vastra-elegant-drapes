@@ -33,7 +33,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(0);
   const { addToCart } = useCart();
   const { formatPrice } = usePricing();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
