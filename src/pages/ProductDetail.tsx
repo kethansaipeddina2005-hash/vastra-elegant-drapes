@@ -381,7 +381,7 @@ const ProductDetail = () => {
                   size="sm"
                   variant="outline" 
                   className="flex-1 h-9 text-sm rounded-lg" 
-                  onClick={handleAddToCart}
+                  onClick={() => handleAddToCart()}
                 >
                   <ShoppingCart className="mr-1.5 h-3.5 w-3.5" />
                   Add to Cart
