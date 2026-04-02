@@ -337,8 +337,9 @@ const ProductDetail = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() => setQuantity(Math.max(0, quantity - 1))}
                   className="h-8 w-8 p-0 rounded-none hover:bg-muted"
+                  disabled={quantity <= 0}
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
@@ -346,8 +347,15 @@ const ProductDetail = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setQuantity(Math.min(product.stockQuantity, quantity + 1))}
+                  onClick={() => {
+                    const newQty = quantity + 1;
+                    if (newQty <= product.stockQuantity) {
+                      setQuantity(newQty);
+                      addToCart(product, 1);
+                    }
+                  }}
                   className="h-8 w-8 p-0 rounded-none hover:bg-muted"
+                  disabled={quantity >= product.stockQuantity}
                 >
                   <Plus className="h-3 w-3" />
                 </Button>
