@@ -283,7 +283,7 @@ const ProductDetail = () => {
                 <p className="text-2xl font-bold text-primary">
                   {formatPrice(product.price, product.foreignPrice)}
                 </p>
-                {product.rating && (
+                {product.rating != null && product.rating > 0 && (
                   <div className="flex items-center gap-1">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
