@@ -93,7 +93,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     setCart(prevCart =>
-      prevCart.map(item => (item.id === productId ? { ...item, quantity } : item))
+      prevCart.map(item => {
+        if (item.id === productId) {
+          const maxQty = item.stockQuantity || 0;
+          const clampedQty = maxQty > 0 ? Math.min(quantity, maxQty) : quantity;
+          if (quantity > maxQty && maxQty > 0) {
+            toast({ title: 'Stock limit', description: `Only ${maxQty} available`, variant: 'destructive' });
+          }
+          return { ...item, quantity: clampedQty };
+        }
+        return item;
+      })
     );
   };
 
