@@ -59,6 +59,7 @@ const AdminProducts = () => {
     color: '',
     occasion: '',
     region: '',
+    return_days: '',
   });
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
