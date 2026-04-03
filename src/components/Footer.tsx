@@ -6,10 +6,11 @@ const Footer = ({ className }: { className?: string }) => {
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-center md:text-left">
-            <h3 className="text-2xl font-playfair font-semibold text-foreground mb-2">
+            <h3 className="text-2xl font-playfair font-semibold text-foreground mb-0.5">
               Vastra
             </h3>
-            <p className="text-muted-foreground">
+            <span className="text-[9px] uppercase tracking-[0.35em] text-primary/60 font-medium">Luxe</span>
+            <p className="text-muted-foreground mt-1">
               Grace in Every Drape
             </p>
           </div>
