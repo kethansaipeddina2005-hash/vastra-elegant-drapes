@@ -83,6 +83,7 @@ const ProductDetail = () => {
         isNew: data.is_new || false,
         rating: Number(data.rating) || 0,
         reviews: data.reviews || 0,
+        returnDays: (data as any).return_days || null,
         categoryIds,
         categoryNames,
       };
