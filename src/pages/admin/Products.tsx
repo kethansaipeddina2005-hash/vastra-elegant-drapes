@@ -360,6 +360,7 @@ const AdminProducts = () => {
       color: '',
       occasion: '',
       region: '',
+      return_days: '',
     });
     setSelectedCategories([]);
     setImageFiles([]);
