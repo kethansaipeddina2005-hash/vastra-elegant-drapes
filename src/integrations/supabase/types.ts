@@ -420,6 +420,7 @@ export type Database = {
           price: number
           rating: number | null
           region: string | null
+          return_days: number | null
           reviews: number | null
           stock_quantity: number | null
           updated_at: string | null
@@ -440,6 +441,7 @@ export type Database = {
           price: number
           rating?: number | null
           region?: string | null
+          return_days?: number | null
           reviews?: number | null
           stock_quantity?: number | null
           updated_at?: string | null
@@ -460,6 +462,7 @@ export type Database = {
           price?: number
           rating?: number | null
           region?: string | null
+          return_days?: number | null
           reviews?: number | null
           stock_quantity?: number | null
           updated_at?: string | null

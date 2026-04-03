@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN return_days integer DEFAULT NULL;
