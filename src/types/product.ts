@@ -16,6 +16,7 @@ export interface Product {
   isOnSale?: boolean;
   rating?: number;
   reviews?: number;
+  returnDays?: number | null;
   categoryIds?: string[];
   categoryNames?: string[];
 }

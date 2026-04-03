@@ -30,9 +30,14 @@ const Header = () => {
         <div className="flex items-center justify-between gap-2">
           <Link to="/" className="flex items-center gap-2 md:gap-3 flex-shrink-0">
             <img src={logo} alt="Vastra Logo" className="h-10 w-10 md:h-12 md:w-12 object-contain" />
-            <h1 className="text-xl md:text-3xl font-playfair font-semibold text-foreground">
-              Vastra
-            </h1>
+            <div className="flex flex-col leading-none">
+              <h1 className="text-xl md:text-3xl font-playfair font-semibold text-foreground">
+                Vastra
+              </h1>
+              <span className="text-[8px] md:text-[10px] uppercase tracking-[0.3em] text-primary/70 font-medium">
+                Luxe
+              </span>
+            </div>
           </Link>
           
           <form

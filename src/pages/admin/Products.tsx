@@ -457,6 +457,17 @@ const AdminProducts = () => {
                       required
                     />
                   </div>
+                  <div>
+                    <Label htmlFor="return_days">Return Days</Label>
+                    <Input
+                      id="return_days"
+                      type="number"
+                      placeholder="0 = No Return"
+                      value={formData.return_days}
+                      onChange={(e) => setFormData({ ...formData, return_days: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Leave empty or 0 for no return</p>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

@@ -48,7 +48,7 @@ const Footer = ({ className }: { className?: string }) => {
         </div>
         
         <div className="mt-8 pt-6 border-t border-border text-center text-muted-foreground">
-          <p>Copyright © 2025 Vastra — All Rights Reserved.</p>
+          <p>Copyright © 2025 Vastra Luxe — All Rights Reserved.</p>
         </div>
       </div>
     </footer>
