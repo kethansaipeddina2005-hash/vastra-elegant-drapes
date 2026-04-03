@@ -248,6 +248,7 @@ const AdminProducts = () => {
         price: parseFloat(formData.price),
         foreign_price: formData.foreign_price ? parseFloat(formData.foreign_price) : null,
         stock_quantity: parseInt(formData.stock_quantity),
+        return_days: formData.return_days ? parseInt(formData.return_days) : null,
         images: imageUrls,
         videos: videoUrls,
         is_new: true,
