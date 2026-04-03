@@ -34,7 +34,7 @@ const Header = () => {
               <h1 className="text-xl md:text-3xl font-playfair font-semibold text-foreground">
                 Vastra
               </h1>
-              <span className="text-[10px] md:text-xs uppercase tracking-[0.35em] text-primary font-semibold">
+              <span className="text-[10px] md:text-xs uppercase tracking-[0.35em] text-primary font-semibold text-right">
                 Luxe
               </span>
             </div>
