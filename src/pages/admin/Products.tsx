@@ -59,6 +59,7 @@ const AdminProducts = () => {
     color: '',
     occasion: '',
     region: '',
+    return_days: '',
   });
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -247,6 +248,7 @@ const AdminProducts = () => {
         price: parseFloat(formData.price),
         foreign_price: formData.foreign_price ? parseFloat(formData.foreign_price) : null,
         stock_quantity: parseInt(formData.stock_quantity),
+        return_days: formData.return_days ? parseInt(formData.return_days) : null,
         images: imageUrls,
         videos: videoUrls,
         is_new: true,
@@ -338,6 +340,7 @@ const AdminProducts = () => {
       color: product.color || '',
       occasion: product.occasion || '',
       region: product.region || '',
+      return_days: (product as any).return_days?.toString() || '',
     });
     setSelectedCategories(product.category_ids || []);
     setExistingImages(product.images || []);
@@ -357,6 +360,7 @@ const AdminProducts = () => {
       color: '',
       occasion: '',
       region: '',
+      return_days: '',
     });
     setSelectedCategories([]);
     setImageFiles([]);
@@ -452,6 +456,17 @@ const AdminProducts = () => {
                       onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
                       required
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="return_days">Return Days</Label>
+                    <Input
+                      id="return_days"
+                      type="number"
+                      placeholder="0 = No Return"
+                      value={formData.return_days}
+                      onChange={(e) => setFormData({ ...formData, return_days: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Leave empty or 0 for no return</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">

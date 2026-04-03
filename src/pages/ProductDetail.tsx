@@ -40,6 +40,7 @@ const ProductDetail = () => {
   const { addToRecentlyViewed } = useRecentlyViewed();
   
   useEffect(() => {
+    window.scrollTo(0, 0);
     fetchProduct();
   }, [id]);
 
@@ -82,6 +83,7 @@ const ProductDetail = () => {
         isNew: data.is_new || false,
         rating: Number(data.rating) || 0,
         reviews: data.reviews || 0,
+        returnDays: (data as any).return_days || null,
         categoryIds,
         categoryNames,
       };
@@ -323,9 +325,14 @@ const ProductDetail = () => {
                   <p className="font-semibold">{product.occasion}</p>
                 </div>
               </div>
-              <div className="pt-2 border-t border-border/50">
+              <div className="pt-2 border-t border-border/50 flex items-center justify-between">
                 <p className={`text-xs font-semibold ${product.stockQuantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {product.stockQuantity > 0 ? `✓ In Stock (${product.stockQuantity})` : 'Out of Stock'}
+                </p>
+                <p className="text-xs font-semibold text-muted-foreground">
+                  {product.returnDays && product.returnDays > 0
+                    ? `↩ ${product.returnDays}-Day Returns`
+                    : '✕ No Returns'}
                 </p>
               </div>
             </div>
