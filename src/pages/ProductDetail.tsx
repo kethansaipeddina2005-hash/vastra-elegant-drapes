@@ -40,6 +40,7 @@ const ProductDetail = () => {
   const { addToRecentlyViewed } = useRecentlyViewed();
   
   useEffect(() => {
+    window.scrollTo(0, 0);
     fetchProduct();
   }, [id]);
 
