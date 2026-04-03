@@ -43,6 +43,7 @@ const FeaturedSarees = () => {
         id: product.id,
         name: product.name,
         price: Number(product.price),
+        foreignPrice: product.foreign_price ? Number(product.foreign_price) : null,
         description: product.description || '',
         image: product.images?.[0] || '',
         images: product.images || [],
