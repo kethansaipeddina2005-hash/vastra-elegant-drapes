@@ -340,6 +340,7 @@ const AdminProducts = () => {
       color: product.color || '',
       occasion: product.occasion || '',
       region: product.region || '',
+      return_days: (product as any).return_days?.toString() || '',
     });
     setSelectedCategories(product.category_ids || []);
     setExistingImages(product.images || []);
