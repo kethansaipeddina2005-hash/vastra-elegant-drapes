@@ -273,6 +273,8 @@ const AdminOrders = () => {
                       <SelectItem value="processing">Processing</SelectItem>
                       <SelectItem value="shipped">Shipped</SelectItem>
                       <SelectItem value="delivered">Delivered</SelectItem>
+                      <SelectItem value="return_requested">Return Requested</SelectItem>
+                      <SelectItem value="returned">Returned</SelectItem>
                       <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
