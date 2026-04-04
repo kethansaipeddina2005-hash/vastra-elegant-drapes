@@ -124,9 +124,12 @@ const AdminOrders = () => {
       processing: 'secondary',
       shipped: 'default',
       delivered: 'default',
+      return_requested: 'destructive',
+      returned: 'secondary',
       cancelled: 'destructive',
     };
-    return <Badge variant={variants[status] || 'outline'}>{status}</Badge>;
+    const labels: Record<string, string> = { return_requested: 'Return Requested', returned: 'Returned' };
+    return <Badge variant={variants[status] || 'outline'}>{labels[status] || status}</Badge>;
   };
 
   if (adminLoading || loading) {
