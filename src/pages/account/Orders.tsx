@@ -33,6 +33,8 @@ interface Order {
   payment_status: string;
   shipping_id: string | null;
   shipping_company: string | null;
+  refund_status: string | null;
+  refund_amount: number | null;
   order_items: OrderItem[];
 }
 
