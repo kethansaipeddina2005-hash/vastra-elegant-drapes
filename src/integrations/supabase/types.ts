@@ -312,6 +312,11 @@ export type Database = {
           id: string
           payment_method: string | null
           payment_status: string | null
+          refund_amount: number | null
+          refund_notes: string | null
+          refund_status: string | null
+          return_product_ok: boolean | null
+          return_product_received: boolean | null
           shipping_address_id: string | null
           shipping_company: string | null
           shipping_id: string | null
@@ -331,6 +336,11 @@ export type Database = {
           id?: string
           payment_method?: string | null
           payment_status?: string | null
+          refund_amount?: number | null
+          refund_notes?: string | null
+          refund_status?: string | null
+          return_product_ok?: boolean | null
+          return_product_received?: boolean | null
           shipping_address_id?: string | null
           shipping_company?: string | null
           shipping_id?: string | null
@@ -350,6 +360,11 @@ export type Database = {
           id?: string
           payment_method?: string | null
           payment_status?: string | null
+          refund_amount?: number | null
+          refund_notes?: string | null
+          refund_status?: string | null
+          return_product_ok?: boolean | null
+          return_product_received?: boolean | null
           shipping_address_id?: string | null
           shipping_company?: string | null
           shipping_id?: string | null

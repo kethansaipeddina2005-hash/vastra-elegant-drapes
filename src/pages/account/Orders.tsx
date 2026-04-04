@@ -33,6 +33,8 @@ interface Order {
   payment_status: string;
   shipping_id: string | null;
   shipping_company: string | null;
+  refund_status: string | null;
+  refund_amount: number | null;
   order_items: OrderItem[];
 }
 
@@ -257,6 +259,34 @@ const Orders = () => {
                           </p>
                           <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5">
                             Your return request is being reviewed. We'll contact you shortly.
+                          </p>
+                        </div>
+                        <Separator />
+                      </>
+                    )}
+
+                    {order.status === 'returned' && order.refund_status === 'completed' && (
+                      <>
+                        <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-4 rounded-lg">
+                          <p className="text-sm font-semibold text-green-800 dark:text-green-300">
+                            ✓ Refund Completed
+                          </p>
+                          <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
+                            ₹{order.refund_amount?.toLocaleString()} has been refunded to your account.
+                          </p>
+                        </div>
+                        <Separator />
+                      </>
+                    )}
+
+                    {order.refund_status === 'rejected' && (
+                      <>
+                        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-4 rounded-lg">
+                          <p className="text-sm font-semibold text-red-800 dark:text-red-300">
+                            ✕ Return Rejected
+                          </p>
+                          <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
+                            Your return request was not approved. Please contact support for details.
                           </p>
                         </div>
                         <Separator />
