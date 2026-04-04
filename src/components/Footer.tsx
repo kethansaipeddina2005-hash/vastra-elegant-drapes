@@ -9,7 +9,7 @@ const Footer = ({ className }: { className?: string }) => {
             <h3 className="text-2xl font-playfair font-semibold text-foreground mb-0.5">
               Vastra
             </h3>
-            <span className="text-xs uppercase tracking-[0.35em] text-primary font-semibold">Luxe</span>
+            <span className="text-xs uppercase tracking-[0.35em] text-primary font-semibold text-right block">Luxe</span>
             <p className="text-muted-foreground mt-1">
               Grace in Every Drape
             </p>
