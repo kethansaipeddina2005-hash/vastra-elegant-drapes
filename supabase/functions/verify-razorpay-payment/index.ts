@@ -45,7 +45,7 @@ serve(async (req) => {
       order_id 
     }: VerifyPaymentRequest = await req.json();
 
-    const razorpayKeySecret = Deno.env.get("RAZORPAY_KEY_SECRET");
+    const razorpayKeySecret = Deno.env.get("Live_Key_Secret");
 
     if (!razorpayKeySecret) {
       throw new Error("Razorpay secret not configured");

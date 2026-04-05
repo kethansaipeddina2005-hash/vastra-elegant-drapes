@@ -39,8 +39,8 @@ serve(async (req) => {
 
     const { amount, currency = "INR", receipt, notes }: CreateOrderRequest = await req.json();
 
-    const razorpayKeyId = Deno.env.get("RAZORPAY_KEY_ID");
-    const razorpayKeySecret = Deno.env.get("RAZORPAY_KEY_SECRET");
+    const razorpayKeyId = Deno.env.get("Live_Key_ID");
+    const razorpayKeySecret = Deno.env.get("Live_Key_Secret");
 
     if (!razorpayKeyId || !razorpayKeySecret) {
       throw new Error("Razorpay credentials not configured");
