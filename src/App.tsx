@@ -46,6 +46,7 @@ const AdminPayments = lazy(() => import("./pages/admin/Payments"));
 const AdminCategories = lazy(() => import("./pages/admin/Categories"));
 const AdminSubscriptions = lazy(() => import("./pages/admin/Subscriptions"));
 const AdminChat = lazy(() => import("./pages/admin/Chat"));
+const AdminMessages = lazy(() => import("./pages/admin/Messages"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentFailure = lazy(() => import("./pages/PaymentFailure"));
 
@@ -130,6 +131,7 @@ const App = () => {
                         <Route path="/admin/categories" element={<AdminCategories />} />
                         <Route path="/admin/subscriptions" element={<AdminSubscriptions />} />
                         <Route path="/admin/chat" element={<AdminChat />} />
+                        <Route path="/admin/messages" element={<AdminMessages />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Suspense>

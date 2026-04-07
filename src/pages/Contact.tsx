@@ -26,11 +26,22 @@ const Contact = () => {
     try {
       const { supabase } = await import("@/integrations/supabase/client");
       
-      const { error } = await supabase.functions.invoke('send-contact-notification', {
+      // Save to database
+      const { error: dbError } = await supabase
+        .from('contact_messages')
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+        });
+
+      if (dbError) throw dbError;
+
+      // Also send email notification
+      await supabase.functions.invoke('send-contact-notification', {
         body: formData
       });
-
-      if (error) throw error;
 
       toast({
         title: "Message sent!",
