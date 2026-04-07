@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Loading } from '@/components/ui/loading';
-import { Plus, Edit, Trash2, Upload, Image } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Edit, Trash2, Image, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import * as LucideIcons from 'lucide-react';
 
@@ -33,6 +34,7 @@ interface Category {
   image_url: string | null;
   is_featured: boolean | null;
   featured_label: string | null;
+  parent_id: string | null;
 }
 
 const AdminCategories = () => {
@@ -53,6 +55,7 @@ const AdminCategories = () => {
     is_active: true,
     is_featured: false,
     featured_label: '',
+    parent_id: '',
   });
 
   useEffect(() => {
@@ -63,9 +66,7 @@ const AdminCategories = () => {
   }, [isAdmin, adminLoading, navigate]);
 
   useEffect(() => {
-    if (isAdmin) {
-      fetchCategories();
-    }
+    if (isAdmin) fetchCategories();
   }, [isAdmin]);
 
   const fetchCategories = async () => {
@@ -74,7 +75,6 @@ const AdminCategories = () => {
         .from('categories')
         .select('*')
         .order('display_order', { ascending: true });
-
       if (error) throw error;
       setCategories(data || []);
     } catch (error) {
@@ -83,6 +83,13 @@ const AdminCategories = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const mainCategories = categories.filter(c => !c.parent_id);
+  const getSubCategories = (parentId: string) => categories.filter(c => c.parent_id === parentId);
+  const getParentName = (parentId: string | null) => {
+    if (!parentId) return null;
+    return categories.find(c => c.id === parentId)?.name || null;
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,31 +102,22 @@ const AdminCategories = () => {
 
   const uploadImage = async (): Promise<string | null> => {
     if (!imageFile) return editingCategory?.image_url || null;
-
     const fileExt = imageFile.name.split('.').pop();
     const fileName = `category-${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-
     const { error: uploadError } = await supabase.storage
       .from('banners')
       .upload(fileName, imageFile, { cacheControl: '3600', upsert: false });
-
     if (uploadError) throw uploadError;
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('banners')
-      .getPublicUrl(fileName);
-
+    const { data: { publicUrl } } = supabase.storage.from('banners').getPublicUrl(fileName);
     return publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploading(true);
-
     try {
       const imageUrl = await uploadImage();
-
-      const categoryData = {
+      const categoryData: any = {
         name: formData.name,
         icon_name: formData.icon_name,
         description: formData.description || null,
@@ -128,19 +126,15 @@ const AdminCategories = () => {
         is_featured: formData.is_featured,
         featured_label: formData.featured_label || null,
         image_url: imageUrl,
+        parent_id: formData.parent_id || null,
       };
 
       if (editingCategory) {
-        const { error } = await supabase
-          .from('categories')
-          .update(categoryData)
-          .eq('id', editingCategory.id);
-
+        const { error } = await supabase.from('categories').update(categoryData).eq('id', editingCategory.id);
         if (error) throw error;
         toast.success('Category updated successfully');
       } else {
         const { error } = await supabase.from('categories').insert([categoryData]);
-
         if (error) throw error;
         toast.success('Category created successfully');
       }
@@ -157,11 +151,14 @@ const AdminCategories = () => {
   };
 
   const handleDelete = async (id: string) => {
+    const subs = getSubCategories(id);
+    if (subs.length > 0) {
+      toast.error('Please delete or reassign sub-categories first');
+      return;
+    }
     if (!confirm('Are you sure you want to delete this category?')) return;
-
     try {
       const { error } = await supabase.from('categories').delete().eq('id', id);
-
       if (error) throw error;
       toast.success('Category deleted successfully');
       fetchCategories();
@@ -181,6 +178,7 @@ const AdminCategories = () => {
       is_active: category.is_active,
       is_featured: category.is_featured || false,
       featured_label: category.featured_label || '',
+      parent_id: category.parent_id || '',
     });
     setImagePreview(category.image_url);
     setIsDialogOpen(true);
@@ -196,6 +194,7 @@ const AdminCategories = () => {
       is_active: true,
       is_featured: false,
       featured_label: '',
+      parent_id: '',
     });
     setImageFile(null);
     setImagePreview(null);
@@ -206,17 +205,64 @@ const AdminCategories = () => {
     return IconComponent ? <IconComponent className="h-5 w-5" /> : null;
   };
 
-  if (adminLoading || loading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loading size="lg" />
+  const renderCategoryRow = (category: Category, isChild = false) => (
+    <TableRow key={category.id} className={isChild ? 'bg-muted/20' : ''}>
+      <TableCell>
+        {category.image_url ? (
+          <img src={category.image_url} alt={category.name} className="w-12 h-12 object-cover rounded" />
+        ) : (
+          <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+            <Image className="h-5 w-5 text-muted-foreground" />
+          </div>
+        )}
+      </TableCell>
+      <TableCell>
+        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+          {renderIcon(category.icon_name)}
         </div>
-      </Layout>
-    );
+      </TableCell>
+      <TableCell className="font-medium">
+        <div className="flex items-center gap-2">
+          {isChild && <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+          {category.name}
+          {!category.parent_id && (
+            <Badge variant="outline" className="text-[10px]">Main</Badge>
+          )}
+          {category.is_featured && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-800 font-semibold">
+              ★ {category.featured_label || 'Featured'}
+            </span>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="hidden md:table-cell max-w-xs truncate">{category.description}</TableCell>
+      <TableCell>{category.display_order}</TableCell>
+      <TableCell>
+        <span className={`px-2 py-1 rounded-full text-xs ${category.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+          {category.is_active ? 'Active' : 'Inactive'}
+        </span>
+      </TableCell>
+      <TableCell>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => handleEdit(category)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant="destructive" onClick={() => handleDelete(category.id)}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+
+  if (adminLoading || loading) {
+    return <Layout><div className="flex items-center justify-center min-h-[60vh]"><Loading size="lg" /></div></Layout>;
   }
 
   if (!isAdmin) return null;
+
+  // Available parents for the form (exclude self when editing)
+  const availableParents = mainCategories.filter(c => c.id !== editingCategory?.id);
 
   return (
     <Layout>
@@ -224,14 +270,11 @@ const AdminCategories = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
             <h1 className="text-2xl md:text-4xl font-bold mb-2">Category Management</h1>
-            <p className="text-muted-foreground text-sm md:text-base">Organize your products by category</p>
+            <p className="text-muted-foreground text-sm md:text-base">Organize your products with main and sub categories</p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Category
-              </Button>
+              <Button><Plus className="mr-2 h-4 w-4" /> Add Category</Button>
             </DialogTrigger>
             <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
               <DialogHeader>
@@ -239,20 +282,32 @@ const AdminCategories = () => {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
+                  <Label htmlFor="parent">Parent Category</Label>
+                  <Select
+                    value={formData.parent_id || 'none'}
+                    onValueChange={(value) => setFormData({ ...formData, parent_id: value === 'none' ? '' : value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="None (Main Category)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None (Main Category)</SelectItem>
+                      {availableParents.map(c => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Leave as "None" to create a main category like "Sarees"
+                  </p>
+                </div>
+                <div>
                   <Label htmlFor="name">Category Name</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                  />
+                  <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
                 </div>
                 <div>
                   <Label htmlFor="icon">Icon</Label>
-                  <Select
-                    value={formData.icon_name}
-                    onValueChange={(value) => setFormData({ ...formData, icon_name: value })}
-                  >
+                  <Select value={formData.icon_name} onValueChange={(value) => setFormData({ ...formData, icon_name: value })}>
                     <SelectTrigger>
                       <SelectValue>
                         <div className="flex items-center gap-2">
@@ -275,30 +330,11 @@ const AdminCategories = () => {
                 </div>
                 <div>
                   <Label htmlFor="image">Category Image</Label>
-                  <Input
-                    id="image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="mb-2"
-                  />
+                  <Input id="image" type="file" accept="image/*" onChange={handleImageChange} className="mb-2" />
                   {imagePreview && (
                     <div className="mt-2 relative">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="w-full h-32 object-cover rounded-lg"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        className="absolute top-2 right-2"
-                        onClick={() => {
-                          setImageFile(null);
-                          setImagePreview(null);
-                        }}
-                      >
+                      <img src={imagePreview} alt="Preview" className="w-full h-32 object-cover rounded-lg" />
+                      <Button type="button" variant="destructive" size="sm" className="absolute top-2 right-2" onClick={() => { setImageFile(null); setImagePreview(null); }}>
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
@@ -306,47 +342,24 @@ const AdminCategories = () => {
                 </div>
                 <div>
                   <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
-                  />
+                  <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} />
                 </div>
                 <div>
                   <Label htmlFor="order">Display Order</Label>
-                  <Input
-                    id="order"
-                    type="number"
-                    value={formData.display_order}
-                    onChange={(e) => setFormData({ ...formData, display_order: e.target.value })}
-                  />
+                  <Input id="order" type="number" value={formData.display_order} onChange={(e) => setFormData({ ...formData, display_order: e.target.value })} />
                 </div>
                 <div className="flex items-center gap-2">
-                  <Switch
-                    id="active"
-                    checked={formData.is_active}
-                    onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                  />
+                  <Switch id="active" checked={formData.is_active} onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })} />
                   <Label htmlFor="active">Active</Label>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Switch
-                    id="featured"
-                    checked={formData.is_featured}
-                    onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
-                  />
+                  <Switch id="featured" checked={formData.is_featured} onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })} />
                   <Label htmlFor="featured">Featured (appears first in Shop by Category)</Label>
                 </div>
                 {formData.is_featured && (
                   <div>
                     <Label htmlFor="featured_label">Featured Label (e.g. "Vastra Special")</Label>
-                    <Input
-                      id="featured_label"
-                      value={formData.featured_label}
-                      onChange={(e) => setFormData({ ...formData, featured_label: e.target.value })}
-                      placeholder="Vastra Special"
-                    />
+                    <Input id="featured_label" value={formData.featured_label} onChange={(e) => setFormData({ ...formData, featured_label: e.target.value })} placeholder="Vastra Special" />
                   </div>
                 )}
                 <Button type="submit" className="w-full" disabled={uploading}>
@@ -375,57 +388,18 @@ const AdminCategories = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {categories.map((category) => (
-                  <TableRow key={category.id}>
-                    <TableCell>
-                      {category.image_url ? (
-                        <img
-                          src={category.image_url}
-                          alt={category.name}
-                          className="w-12 h-12 object-cover rounded"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
-                          <Image className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                        {renderIcon(category.icon_name)}
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {category.name}
-                      {category.is_featured && (
-                        <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-800 font-semibold">
-                          ★ {category.featured_label || 'Featured'}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell max-w-xs truncate">{category.description}</TableCell>
-                    <TableCell>{category.display_order}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs ${category.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {category.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => handleEdit(category)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="destructive" onClick={() => handleDelete(category.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                {mainCategories.map((main) => (
+                  <>
+                    {renderCategoryRow(main, false)}
+                    {getSubCategories(main.id).map(sub => renderCategoryRow(sub, true))}
+                  </>
                 ))}
+                {/* Show orphan categories (parent_id set but parent doesn't exist as main) */}
+                {categories.filter(c => c.parent_id && !mainCategories.find(m => m.id === c.parent_id)).map(c => renderCategoryRow(c, true))}
                 {categories.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      No categories found. Create your first category!
+                      No categories found. Create your first main category!
                     </TableCell>
                   </TableRow>
                 )}
