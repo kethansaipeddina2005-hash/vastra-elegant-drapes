@@ -3,17 +3,26 @@ import { Product, Filter, SortOption } from '@/types/product';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+export interface CategoryWithChildren {
+  id: string;
+  name: string;
+  parent_id: string | null;
+  children: CategoryWithChildren[];
+}
+
 export interface FilterOptions {
   fabricTypes: string[];
   colors: string[];
   occasions: string[];
   regions: string[];
   categories: string[];
+  categoryTree: CategoryWithChildren[];
 }
 
 interface Category {
   id: string;
   name: string;
+  parent_id: string | null;
 }
 
 export const useProducts = () => {
