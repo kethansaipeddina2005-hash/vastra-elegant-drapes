@@ -222,6 +222,14 @@ const AdminDashboard = () => {
               <Mail className="mr-2 h-5 w-5" />
               Manage Subscriptions
             </Button>
+            <Button
+              onClick={() => navigate('/admin/messages')}
+              className="h-20 text-lg"
+              variant="outline"
+            >
+              <Mail className="mr-2 h-5 w-5" />
+              Contact Messages
+            </Button>
           </div>
         </div>
       </div>
