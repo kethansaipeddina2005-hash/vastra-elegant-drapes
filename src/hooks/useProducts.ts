@@ -36,6 +36,7 @@ export const useProducts = () => {
     occasions: [],
     regions: [],
     categories: [],
+    categoryTree: [],
   });
   const [filters, setFilters] = useState<Filter>({
     priceRange: [0, 50000],
@@ -59,10 +60,10 @@ export const useProducts = () => {
       // Fetch categories first
       const { data: categoriesData } = await supabase
         .from('categories')
-        .select('id, name')
+        .select('id, name, parent_id')
         .eq('is_active', true);
       
-      setCategories(categoriesData || []);
+      setCategories((categoriesData as Category[]) || []);
 
       // Fetch products
       const { data: productsData, error } = await supabase
@@ -126,12 +127,21 @@ export const useProducts = () => {
       const uniqueRegions = [...new Set(transformedProducts.map(p => p.region.trim()).filter(Boolean))].sort();
       const uniqueCategories = [...new Set(transformedProducts.flatMap(p => p.categoryNames || []).filter(Boolean))].sort();
       
+      // Build category tree
+      const allCats = (categoriesData as Category[]) || [];
+      const mainCats = allCats.filter(c => !c.parent_id);
+      const categoryTree: CategoryWithChildren[] = mainCats.map(main => ({
+        ...main,
+        children: allCats.filter(c => c.parent_id === main.id),
+      }));
+
       setFilterOptions({
         fabricTypes: uniqueFabricTypes,
         colors: uniqueColors,
         occasions: uniqueOccasions,
         regions: uniqueRegions,
         categories: uniqueCategories,
+        categoryTree,
       });
       
       // Initialize price range to include all products on first load
