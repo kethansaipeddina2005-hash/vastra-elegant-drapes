@@ -132,7 +132,7 @@ export const useProducts = () => {
       const mainCats = allCats.filter(c => !c.parent_id);
       const categoryTree: CategoryWithChildren[] = mainCats.map(main => ({
         ...main,
-        children: allCats.filter(c => c.parent_id === main.id),
+        children: allCats.filter(c => c.parent_id === main.id).map(c => ({ ...c, children: [] })),
       }));
 
       setFilterOptions({
