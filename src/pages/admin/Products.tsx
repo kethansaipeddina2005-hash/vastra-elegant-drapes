@@ -366,9 +366,42 @@ const AdminProducts = () => {
     setVideoPreviews([]);
     setExistingImages([]);
     setExistingVideos([]);
+    setImageUrlInput('');
+    setVideoUrlInput('');
     // Clean up preview URLs
     imagePreviews.forEach(url => URL.revokeObjectURL(url));
     videoPreviews.forEach(url => URL.revokeObjectURL(url));
+  };
+
+  const isValidUrl = (url: string) => {
+    try {
+      const u = new URL(url);
+      return u.protocol === 'http:' || u.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  const addImageFromUrl = () => {
+    const url = imageUrlInput.trim();
+    if (!isValidUrl(url)) {
+      toast.error('Please enter a valid image URL (http/https)');
+      return;
+    }
+    setExistingImages(prev => [...prev, url]);
+    setImageUrlInput('');
+    toast.success('Image URL added');
+  };
+
+  const addVideoFromUrl = () => {
+    const url = videoUrlInput.trim();
+    if (!isValidUrl(url)) {
+      toast.error('Please enter a valid video URL (http/https)');
+      return;
+    }
+    setExistingVideos(prev => [...prev, url]);
+    setVideoUrlInput('');
+    toast.success('Video URL added');
   };
 
   if (adminLoading || loading) {
