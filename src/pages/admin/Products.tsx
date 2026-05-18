@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loading } from '@/components/ui/loading';
-import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, X, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Category {
@@ -64,6 +64,8 @@ const AdminProducts = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [existingVideos, setExistingVideos] = useState<string[]>([]);
+  const [imageUrlInput, setImageUrlInput] = useState('');
+  const [videoUrlInput, setVideoUrlInput] = useState('');
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
@@ -220,13 +222,8 @@ const AdminProducts = () => {
     setUploading(true);
 
     try {
-      let imageUrls: string[] = editingProduct?.images || [];
-      let videoUrls: string[] = editingProduct?.videos || [];
-
-      if (editingProduct) {
-        imageUrls = existingImages;
-        videoUrls = existingVideos;
-      }
+      let imageUrls: string[] = [...existingImages];
+      let videoUrls: string[] = [...existingVideos];
 
       if (imageFiles.length > 0) {
         const newUrls = await uploadImages();
