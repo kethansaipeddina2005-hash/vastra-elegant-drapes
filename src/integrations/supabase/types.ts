@@ -362,6 +362,8 @@ export type Database = {
           shipping_company: string | null
           shipping_id: string | null
           status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
           total_amount: number
           updated_at: string | null
           user_id: string
@@ -386,6 +388,8 @@ export type Database = {
           shipping_company?: string | null
           shipping_id?: string | null
           status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
           total_amount: number
           updated_at?: string | null
           user_id: string
@@ -410,6 +414,8 @@ export type Database = {
           shipping_company?: string | null
           shipping_id?: string | null
           status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
           total_amount?: number
           updated_at?: string | null
           user_id?: string
