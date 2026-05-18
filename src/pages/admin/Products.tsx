@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loading } from '@/components/ui/loading';
-import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, X, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Category {
@@ -64,6 +64,8 @@ const AdminProducts = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [existingVideos, setExistingVideos] = useState<string[]>([]);
+  const [imageUrlInput, setImageUrlInput] = useState('');
+  const [videoUrlInput, setVideoUrlInput] = useState('');
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
@@ -220,13 +222,8 @@ const AdminProducts = () => {
     setUploading(true);
 
     try {
-      let imageUrls: string[] = editingProduct?.images || [];
-      let videoUrls: string[] = editingProduct?.videos || [];
-
-      if (editingProduct) {
-        imageUrls = existingImages;
-        videoUrls = existingVideos;
-      }
+      let imageUrls: string[] = [...existingImages];
+      let videoUrls: string[] = [...existingVideos];
 
       if (imageFiles.length > 0) {
         const newUrls = await uploadImages();
@@ -369,9 +366,42 @@ const AdminProducts = () => {
     setVideoPreviews([]);
     setExistingImages([]);
     setExistingVideos([]);
+    setImageUrlInput('');
+    setVideoUrlInput('');
     // Clean up preview URLs
     imagePreviews.forEach(url => URL.revokeObjectURL(url));
     videoPreviews.forEach(url => URL.revokeObjectURL(url));
+  };
+
+  const isValidUrl = (url: string) => {
+    try {
+      const u = new URL(url);
+      return u.protocol === 'http:' || u.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  const addImageFromUrl = () => {
+    const url = imageUrlInput.trim();
+    if (!isValidUrl(url)) {
+      toast.error('Please enter a valid image URL (http/https)');
+      return;
+    }
+    setExistingImages(prev => [...prev, url]);
+    setImageUrlInput('');
+    toast.success('Image URL added');
+  };
+
+  const addVideoFromUrl = () => {
+    const url = videoUrlInput.trim();
+    if (!isValidUrl(url)) {
+      toast.error('Please enter a valid video URL (http/https)');
+      return;
+    }
+    setExistingVideos(prev => [...prev, url]);
+    setVideoUrlInput('');
+    toast.success('Video URL added');
   };
 
   if (adminLoading || loading) {
@@ -532,9 +562,9 @@ const AdminProducts = () => {
                   </div>
                 </div>
                 {/* Current Images with delete */}
-                {editingProduct && existingImages.length > 0 && (
+                {existingImages.length > 0 && (
                   <div className="mb-4 space-y-2">
-                    <p className="text-sm font-medium">Current Images:</p>
+                    <p className="text-sm font-medium">Images ({existingImages.length}):</p>
                     <div className="grid grid-cols-4 gap-2">
                       {existingImages.map((url, index) => (
                         <div key={url} className="relative group rounded-md overflow-hidden border">
@@ -553,9 +583,9 @@ const AdminProducts = () => {
                 )}
 
                 {/* Current Videos with delete */}
-                {editingProduct && existingVideos.length > 0 && (
+                {existingVideos.length > 0 && (
                   <div className="mb-4 space-y-2">
-                    <p className="text-sm font-medium">Current Videos:</p>
+                    <p className="text-sm font-medium">Videos ({existingVideos.length}):</p>
                     <div className="grid grid-cols-3 gap-2">
                       {existingVideos.map((url, index) => (
                         <div key={url} className="relative group rounded-md overflow-hidden border">
@@ -586,7 +616,21 @@ const AdminProducts = () => {
                   <p className="text-sm text-muted-foreground mb-2">
                     Upload multiple images (JPG, PNG, WEBP)
                   </p>
-                  
+
+                  {/* Add image by URL */}
+                  <div className="flex gap-2 mb-3">
+                    <Input
+                      type="url"
+                      placeholder="Paste image URL (https://...)"
+                      value={imageUrlInput}
+                      onChange={(e) => setImageUrlInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addImageFromUrl(); } }}
+                    />
+                    <Button type="button" variant="outline" onClick={addImageFromUrl}>
+                      <Link2 className="h-4 w-4 mr-1" /> Add URL
+                    </Button>
+                  </div>
+
                   {/* Image Previews */}
                   {imagePreviews.length > 0 && (
                     <div className="mb-3">
@@ -613,7 +657,21 @@ const AdminProducts = () => {
                   <p className="text-sm text-muted-foreground mb-2">
                     Upload product videos (MP4, WebM, MOV)
                   </p>
-                  
+
+                  {/* Add video by URL */}
+                  <div className="flex gap-2 mb-3">
+                    <Input
+                      type="url"
+                      placeholder="Paste video URL (https://...)"
+                      value={videoUrlInput}
+                      onChange={(e) => setVideoUrlInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addVideoFromUrl(); } }}
+                    />
+                    <Button type="button" variant="outline" onClick={addVideoFromUrl}>
+                      <Link2 className="h-4 w-4 mr-1" /> Add URL
+                    </Button>
+                  </div>
+
                   {/* Video Previews */}
                   {videoPreviews.length > 0 && (
                     <div className="mb-3">
