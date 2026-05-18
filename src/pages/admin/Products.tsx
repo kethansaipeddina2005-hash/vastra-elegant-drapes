@@ -562,9 +562,9 @@ const AdminProducts = () => {
                   </div>
                 </div>
                 {/* Current Images with delete */}
-                {editingProduct && existingImages.length > 0 && (
+                {existingImages.length > 0 && (
                   <div className="mb-4 space-y-2">
-                    <p className="text-sm font-medium">Current Images:</p>
+                    <p className="text-sm font-medium">Images ({existingImages.length}):</p>
                     <div className="grid grid-cols-4 gap-2">
                       {existingImages.map((url, index) => (
                         <div key={url} className="relative group rounded-md overflow-hidden border">
@@ -583,9 +583,9 @@ const AdminProducts = () => {
                 )}
 
                 {/* Current Videos with delete */}
-                {editingProduct && existingVideos.length > 0 && (
+                {existingVideos.length > 0 && (
                   <div className="mb-4 space-y-2">
-                    <p className="text-sm font-medium">Current Videos:</p>
+                    <p className="text-sm font-medium">Videos ({existingVideos.length}):</p>
                     <div className="grid grid-cols-3 gap-2">
                       {existingVideos.map((url, index) => (
                         <div key={url} className="relative group rounded-md overflow-hidden border">
@@ -616,7 +616,21 @@ const AdminProducts = () => {
                   <p className="text-sm text-muted-foreground mb-2">
                     Upload multiple images (JPG, PNG, WEBP)
                   </p>
-                  
+
+                  {/* Add image by URL */}
+                  <div className="flex gap-2 mb-3">
+                    <Input
+                      type="url"
+                      placeholder="Paste image URL (https://...)"
+                      value={imageUrlInput}
+                      onChange={(e) => setImageUrlInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addImageFromUrl(); } }}
+                    />
+                    <Button type="button" variant="outline" onClick={addImageFromUrl}>
+                      <Link2 className="h-4 w-4 mr-1" /> Add URL
+                    </Button>
+                  </div>
+
                   {/* Image Previews */}
                   {imagePreviews.length > 0 && (
                     <div className="mb-3">
@@ -643,7 +657,21 @@ const AdminProducts = () => {
                   <p className="text-sm text-muted-foreground mb-2">
                     Upload product videos (MP4, WebM, MOV)
                   </p>
-                  
+
+                  {/* Add video by URL */}
+                  <div className="flex gap-2 mb-3">
+                    <Input
+                      type="url"
+                      placeholder="Paste video URL (https://...)"
+                      value={videoUrlInput}
+                      onChange={(e) => setVideoUrlInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addVideoFromUrl(); } }}
+                    />
+                    <Button type="button" variant="outline" onClick={addVideoFromUrl}>
+                      <Link2 className="h-4 w-4 mr-1" /> Add URL
+                    </Button>
+                  </div>
+
                   {/* Video Previews */}
                   {videoPreviews.length > 0 && (
                     <div className="mb-3">
