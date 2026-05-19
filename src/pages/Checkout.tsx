@@ -315,7 +315,13 @@ const Checkout = () => {
           notes: {
             order_id: orderId,
             user_id: user!.id
-          }
+          },
+          // Server re-validates pricing & coupon to prevent client-side tampering
+          items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity })),
+          shipping: shipping,
+          coupon_code: promoCode || null,
+          pricing_region: pricingRegion,
+          order_id: orderId,
         }
       });
 
