@@ -44,19 +44,19 @@ const FitCheckUpload = ({ userId, currentPhotoUrl, onPhotoUploaded, variant = "f
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("fit-check-photos")
-        .getPublicUrl(filePath);
-
-      const url = `${publicUrl}?t=${Date.now()}`;
-
+      // Bucket is private — store the storage path and use signed URLs for display
       await supabase
         .from("profiles")
-        .update({ fit_check_photo: url })
+        .update({ fit_check_photo: filePath })
         .eq("id", userId);
 
-      setPreview(url);
-      onPhotoUploaded(url);
+      const { data: signed } = await supabase.storage
+        .from("fit-check-photos")
+        .createSignedUrl(filePath, 60 * 60);
+
+      const displayUrl = signed?.signedUrl ?? "";
+      setPreview(displayUrl);
+      onPhotoUploaded(displayUrl);
       toast({ title: "✨ Photo uploaded!", description: "Your Style Avatar is ready for virtual try-ons" });
     } catch (error: any) {
       console.error("Upload error:", error);

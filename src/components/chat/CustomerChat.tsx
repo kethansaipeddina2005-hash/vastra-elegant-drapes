@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import ChatImage from './ChatImage';
 
 interface Message {
   id: string;
@@ -264,11 +265,8 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
 
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('chat-images')
-          .getPublicUrl(fileName);
-
-        uploadedUrls.push(publicUrl);
+        // Bucket is private — store the storage path; ChatImage resolves signed URLs at render time
+        uploadedUrls.push(fileName);
       }
     } catch (error) {
       console.error('Error uploading images:', error);
@@ -414,13 +412,12 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
                     {msg.images && msg.images.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-2">
                         {msg.images.map((img, idx) => (
-                          <a key={idx} href={img} target="_blank" rel="noopener noreferrer">
-                            <img
-                              src={img}
-                              alt={`Attachment ${idx + 1}`}
-                              className="w-20 h-20 object-cover rounded border border-border/50 hover:opacity-90 transition-opacity"
-                            />
-                          </a>
+                          <ChatImage
+                            key={idx}
+                            src={img}
+                            alt={`Attachment ${idx + 1}`}
+                            className="w-20 h-20 object-cover rounded border border-border/50 hover:opacity-90 transition-opacity"
+                          />
                         ))}
                       </div>
                     )}

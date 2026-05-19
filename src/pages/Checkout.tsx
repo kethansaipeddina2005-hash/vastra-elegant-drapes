@@ -221,7 +221,8 @@ const Checkout = () => {
           shipping_address_id: null,
           status: "processing",
           payment_method: paymentMethod,
-          payment_status: paymentMethod === "cod" ? "pending" : "completed",
+          // Always start as pending — Razorpay flips to 'completed' only after server-side signature verification
+          payment_status: "pending",
           customer_name: shippingData.fullName,
           customer_email: shippingData.email,
           customer_phone: shippingData.phone,
@@ -314,7 +315,13 @@ const Checkout = () => {
           notes: {
             order_id: orderId,
             user_id: user!.id
-          }
+          },
+          // Server re-validates pricing & coupon to prevent client-side tampering
+          items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity })),
+          shipping: shipping,
+          coupon_code: promoCode || null,
+          pricing_region: pricingRegion,
+          order_id: orderId,
         }
       });
 
