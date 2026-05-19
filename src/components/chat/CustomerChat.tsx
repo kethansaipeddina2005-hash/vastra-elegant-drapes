@@ -265,11 +265,8 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
 
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('chat-images')
-          .getPublicUrl(fileName);
-
-        uploadedUrls.push(publicUrl);
+        // Bucket is private — store the storage path; ChatImage resolves signed URLs at render time
+        uploadedUrls.push(fileName);
       }
     } catch (error) {
       console.error('Error uploading images:', error);
