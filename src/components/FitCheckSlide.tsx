@@ -32,7 +32,24 @@ const FitCheckSlide = ({ sareeImageUrl, sareeName, className }: FitCheckSlidePro
         .single();
 
       if (data?.fit_check_photo) {
-        setFitCheckPhoto(data.fit_check_photo);
+        const stored = data.fit_check_photo as string;
+        if (stored.startsWith("http")) {
+          // Legacy public URL — try to extract path and create signed URL
+          const m = stored.match(/fit-check-photos\/(.+?)(?:\?|$)/);
+          if (m?.[1]) {
+            const { data: signed } = await supabase.storage
+              .from("fit-check-photos")
+              .createSignedUrl(m[1], 60 * 60);
+            setFitCheckPhoto(signed?.signedUrl ?? null);
+          } else {
+            setFitCheckPhoto(null);
+          }
+        } else {
+          const { data: signed } = await supabase.storage
+            .from("fit-check-photos")
+            .createSignedUrl(stored, 60 * 60);
+          setFitCheckPhoto(signed?.signedUrl ?? null);
+        }
       }
       setProfileChecked(true);
     } catch (err) {
@@ -62,15 +79,13 @@ const FitCheckSlide = ({ sareeImageUrl, sareeName, className }: FitCheckSlidePro
 
       if (error) throw error;
 
-      const { data: { publicUrl } } = supabase.storage
+      await supabase.from("profiles").update({ fit_check_photo: filePath }).eq("id", user.id);
+
+      const { data: signed } = await supabase.storage
         .from("fit-check-photos")
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 60 * 60);
 
-      const url = `${publicUrl}?t=${Date.now()}`;
-
-      await supabase.from("profiles").update({ fit_check_photo: url }).eq("id", user.id);
-
-      setFitCheckPhoto(url);
+      setFitCheckPhoto(signed?.signedUrl ?? null);
       toast({ title: "✨ Photo uploaded!", description: "Now tap 'Try It On' to see the magic" });
     } catch (err: any) {
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
