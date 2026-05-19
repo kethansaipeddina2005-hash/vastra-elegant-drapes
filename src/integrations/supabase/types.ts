@@ -353,6 +353,8 @@ export type Database = {
           id: string
           payment_method: string | null
           payment_status: string | null
+          paypal_capture_id: string | null
+          paypal_order_id: string | null
           refund_amount: number | null
           refund_notes: string | null
           refund_status: string | null
@@ -379,6 +381,8 @@ export type Database = {
           id?: string
           payment_method?: string | null
           payment_status?: string | null
+          paypal_capture_id?: string | null
+          paypal_order_id?: string | null
           refund_amount?: number | null
           refund_notes?: string | null
           refund_status?: string | null
@@ -405,6 +409,8 @@ export type Database = {
           id?: string
           payment_method?: string | null
           payment_status?: string | null
+          paypal_capture_id?: string | null
+          paypal_order_id?: string | null
           refund_amount?: number | null
           refund_notes?: string | null
           refund_status?: string | null
