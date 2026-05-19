@@ -353,10 +353,6 @@ export type Database = {
           id: string
           payment_method: string | null
           payment_status: string | null
-          paypal_capture_id: string | null
-          paypal_order_id: string | null
-          payu_mihpayid: string | null
-          payu_txn_id: string | null
           refund_amount: number | null
           refund_notes: string | null
           refund_status: string | null
@@ -366,8 +362,6 @@ export type Database = {
           shipping_company: string | null
           shipping_id: string | null
           status: string
-          stripe_payment_intent_id: string | null
-          stripe_session_id: string | null
           total_amount: number
           updated_at: string | null
           user_id: string
@@ -383,10 +377,6 @@ export type Database = {
           id?: string
           payment_method?: string | null
           payment_status?: string | null
-          paypal_capture_id?: string | null
-          paypal_order_id?: string | null
-          payu_mihpayid?: string | null
-          payu_txn_id?: string | null
           refund_amount?: number | null
           refund_notes?: string | null
           refund_status?: string | null
@@ -396,8 +386,6 @@ export type Database = {
           shipping_company?: string | null
           shipping_id?: string | null
           status?: string
-          stripe_payment_intent_id?: string | null
-          stripe_session_id?: string | null
           total_amount: number
           updated_at?: string | null
           user_id: string
@@ -413,10 +401,6 @@ export type Database = {
           id?: string
           payment_method?: string | null
           payment_status?: string | null
-          paypal_capture_id?: string | null
-          paypal_order_id?: string | null
-          payu_mihpayid?: string | null
-          payu_txn_id?: string | null
           refund_amount?: number | null
           refund_notes?: string | null
           refund_status?: string | null
@@ -426,8 +410,6 @@ export type Database = {
           shipping_company?: string | null
           shipping_id?: string | null
           status?: string
-          stripe_payment_intent_id?: string | null
-          stripe_session_id?: string | null
           total_amount?: number
           updated_at?: string | null
           user_id?: string
