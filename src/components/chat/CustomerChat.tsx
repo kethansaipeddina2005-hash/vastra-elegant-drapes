@@ -414,13 +414,12 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
                     {msg.images && msg.images.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-2">
                         {msg.images.map((img, idx) => (
-                          <a key={idx} href={img} target="_blank" rel="noopener noreferrer">
-                            <img
-                              src={img}
-                              alt={`Attachment ${idx + 1}`}
-                              className="w-20 h-20 object-cover rounded border border-border/50 hover:opacity-90 transition-opacity"
-                            />
-                          </a>
+                          <ChatImage
+                            key={idx}
+                            src={img}
+                            alt={`Attachment ${idx + 1}`}
+                            className="w-20 h-20 object-cover rounded border border-border/50 hover:opacity-90 transition-opacity"
+                          />
                         ))}
                       </div>
                     )}
