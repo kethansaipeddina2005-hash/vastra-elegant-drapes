@@ -221,7 +221,8 @@ const Checkout = () => {
           shipping_address_id: null,
           status: "processing",
           payment_method: paymentMethod,
-          payment_status: paymentMethod === "cod" ? "pending" : "completed",
+          // Always start as pending — Razorpay flips to 'completed' only after server-side signature verification
+          payment_status: "pending",
           customer_name: shippingData.fullName,
           customer_email: shippingData.email,
           customer_phone: shippingData.phone,
