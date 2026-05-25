@@ -15,6 +15,17 @@ interface ContactRequest {
   message: string;
 }
 
+function escapeHtml(str: string): string {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -23,17 +34,30 @@ serve(async (req) => {
   try {
     const { name, email, subject, message }: ContactRequest = await req.json();
 
-    // Validate input
-    if (!name || !email || !subject || !message) {
-      throw new Error("All fields are required");
+    // Validate input (defense in depth)
+    if (
+      typeof name !== "string" || name.trim().length === 0 || name.length > 100 ||
+      typeof email !== "string" || !EMAIL_RE.test(email) || email.length > 255 ||
+      typeof subject !== "string" || subject.trim().length === 0 || subject.length > 200 ||
+      typeof message !== "string" || message.trim().length === 0 || message.length > 2000
+    ) {
+      return new Response(
+        JSON.stringify({ error: "Invalid input" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safeSubject = escapeHtml(subject);
+    const safeMessage = escapeHtml(message).replace(/\n/g, "<br>");
 
     // Send email to admin
     const emailResponse = await resend.emails.send({
       from: "Vastra Contact Form <onboarding@resend.dev>",
       to: ["kethansaipeddina2005@gmail.com"],
       reply_to: email,
-      subject: `Contact Form: ${subject}`,
+      subject: `Contact Form: ${subject.slice(0, 200)}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -56,18 +80,18 @@ serve(async (req) => {
               <div class="content">
                 <div class="info-box">
                   <h3 style="margin-top: 0;">Contact Details</h3>
-                  <p style="margin: 5px 0;"><strong>Name:</strong> ${name}</p>
-                  <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
-                  <p style="margin: 5px 0;"><strong>Subject:</strong> ${subject}</p>
+                  <p style="margin: 5px 0;"><strong>Name:</strong> ${safeName}</p>
+                  <p style="margin: 5px 0;"><strong>Email:</strong> ${safeEmail}</p>
+                  <p style="margin: 5px 0;"><strong>Subject:</strong> ${safeSubject}</p>
                 </div>
 
                 <h3>Message</h3>
                 <div class="message-box">
-                  ${message.replace(/\n/g, '<br>')}
+                  ${safeMessage}
                 </div>
 
                 <p style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee; color: #666;">
-                  Please respond to this inquiry as soon as possible by replying to this email or contacting ${email} directly.
+                  Please respond to this inquiry as soon as possible by replying to this email or contacting ${safeEmail} directly.
                 </p>
               </div>
             </div>
@@ -99,12 +123,12 @@ serve(async (req) => {
                 <h1 style="color: #fff; margin: 0; font-family: 'Playfair Display', serif;">Thank You for Contacting Vastra</h1>
               </div>
               <div class="content">
-                <p>Dear ${name},</p>
+                <p>Dear ${safeName},</p>
                 <p>Thank you for reaching out to us. We have received your message and will get back to you within 24 hours.</p>
                 
                 <p><strong>Your message:</strong></p>
                 <p style="background: #f9f9f9; padding: 15px; border-radius: 5px; border-left: 4px solid #c2a079;">
-                  ${message.replace(/\n/g, '<br>')}
+                  ${safeMessage}
                 </p>
 
                 <p style="margin-top: 30px;">
@@ -137,7 +161,7 @@ serve(async (req) => {
   } catch (error: any) {
     console.error("Error in send-contact-notification function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Unable to send message. Please try again later." }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
