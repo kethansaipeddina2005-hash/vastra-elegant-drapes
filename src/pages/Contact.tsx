@@ -8,6 +8,14 @@ import { Card } from "@/components/ui/card";
 import { Mail, Phone, MapPin, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import SEO from "@/components/SEO";
+import { z } from "zod";
+
+const contactSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100),
+  email: z.string().trim().email("Invalid email").max(255),
+  subject: z.string().trim().min(1, "Subject is required").max(200),
+  message: z.string().trim().min(1, "Message is required").max(2000),
+});
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -24,23 +32,31 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
+      const parsed = contactSchema.safeParse(formData);
+      if (!parsed.success) {
+        const first = parsed.error.errors[0];
+        toast({
+          title: "Invalid input",
+          description: first?.message ?? "Please check the form fields.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      const clean = parsed.data;
+
       const { supabase } = await import("@/integrations/supabase/client");
       
       // Save to database
       const { error: dbError } = await supabase
         .from('contact_messages')
-        .insert({
-          name: formData.name,
-          email: formData.email,
-          subject: formData.subject,
-          message: formData.message,
-        });
+        .insert(clean);
 
       if (dbError) throw dbError;
 
       // Also send email notification
       await supabase.functions.invoke('send-contact-notification', {
-        body: formData
+        body: clean,
       });
 
       toast({
