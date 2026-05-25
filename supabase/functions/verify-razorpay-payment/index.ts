@@ -106,7 +106,7 @@ serve(async (req) => {
   } catch (error: any) {
     console.error("Error in verify-razorpay-payment function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Payment verification failed." }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
