@@ -69,6 +69,46 @@ serve(async (req) => {
     const safePhone = escapeHtml(customerPhone);
     const safeOrderId = escapeHtml(orderId);
 
+    // Fetch authoritative order + address details server-side (service role).
+    const adminClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    const { data: orderRow } = await adminClient
+      .from("orders")
+      .select("payment_method, payment_status, status, final_amount, shipping_address_id")
+      .eq("id", orderId)
+      .maybeSingle();
+    let addressRow: any = null;
+    if (orderRow?.shipping_address_id) {
+      const { data: addr } = await adminClient
+        .from("addresses")
+        .select("full_name, phone, address_line1, address_line2, city, state, postal_code, country")
+        .eq("id", orderRow.shipping_address_id)
+        .maybeSingle();
+      addressRow = addr;
+    }
+    const addressHtml = addressRow
+      ? `
+        <div class="info-box">
+          <h3 style="margin-top: 0;">Shipping Address</h3>
+          <p style="margin: 5px 0;">${escapeHtml(addressRow.full_name)}</p>
+          <p style="margin: 5px 0;">${escapeHtml(addressRow.address_line1)}${addressRow.address_line2 ? ", " + escapeHtml(addressRow.address_line2) : ""}</p>
+          <p style="margin: 5px 0;">${escapeHtml(addressRow.city)}, ${escapeHtml(addressRow.state)} ${escapeHtml(addressRow.postal_code)}</p>
+          <p style="margin: 5px 0;">${escapeHtml(addressRow.country)}</p>
+          <p style="margin: 5px 0;"><strong>Phone:</strong> ${escapeHtml(addressRow.phone)}</p>
+        </div>`
+      : "";
+    const paymentHtml = orderRow
+      ? `
+        <div class="info-box">
+          <h3 style="margin-top: 0;">Payment</h3>
+          <p style="margin: 5px 0;"><strong>Method:</strong> ${escapeHtml(orderRow.payment_method ?? "-")}</p>
+          <p style="margin: 5px 0;"><strong>Status:</strong> ${escapeHtml(orderRow.payment_status ?? "-")}</p>
+          <p style="margin: 5px 0;"><strong>Order Status:</strong> ${escapeHtml(orderRow.status ?? "-")}</p>
+        </div>`
+      : "";
+
     // Create order summary HTML
     const orderItemsHtml = orderItems
       .map(
@@ -82,10 +122,10 @@ serve(async (req) => {
       )
       .join("");
 
-    // Send email to admin
+    // Send email to admins
     const adminEmail = await resend.emails.send({
       from: "Vastra Orders <onboarding@resend.dev>",
-      to: ["kethan2311@gmail.com"],
+      to: ["kethan2311@gmail.com", "kethansaipeddina2005@gmail.com"],
       subject: `New Order Received - #${String(orderId).slice(0, 8)}`,
       html: `
         <!DOCTYPE html>
@@ -118,7 +158,8 @@ serve(async (req) => {
                   <p style="margin: 5px 0;"><strong>Email:</strong> ${safeEmail}</p>
                   <p style="margin: 5px 0;"><strong>Phone:</strong> ${safePhone}</p>
                 </div>
-
+                ${addressHtml}
+                ${paymentHtml}
                 <h3>Order Items</h3>
                 <table>
                   <thead>

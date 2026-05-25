@@ -117,6 +117,11 @@ const Orders = () => {
         .eq('id', orderId);
 
       if (error) throw error;
+      try {
+        await supabase.functions.invoke('send-return-notification', { body: { orderId } });
+      } catch (e) {
+        console.error('Return notification email failed:', e);
+      }
       toast.success('Return request submitted successfully! We will contact you shortly.');
       fetchOrders();
     } catch (error) {
