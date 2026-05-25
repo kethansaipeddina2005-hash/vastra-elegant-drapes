@@ -271,6 +271,19 @@ const Checkout = () => {
       if (paymentMethod === "razorpay") {
         await handleRazorpayPayment(order.id, total);
       } else if (paymentMethod === "cod") {
+        // Server-side recompute & persist authoritative final_amount for COD
+        // (defends against client-tampered prices/discounts).
+        const { error: finalizeErr } = await supabase.functions.invoke('finalize-cod-order', {
+          body: {
+            order_id: order.id,
+            items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity })),
+            shipping,
+            coupon_code: promoCode || null,
+            pricing_region: pricingRegion,
+          },
+        });
+        if (finalizeErr) throw finalizeErr;
+
         toast({
           title: "Order Placed Successfully!",
           description: `Order #${order.id.slice(0, 8)} confirmed. Pay on delivery.`,

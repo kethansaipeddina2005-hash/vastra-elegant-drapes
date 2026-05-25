@@ -169,7 +169,7 @@ serve(async (req) => {
   } catch (error: any) {
     console.error("Error in create-razorpay-order function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Unable to create payment order." }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

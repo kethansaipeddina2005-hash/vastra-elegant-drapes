@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.0";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -12,6 +13,8 @@ interface SubscriptionEmailRequest {
   email: string;
 }
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -21,11 +24,40 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email }: SubscriptionEmailRequest = await req.json();
 
-    console.log("Sending welcome email to:", email);
+    if (typeof email !== "string" || !EMAIL_RE.test(email) || email.length > 255) {
+      return new Response(
+        JSON.stringify({ error: "Invalid email" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const normalized = email.toLowerCase().trim();
+
+    // Only send a welcome email to addresses that are actually subscribed.
+    // This prevents the function from being abused to spam arbitrary inboxes
+    // with Vastra-branded mail.
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    const { data: sub, error: subErr } = await admin
+      .from("subscriptions")
+      .select("id")
+      .eq("email", normalized)
+      .maybeSingle();
+
+    if (subErr || !sub) {
+      return new Response(
+        JSON.stringify({ error: "Email not subscribed" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("Sending welcome email to:", normalized);
 
     const emailResponse = await resend.emails.send({
       from: "Vastra <onboarding@resend.dev>",
-      to: [email],
+      to: [normalized],
       subject: "Welcome to Vastra - You're Now Part of Our Family! 🪷",
       html: `
         <!DOCTYPE html>
@@ -95,7 +127,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error sending subscription email:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Unable to send welcome email." }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

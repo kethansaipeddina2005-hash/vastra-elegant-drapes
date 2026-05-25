@@ -22,6 +22,15 @@ interface OrderNotificationRequest {
   }>;
 }
 
+function escapeHtml(str: unknown): string {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -55,14 +64,19 @@ serve(async (req) => {
       orderItems,
     }: OrderNotificationRequest = await req.json();
 
+    const safeName = escapeHtml(customerName);
+    const safeEmail = escapeHtml(customerEmail);
+    const safePhone = escapeHtml(customerPhone);
+    const safeOrderId = escapeHtml(orderId);
+
     // Create order summary HTML
     const orderItemsHtml = orderItems
       .map(
         (item) => `
         <tr>
-          <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${item.price.toLocaleString()}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">${escapeHtml(item.name)}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${Number(item.quantity) || 0}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${(Number(item.price) || 0).toLocaleString()}</td>
         </tr>
       `
       )
@@ -72,7 +86,7 @@ serve(async (req) => {
     const adminEmail = await resend.emails.send({
       from: "Vastra Orders <onboarding@resend.dev>",
       to: ["kethan2311@gmail.com"],
-      subject: `New Order Received - #${orderId.slice(0, 8)}`,
+      subject: `New Order Received - #${String(orderId).slice(0, 8)}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -96,13 +110,13 @@ serve(async (req) => {
               </div>
               <div class="content">
                 <h2 style="color: #c2a079;">Order Details</h2>
-                <p><strong>Order ID:</strong> #${orderId.slice(0, 8)}</p>
+                <p><strong>Order ID:</strong> #${safeOrderId.slice(0, 8)}</p>
                 
                 <div class="info-box">
                   <h3 style="margin-top: 0;">Customer Information</h3>
-                  <p style="margin: 5px 0;"><strong>Name:</strong> ${customerName}</p>
-                  <p style="margin: 5px 0;"><strong>Email:</strong> ${customerEmail}</p>
-                  <p style="margin: 5px 0;"><strong>Phone:</strong> ${customerPhone}</p>
+                  <p style="margin: 5px 0;"><strong>Name:</strong> ${safeName}</p>
+                  <p style="margin: 5px 0;"><strong>Email:</strong> ${safeEmail}</p>
+                  <p style="margin: 5px 0;"><strong>Phone:</strong> ${safePhone}</p>
                 </div>
 
                 <h3>Order Items</h3>
@@ -120,7 +134,7 @@ serve(async (req) => {
                 </table>
 
                 <div class="total">
-                  Total Amount: ₹${totalAmount.toLocaleString()}
+                  Total Amount: ₹${(Number(totalAmount) || 0).toLocaleString()}
                 </div>
 
                 <p style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee; color: #666;">
@@ -137,7 +151,7 @@ serve(async (req) => {
     const customerEmailResponse = await resend.emails.send({
       from: "Vastra <onboarding@resend.dev>",
       to: [customerEmail],
-      subject: `Order Confirmation - Vastra #${orderId.slice(0, 8)}`,
+      subject: `Order Confirmation - Vastra #${String(orderId).slice(0, 8)}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -160,10 +174,10 @@ serve(async (req) => {
               </div>
               <div class="content">
                 <h2 style="color: #c2a079;">Order Confirmed</h2>
-                <p>Dear ${customerName},</p>
+                <p>Dear ${safeName},</p>
                 <p>Thank you for your purchase! Your order has been successfully placed.</p>
                 
-                <p><strong>Order ID:</strong> #${orderId.slice(0, 8)}</p>
+                <p><strong>Order ID:</strong> #${safeOrderId.slice(0, 8)}</p>
 
                 <h3>Order Summary</h3>
                 <table>
@@ -180,7 +194,7 @@ serve(async (req) => {
                 </table>
 
                 <div class="total">
-                  Total: ₹${totalAmount.toLocaleString()}
+                  Total: ₹${(Number(totalAmount) || 0).toLocaleString()}
                 </div>
 
                 <p style="margin-top: 30px;">
@@ -216,7 +230,7 @@ serve(async (req) => {
   } catch (error: any) {
     console.error("Error in send-order-notification function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Unable to send order notification." }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
