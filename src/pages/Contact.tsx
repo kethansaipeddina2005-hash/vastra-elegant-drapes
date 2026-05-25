@@ -50,7 +50,12 @@ const Contact = () => {
       // Save to database
       const { error: dbError } = await supabase
         .from('contact_messages')
-        .insert(clean);
+        .insert({
+          name: clean.name,
+          email: clean.email,
+          subject: clean.subject,
+          message: clean.message,
+        });
 
       if (dbError) throw dbError;
 
