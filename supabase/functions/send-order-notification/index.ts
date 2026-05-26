@@ -187,6 +187,9 @@ serve(async (req) => {
         </html>
       `,
     });
+    if ((adminEmail as any)?.error) {
+      console.error("Resend admin email error:", (adminEmail as any).error);
+    }
 
     // Send confirmation email to customer
     const customerEmailResponse = await resend.emails.send({
@@ -255,6 +258,9 @@ serve(async (req) => {
         </html>
       `,
     });
+    if ((customerEmailResponse as any)?.error) {
+      console.error("Resend customer email error:", (customerEmailResponse as any).error);
+    }
 
     console.log("Order notification emails sent:", { adminEmail, customerEmailResponse });
 
