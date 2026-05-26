@@ -29,6 +29,7 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
   };
 
   const formattedPrice = formatPrice(product.price, product.foreignPrice);
+  const outOfStock = (product.stockQuantity ?? 0) <= 0;
 
   return (
     <Card className="group relative overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
@@ -40,17 +41,19 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
             loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          {(product.isNew || product.isOnSale) && (
+          {(product.isNew || product.isOnSale || outOfStock) && (
             <div className="absolute top-4 left-4 flex flex-col gap-2">
-              {product.isNew && <Badge className="bg-accent text-accent-foreground">New</Badge>}
-              {product.isOnSale && <Badge className="bg-destructive text-destructive-foreground">Sale</Badge>}
+              {outOfStock && <Badge className="bg-destructive text-destructive-foreground">Out of Stock</Badge>}
+              {!outOfStock && product.isNew && <Badge className="bg-accent text-accent-foreground">New</Badge>}
+              {!outOfStock && product.isOnSale && <Badge className="bg-destructive text-destructive-foreground">Sale</Badge>}
             </div>
           )}
           <Button
             variant="ghost"
             size="icon"
+            disabled={outOfStock}
             className="absolute bottom-2 right-2 z-10 h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md opacity-0 group-hover:opacity-100 md:opacity-0 max-md:opacity-100 transition-opacity"
-            onClick={(e) => { e.preventDefault(); addToCart(product); }}
+            onClick={(e) => { e.preventDefault(); if (!outOfStock) addToCart(product); }}
           >
             <ShoppingCart className="h-4 w-4" />
           </Button>
