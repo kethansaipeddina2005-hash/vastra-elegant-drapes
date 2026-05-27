@@ -60,7 +60,7 @@ serve(async (req) => {
 
     const { data: order, error: orderErr } = await admin
       .from("orders")
-      .select("id, user_id, customer_name, customer_email, customer_phone, status, payment_status, payment_method, final_amount, total_amount, shipping_address_id, created_at")
+      .select("id, order_number, user_id, customer_name, customer_email, customer_phone, status, payment_status, payment_method, final_amount, total_amount, shipping_address_id, created_at")
       .eq("id", orderId)
       .maybeSingle();
     if (orderErr || !order) {
@@ -124,13 +124,14 @@ serve(async (req) => {
         <p style="margin:5px 0;"><strong>Phone:</strong> ${escapeHtml(address.phone)}</p>
       </div>` : "";
 
-    const safeOrderId = escapeHtml(order.id);
+    const displayOrderNumber = (order as any).order_number ?? `#${String(order.id).slice(0, 8)}`;
+    const safeDisplayOrderNumber = escapeHtml(displayOrderNumber);
     const total = Number(order.final_amount ?? order.total_amount ?? 0);
 
     await resend.emails.send({
       from: "Vastra Returns <onboarding@resend.dev>",
       to: ["kethan2311@gmail.com", "kethansaipeddina2005@gmail.com"],
-      subject: `Return Requested - Order #${String(order.id).slice(0, 8)}`,
+      subject: `Return Requested - ${displayOrderNumber}`,
       html: `
         <!DOCTYPE html><html><head><meta charset="utf-8">
         <style>
@@ -147,7 +148,7 @@ serve(async (req) => {
           <div class="header"><h1 style="color:#fff;margin:0;font-family:'Playfair Display',serif;">Return Request</h1></div>
           <div class="content">
             <h2 style="color:#c2a079;">Return Requested</h2>
-            <p><strong>Order ID:</strong> #${safeOrderId.slice(0, 8)}</p>
+            <p><strong>Order Number:</strong> ${safeDisplayOrderNumber}</p>
             <p><strong>Requested on:</strong> ${escapeHtml(new Date().toISOString())}</p>
             ${reason ? `<p><strong>Reason:</strong> ${escapeHtml(reason)}</p>` : ""}
             <div class="info-box">

@@ -76,9 +76,11 @@ serve(async (req) => {
     );
     const { data: orderRow } = await adminClient
       .from("orders")
-      .select("payment_method, payment_status, status, final_amount, shipping_address_id")
+      .select("order_number, payment_method, payment_status, status, final_amount, shipping_address_id")
       .eq("id", orderId)
       .maybeSingle();
+    const displayOrderNumber = orderRow?.order_number ?? `#${String(orderId).slice(0, 8)}`;
+    const safeDisplayOrderNumber = escapeHtml(displayOrderNumber);
     let addressRow: any = null;
     if (orderRow?.shipping_address_id) {
       const { data: addr } = await adminClient
@@ -126,7 +128,7 @@ serve(async (req) => {
     const adminEmail = await resend.emails.send({
       from: "Vastra Orders <onboarding@resend.dev>",
       to: ["kethan2311@gmail.com", "kethansaipeddina2005@gmail.com"],
-      subject: `New Order Received - #${String(orderId).slice(0, 8)}`,
+      subject: `New Order Received - ${displayOrderNumber}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -150,7 +152,7 @@ serve(async (req) => {
               </div>
               <div class="content">
                 <h2 style="color: #c2a079;">Order Details</h2>
-                <p><strong>Order ID:</strong> #${safeOrderId.slice(0, 8)}</p>
+                <p><strong>Order Number:</strong> ${safeDisplayOrderNumber}</p>
                 
                 <div class="info-box">
                   <h3 style="margin-top: 0;">Customer Information</h3>
@@ -195,7 +197,7 @@ serve(async (req) => {
     const customerEmailResponse = await resend.emails.send({
       from: "Vastra <onboarding@resend.dev>",
       to: [customerEmail],
-      subject: `Order Confirmation - Vastra #${String(orderId).slice(0, 8)}`,
+      subject: `Order Confirmation - Vastra ${displayOrderNumber}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -221,7 +223,7 @@ serve(async (req) => {
                 <p>Dear ${safeName},</p>
                 <p>Thank you for your purchase! Your order has been successfully placed.</p>
                 
-                <p><strong>Order ID:</strong> #${safeOrderId.slice(0, 8)}</p>
+                <p><strong>Order Number:</strong> ${safeDisplayOrderNumber}</p>
 
                 <h3>Order Summary</h3>
                 <table>

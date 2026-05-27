@@ -47,6 +47,7 @@ import { format } from "date-fns";
 
 interface Order {
   id: string;
+  order_number: string | null;
   user_id: string;
   total_amount: number;
   final_amount: number | null;
@@ -369,7 +370,7 @@ const Payments = () => {
                     filteredOrders.map((order) => (
                       <TableRow key={order.id}>
                         <TableCell className="font-mono text-xs">
-                          {order.id.slice(0, 8)}...
+                          {order.order_number ?? `${order.id.slice(0, 8)}...`}
                         </TableCell>
                         <TableCell>
                           <div>
@@ -432,8 +433,8 @@ const Payments = () => {
               <div className="space-y-4">
                 <div className="bg-muted p-4 rounded-lg space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Order ID:</span>
-                    <span className="font-mono">{selectedOrder.id.slice(0, 8)}...</span>
+                    <span className="text-muted-foreground">Order #:</span>
+                    <span className="font-mono">{selectedOrder.order_number ?? `${selectedOrder.id.slice(0, 8)}...`}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Customer:</span>

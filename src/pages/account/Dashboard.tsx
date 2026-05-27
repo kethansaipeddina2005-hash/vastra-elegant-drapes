@@ -195,7 +195,7 @@ const Dashboard = () => {
                   <div key={order.id} className="border rounded-lg p-4 hover:bg-muted/50 transition">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <p className="font-semibold">Order #{order.id.slice(0, 8)}</p>
+                        <p className="font-semibold">{order.order_number ?? `Order #${order.id.slice(0, 8)}`}</p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(order.created_at).toLocaleDateString('en-IN', {
                             day: 'numeric',
