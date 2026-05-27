@@ -286,7 +286,7 @@ const Checkout = () => {
 
         toast({
           title: "Order Placed Successfully!",
-          description: `Order #${order.id.slice(0, 8)} confirmed. Pay on delivery.`,
+          description: `${order.order_number ?? `Order #${order.id.slice(0, 8)}`} confirmed. Pay on delivery.`,
         });
         clearCart();
         clearPromo();
@@ -362,7 +362,7 @@ const Checkout = () => {
 
             toast({
               title: "Payment Successful!",
-              description: `Order #${orderId.slice(0, 8)} has been confirmed.`,
+              description: `Order has been confirmed.`,
             });
             clearCart();
             navigate("/account/orders");
