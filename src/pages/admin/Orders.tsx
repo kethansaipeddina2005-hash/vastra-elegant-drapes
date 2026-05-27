@@ -25,6 +25,7 @@ import * as XLSX from 'xlsx';
 
 interface Order {
   id: string;
+  order_number: string | null;
   customer_name: string;
   customer_email: string;
   customer_phone: string;
@@ -479,7 +480,7 @@ const AdminOrders = () => {
                   <TableBody>
                     {dateOrders.map((order) => (
                       <TableRow key={order.id} className={order.status === 'return_requested' ? 'bg-orange-50/50 dark:bg-orange-950/10' : ''}>
-                        <TableCell className="font-mono text-sm">{order.id.slice(0, 8)}...</TableCell>
+                        <TableCell className="font-mono text-sm">{order.order_number ?? `${order.id.slice(0, 8)}...`}</TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">{order.customer_name}</p>
