@@ -1,14 +1,27 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { XCircle, RefreshCw, MessageCircle, ArrowRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const PaymentFailure = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get("orderId");
   const reason = searchParams.get("reason") || "Payment could not be completed";
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!orderId) return;
+    supabase
+      .from("orders")
+      .select("order_number")
+      .eq("id", orderId)
+      .maybeSingle()
+      .then(({ data }) => setOrderNumber(data?.order_number ?? null));
+  }, [orderId]);
 
   return (
     <Layout>
@@ -30,8 +43,8 @@ const PaymentFailure = () => {
 
               {orderId && (
                 <div className="bg-muted/50 rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground">Order ID</p>
-                  <p className="font-mono text-lg font-semibold">{orderId.slice(0, 8).toUpperCase()}</p>
+                  <p className="text-sm text-muted-foreground">Order Number</p>
+                  <p className="font-mono text-lg font-semibold">{orderNumber ?? orderId.slice(0, 8).toUpperCase()}</p>
                 </div>
               )}
 
