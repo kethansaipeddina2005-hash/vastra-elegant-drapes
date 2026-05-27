@@ -25,6 +25,7 @@ interface ProductReturnInfo {
 
 interface Order {
   id: string;
+  order_number: string | null;
   created_at: string;
   updated_at: string;
   total_amount: number;
@@ -176,7 +177,7 @@ const Orders = () => {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-xl">
-                        Order #{order.id.slice(0, 8)}
+                        {order.order_number ?? `Order #${order.id.slice(0, 8)}`}
                       </CardTitle>
                       <Badge className={getStatusColor(order.status)}>
                         {getStatusLabel(order.status)}
