@@ -1,22 +1,34 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Package, ArrowRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get("orderId");
   const { clearCart, clearPromo } = useCart();
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
 
   useEffect(() => {
     // Clear cart on successful payment
     clearCart();
     clearPromo();
   }, []);
+
+  useEffect(() => {
+    if (!orderId) return;
+    supabase
+      .from("orders")
+      .select("order_number")
+      .eq("id", orderId)
+      .maybeSingle()
+      .then(({ data }) => setOrderNumber(data?.order_number ?? null));
+  }, [orderId]);
 
   return (
     <Layout>
@@ -38,8 +50,8 @@ const PaymentSuccess = () => {
 
               {orderId && (
                 <div className="bg-muted/50 rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground">Order ID</p>
-                  <p className="font-mono text-lg font-semibold">{orderId.slice(0, 8).toUpperCase()}</p>
+                  <p className="text-sm text-muted-foreground">Order Number</p>
+                  <p className="font-mono text-lg font-semibold">{orderNumber ?? orderId.slice(0, 8).toUpperCase()}</p>
                 </div>
               )}
 
