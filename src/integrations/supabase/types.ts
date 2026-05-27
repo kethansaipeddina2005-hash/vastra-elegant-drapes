@@ -351,6 +351,7 @@ export type Database = {
           discount_percent: number | null
           final_amount: number | null
           id: string
+          order_number: string | null
           payment_method: string | null
           payment_status: string | null
           refund_amount: number | null
@@ -375,6 +376,7 @@ export type Database = {
           discount_percent?: number | null
           final_amount?: number | null
           id?: string
+          order_number?: string | null
           payment_method?: string | null
           payment_status?: string | null
           refund_amount?: number | null
@@ -399,6 +401,7 @@ export type Database = {
           discount_percent?: number | null
           final_amount?: number | null
           id?: string
+          order_number?: string | null
           payment_method?: string | null
           payment_status?: string | null
           refund_amount?: number | null
