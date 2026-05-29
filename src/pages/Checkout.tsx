@@ -43,7 +43,9 @@ const Checkout = () => {
     clearCart, 
     promoCode: savedPromoCode, 
     discountPercent: savedDiscountPercent,
-    clearPromo
+    clearPromo,
+    updateQuantity,
+    removeFromCart
   } = useCart();
   const [step, setStep] = useState(1);
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
