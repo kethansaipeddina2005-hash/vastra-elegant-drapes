@@ -29,7 +29,9 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
   };
 
   const formattedPrice = formatPrice(product.price, product.foreignPrice);
-  const outOfStock = (product.stockQuantity ?? 0) <= 0;
+  const stockQty = product.stockQuantity ?? 0;
+  const outOfStock = stockQty <= 0;
+  const lowStock = !outOfStock && stockQty <= 3;
 
   return (
     <Card className="group relative overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
@@ -41,9 +43,10 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
             loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          {(product.isNew || product.isOnSale || outOfStock) && (
+          {(product.isNew || product.isOnSale || outOfStock || lowStock) && (
             <div className="absolute top-4 left-4 flex flex-col gap-2">
               {outOfStock && <Badge className="bg-destructive text-destructive-foreground">Out of Stock</Badge>}
+              {lowStock && <Badge className="bg-gold text-foreground">Only {stockQty} left</Badge>}
               {!outOfStock && product.isNew && <Badge className="bg-accent text-accent-foreground">New</Badge>}
               {!outOfStock && product.isOnSale && <Badge className="bg-destructive text-destructive-foreground">Sale</Badge>}
             </div>
