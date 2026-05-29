@@ -1,35 +1,45 @@
-## Goal
+# Stock restore + checkout re-validation
 
-Send a detailed email to **kethansaipeddina2005@gmail.com** whenever:
-1. A new order is placed
-2. A customer requests a return
+Two related fixes so inventory stays accurate end-to-end.
 
-Each email includes: order #, customer name/email/phone, full shipping address, all line items, totals, payment method, payment status, and order status.
+## 1. Auto-restore stock when an order is cancelled or returned
 
-## Note on "replacement"
+Today a DB trigger decrements `products.stock_quantity` on every new `order_items` row, but stock is **never** added back when an order is cancelled or returned. Result: oversold-looking inventory and false "Out of Stock" badges.
 
-The current schema has no replacement flow — only returns (`status: return_requested` → `returned` + refund). I'll wire the same notification to fire for return requests. If you actually want a separate "replacement" workflow added (new status, admin UI, customer trigger), that's a bigger change — happy to scope it next if you want it.
+**Migration:**
+- New SECURITY DEFINER function `restore_product_stock_for_order(order_id uuid)` that loops the order's items and increments `products.stock_quantity` by each item's qty.
+- New trigger `restore_stock_on_order_status_change` on `AFTER UPDATE OF status ON public.orders`:
+  - If `OLD.status NOT IN ('cancelled','returned')` AND `NEW.status IN ('cancelled','returned')` → call restore function.
+  - Guard with a per-order `stock_restored boolean DEFAULT false` column on `orders` so toggling status twice (e.g. returned → cancelled) never double-restores.
+- Add `stock_restored` column (default false), set true inside the restore function.
+- Revoke EXECUTE from PUBLIC / anon / authenticated on the new function.
 
-## Changes
+No change to the existing decrement trigger.
 
-### 1. `supabase/functions/send-order-notification/index.ts`
-- Add `kethansaipeddina2005@gmail.com` to the `to:` array (alongside existing `kethan2311@gmail.com`).
-- No template changes — it already includes order #, customer info, address, items, payment status/method, totals.
+## 2. Block checkout when cart qty > current stock
 
-### 2. New edge function: `send-return-notification`
-- Triggered when a customer clicks "Request Return" on `src/pages/account/Orders.tsx`.
-- Recipients: `kethan2311@gmail.com` + `kethansaipeddina2005@gmail.com`.
-- Pulls order, order_items, product names, and shipping address server-side (using service role) from the order ID — so the client can't forge contents.
-- Email body: subject `Return requested — Order #XXXX`, plus the same detail block used by order notifications, with a "Return requested on <date>" header and the reason (if provided).
-- HTML-escapes all user fields (same helper pattern already used in `send-order-notification`).
+Race: user adds 2 to cart, admin/another buyer reduces stock to 1, user proceeds to pay. Today nothing blocks them.
 
-### 3. `src/pages/account/Orders.tsx`
-- After the existing `update({ status: 'return_requested' })` succeeds, invoke `send-return-notification` with `{ orderId }`. Failure to email does not block the status update (logged, toast still shows success).
+**`src/pages/Checkout.tsx`:**
+- Before creating the Razorpay order / COD finalize call, fetch live `id, stock_quantity, name` for every `cart` item id in one query.
+- If any item has `stock_quantity < cart qty`:
+  - Show a destructive toast listing the affected products and the max available.
+  - Auto-clamp cart quantities via `updateQuantity` (already in CartContext) or remove if stock = 0.
+  - Abort the payment step; user stays on checkout to review.
+- Run this re-check on Checkout mount too so the totals shown already reflect reality.
 
-### 4. Memory update
-- Update `mem://integrations/email-notifications` to record that admin notifications go to both `kethan2311@gmail.com` and `kethansaipeddina2005@gmail.com`, and that return requests now also trigger an admin email.
+## 3. Low-stock surfacing (small UX nicety, same scope)
 
-## Out of scope (ask if you want these)
-- Adding a true replacement workflow (new order status, customer UI, admin handling).
-- Notifying the customer (these are admin-only emails).
-- Switching to Lovable Emails / branded domain — current setup uses Resend with the existing `RESEND_API_KEY` secret; keeping that.
+- `ProductCard`: when `1 ≤ stockQuantity ≤ 3`, show an amber "Only N left" badge (reusing existing badge slot, hidden when out of stock).
+
+## Technical details
+
+- Files touched:
+  - new `supabase/migrations/<ts>_restore_stock_on_cancel_return.sql`
+  - `src/pages/Checkout.tsx` (pre-payment stock check)
+  - `src/components/ProductCard.tsx` (low-stock badge)
+- No edge-function changes.
+- No change to existing decrement trigger or `order_items` schema.
+- The new orders column `stock_restored` is internal; no UI surfaces it.
+
+Confirm and I'll switch to build mode and ship it.

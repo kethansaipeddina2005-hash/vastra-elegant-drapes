@@ -363,6 +363,7 @@ export type Database = {
           shipping_company: string | null
           shipping_id: string | null
           status: string
+          stock_restored: boolean
           total_amount: number
           updated_at: string | null
           user_id: string
@@ -388,6 +389,7 @@ export type Database = {
           shipping_company?: string | null
           shipping_id?: string | null
           status?: string
+          stock_restored?: boolean
           total_amount: number
           updated_at?: string | null
           user_id: string
@@ -413,6 +415,7 @@ export type Database = {
           shipping_company?: string | null
           shipping_id?: string | null
           status?: string
+          stock_restored?: boolean
           total_amount?: number
           updated_at?: string | null
           user_id?: string
@@ -664,6 +667,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      restore_product_stock_for_order: {
+        Args: { _order_id: string }
+        Returns: undefined
       }
     }
     Enums: {

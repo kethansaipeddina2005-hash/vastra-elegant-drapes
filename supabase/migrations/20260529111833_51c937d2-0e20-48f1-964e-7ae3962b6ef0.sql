@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.handle_order_status_stock_restore() FROM PUBLIC, anon, authenticated;

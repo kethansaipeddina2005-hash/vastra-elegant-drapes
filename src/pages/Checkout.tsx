@@ -43,7 +43,9 @@ const Checkout = () => {
     clearCart, 
     promoCode: savedPromoCode, 
     discountPercent: savedDiscountPercent,
-    clearPromo
+    clearPromo,
+    updateQuantity,
+    removeFromCart
   } = useCart();
   const [step, setStep] = useState(1);
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
@@ -209,6 +211,36 @@ const Checkout = () => {
     setIsProcessing(true);
 
     try {
+      // Live stock re-validation: prevent oversells if inventory dropped after add-to-cart
+      const ids = cart.map((i) => i.id);
+      if (ids.length > 0) {
+        const { data: liveStock, error: stockErr } = await supabase
+          .from("products")
+          .select("id, name, stock_quantity")
+          .in("id", ids);
+        if (stockErr) throw stockErr;
+        const stockMap = new Map((liveStock ?? []).map((p: any) => [p.id, p]));
+        const issues: string[] = [];
+        for (const item of cart) {
+          const p: any = stockMap.get(item.id);
+          const available = Math.max(0, p?.stock_quantity ?? 0);
+          if (available < item.quantity) {
+            issues.push(`${p?.name ?? item.name}: only ${available} left`);
+            if (available <= 0) removeFromCart(item.id);
+            else updateQuantity(item.id, available);
+          }
+        }
+        if (issues.length > 0) {
+          toast({
+            title: "Stock changed",
+            description: `We updated your cart: ${issues.join("; ")}. Please review and try again.`,
+            variant: "destructive",
+          });
+          setIsProcessing(false);
+          return;
+        }
+      }
+
       // Create order in database first
       const { data: order, error: orderError } = await supabase
         .from("orders")
