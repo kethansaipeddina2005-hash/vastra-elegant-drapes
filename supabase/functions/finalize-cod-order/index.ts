@@ -12,6 +12,7 @@ interface Body {
   shipping?: number;
   coupon_code?: string | null;
   pricing_region?: "india" | "foreign";
+  guest_token?: string | null;
 }
 
 serve(async (req) => {
@@ -21,28 +22,15 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
+      { global: { headers: authHeader ? { Authorization: authHeader } : {} } }
     );
     const { data: { user } } = await userClient.auth.getUser();
-    if (!user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const body: Body = await req.json();
-    const { order_id, items, shipping = 0, coupon_code, pricing_region } = body;
+    const { order_id, items, shipping = 0, coupon_code, pricing_region, guest_token } = body;
 
     if (!order_id || !Array.isArray(items) || items.length === 0) {
       return new Response(JSON.stringify({ error: "Invalid input" }), {
@@ -56,13 +44,16 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Verify order ownership and that it's still pending
+    // Verify order ownership: either signed-in owner OR matching guest_token
     const { data: order, error: orderErr } = await admin
       .from("orders")
-      .select("id, user_id, payment_status")
+      .select("id, user_id, guest_token, payment_status")
       .eq("id", order_id)
       .maybeSingle();
-    if (orderErr || !order || order.user_id !== user.id) {
+    const isGuest = !order?.user_id;
+    const guestOk = isGuest && guest_token && order?.guest_token === guest_token;
+    const userOk = !isGuest && user && order?.user_id === user.id;
+    if (orderErr || !order || (!guestOk && !userOk)) {
       return new Response(JSON.stringify({ error: "Order not found" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -121,7 +112,7 @@ serve(async (req) => {
     const shippingAmount = Math.max(0, Number(shipping) || 0);
     const finalAmount = Math.max(0, subtotal + shippingAmount - discountAmount);
 
-    const { error: updErr } = await admin
+    const updQuery = admin
       .from("orders")
       .update({
         total_amount: subtotal,
@@ -129,8 +120,10 @@ serve(async (req) => {
         discount_percent: discountPercent,
         coupon_code: discountPercent > 0 ? coupon_code : null,
       })
-      .eq("id", order_id)
-      .eq("user_id", user.id);
+      .eq("id", order_id);
+    const { error: updErr } = isGuest
+      ? await updQuery.eq("guest_token", guest_token as string)
+      : await updQuery.eq("user_id", user!.id);
     if (updErr) throw updErr;
 
     return new Response(
