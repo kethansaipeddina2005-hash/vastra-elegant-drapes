@@ -22,6 +22,9 @@ declare global {
   }
 }
 
+const GUEST_TOKEN_KEY = "vastra_guest_token";
+const GUEST_ORDER_KEY = "vastra_guest_order_id";
+
 interface SavedAddress {
   id: string;
   full_name: string;
@@ -92,10 +95,14 @@ const Checkout = () => {
     }
   };
 
-  // Fetch saved addresses
+  // Fetch saved addresses (only for signed-in users)
   useEffect(() => {
     if (user) {
       fetchSavedAddresses();
+    } else {
+      setSavedAddresses([]);
+      setSelectedAddressId(null);
+      setUseNewAddress(true);
     }
   }, [user]);
 
@@ -198,13 +205,14 @@ const Checkout = () => {
 
   // ----------------- Place Order -----------------
   const handlePlaceOrder = async () => {
-    if (!user) {
+    // Guest checkout supported — no auth gate here.
+    if (!shippingData.email || !shippingData.fullName || !shippingData.phone) {
       toast({
-        title: "Authentication Required",
-        description: "Please log in to place an order.",
+        title: "Missing details",
+        description: "Please complete shipping information first.",
         variant: "destructive",
       });
-      navigate("/account/login");
+      setStep(1);
       return;
     }
 
@@ -241,11 +249,18 @@ const Checkout = () => {
         }
       }
 
+      // Guests get a random token used for later lookup & to authorize edge-function calls.
+      const guestToken =
+        !user && typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : null;
+
       // Create order in database first
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
-          user_id: user.id,
+          user_id: user?.id ?? null,
+          guest_token: user ? null : guestToken,
           total_amount: cartTotal,
           discount_percent: discountPercent,
           coupon_code: promoCode || null,
@@ -263,6 +278,14 @@ const Checkout = () => {
         .single();
 
       if (orderError) throw orderError;
+
+      // Persist guest token locally so the user can look up their order later
+      if (!user && guestToken) {
+        try {
+          localStorage.setItem(GUEST_TOKEN_KEY, guestToken);
+          localStorage.setItem(GUEST_ORDER_KEY, order.id);
+        } catch {}
+      }
 
       // Create order items
       const orderItems = cart.map(item => ({
@@ -312,6 +335,7 @@ const Checkout = () => {
             shipping,
             coupon_code: promoCode || null,
             pricing_region: pricingRegion,
+            guest_token: user ? null : guestToken,
           },
         });
         if (finalizeErr) throw finalizeErr;
@@ -322,7 +346,7 @@ const Checkout = () => {
         });
         clearCart();
         clearPromo();
-        navigate("/account/orders");
+        navigate(user ? "/account/orders" : "/");
         setIsProcessing(false);
       }
 
@@ -340,6 +364,7 @@ const Checkout = () => {
   // ----------------- Razorpay Payment -----------------
   const handleRazorpayPayment = async (orderId: string, amount: number) => {
     try {
+      const guestToken = !user ? localStorage.getItem(GUEST_TOKEN_KEY) : null;
       const scriptLoaded = await loadRazorpayScript();
       
       if (!scriptLoaded) {
@@ -359,7 +384,7 @@ const Checkout = () => {
           receipt: orderId,
           notes: {
             order_id: orderId,
-            user_id: user!.id
+            user_id: user?.id ?? "guest",
           },
           // Server re-validates pricing & coupon to prevent client-side tampering
           items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity })),
@@ -367,6 +392,7 @@ const Checkout = () => {
           coupon_code: promoCode || null,
           pricing_region: pricingRegion,
           order_id: orderId,
+          guest_token: guestToken,
         }
       });
 
@@ -386,7 +412,8 @@ const Checkout = () => {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-                order_id: orderId
+                order_id: orderId,
+                guest_token: guestToken,
               }
             });
 
@@ -397,7 +424,7 @@ const Checkout = () => {
               description: `Order has been confirmed.`,
             });
             clearCart();
-            navigate("/account/orders");
+            navigate(user ? "/account/orders" : "/");
           } catch (error) {
             console.error('Payment verification failed:', error);
             toast({
