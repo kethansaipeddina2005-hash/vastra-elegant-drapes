@@ -471,6 +471,7 @@ export type Database = {
       }
       products: {
         Row: {
+          batch_number: number | null
           category_id: string | null
           color: string | null
           created_at: string | null
@@ -483,6 +484,7 @@ export type Database = {
           name: string
           occasion: string | null
           price: number
+          product_code: string | null
           rating: number | null
           region: string | null
           return_days: number | null
@@ -492,6 +494,7 @@ export type Database = {
           videos: string[] | null
         }
         Insert: {
+          batch_number?: number | null
           category_id?: string | null
           color?: string | null
           created_at?: string | null
@@ -504,6 +507,7 @@ export type Database = {
           name: string
           occasion?: string | null
           price: number
+          product_code?: string | null
           rating?: number | null
           region?: string | null
           return_days?: number | null
@@ -513,6 +517,7 @@ export type Database = {
           videos?: string[] | null
         }
         Update: {
+          batch_number?: number | null
           category_id?: string | null
           color?: string | null
           created_at?: string | null
@@ -525,6 +530,7 @@ export type Database = {
           name?: string
           occasion?: string | null
           price?: number
+          product_code?: string | null
           rating?: number | null
           region?: string | null
           return_days?: number | null
