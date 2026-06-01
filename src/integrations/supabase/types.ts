@@ -350,6 +350,7 @@ export type Database = {
           customer_phone: string | null
           discount_percent: number | null
           final_amount: number | null
+          guest_token: string | null
           id: string
           order_number: string | null
           payment_method: string | null
@@ -366,7 +367,7 @@ export type Database = {
           stock_restored: boolean
           total_amount: number
           updated_at: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           coupon_code?: string | null
@@ -376,6 +377,7 @@ export type Database = {
           customer_phone?: string | null
           discount_percent?: number | null
           final_amount?: number | null
+          guest_token?: string | null
           id?: string
           order_number?: string | null
           payment_method?: string | null
@@ -392,7 +394,7 @@ export type Database = {
           stock_restored?: boolean
           total_amount: number
           updated_at?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           coupon_code?: string | null
@@ -402,6 +404,7 @@ export type Database = {
           customer_phone?: string | null
           discount_percent?: number | null
           final_amount?: number | null
+          guest_token?: string | null
           id?: string
           order_number?: string | null
           payment_method?: string | null
@@ -418,7 +421,7 @@ export type Database = {
           stock_restored?: boolean
           total_amount?: number
           updated_at?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -661,6 +664,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_guest_order: {
+        Args: { _guest_token: string; _order_id: string }
+        Returns: {
+          coupon_code: string
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          discount_percent: number
+          final_amount: number
+          id: string
+          order_number: string
+          payment_method: string
+          payment_status: string
+          status: string
+          total_amount: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
