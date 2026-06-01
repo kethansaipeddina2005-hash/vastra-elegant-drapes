@@ -541,6 +541,28 @@ const AdminProducts = () => {
                     />
                   </div>
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="batch_number">Batch Number</Label>
+                    <Input
+                      id="batch_number"
+                      type="number"
+                      min="1"
+                      placeholder="e.g. 1, 2, 3"
+                      value={formData.batch_number}
+                      onChange={(e) => setFormData({ ...formData, batch_number: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Product code will be auto-generated as B{formData.batch_number || 'N'}-1, B{formData.batch_number || 'N'}-2…
+                    </p>
+                  </div>
+                  {editingProduct?.product_code && (
+                    <div>
+                      <Label>Product Code</Label>
+                      <Input value={editingProduct.product_code} disabled className="font-mono" />
+                    </div>
+                  )}
+                </div>
                 <div>
                   <Label>Categories</Label>
                   <div className="grid grid-cols-2 gap-2 mt-2 max-h-40 overflow-y-auto border rounded-md p-3">
@@ -707,6 +729,7 @@ const AdminProducts = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Image</TableHead>
+                  <TableHead>Code</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Stock</TableHead>
@@ -725,6 +748,9 @@ const AdminProducts = () => {
                           className="w-16 h-16 object-cover rounded"
                         />
                       )}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {product.product_code || <span className="text-muted-foreground">—</span>}
                     </TableCell>
                     <TableCell className="font-medium">{product.name}</TableCell>
                     <TableCell>₹{product.price}{product.foreign_price ? ` / $${product.foreign_price}` : ''}</TableCell>
