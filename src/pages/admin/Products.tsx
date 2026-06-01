@@ -34,6 +34,8 @@ interface Product {
   images: string[];
   videos?: string[];
   category_ids?: string[];
+  batch_number?: number | null;
+  product_code?: string | null;
 }
 
 const AdminProducts = () => {
@@ -60,6 +62,7 @@ const AdminProducts = () => {
     occasion: '',
     region: '',
     return_days: '',
+    batch_number: '',
   });
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -246,6 +249,7 @@ const AdminProducts = () => {
         foreign_price: formData.foreign_price ? parseFloat(formData.foreign_price) : null,
         stock_quantity: parseInt(formData.stock_quantity),
         return_days: formData.return_days ? parseInt(formData.return_days) : null,
+        batch_number: formData.batch_number ? parseInt(formData.batch_number) : null,
         images: imageUrls,
         videos: videoUrls,
         is_new: true,
@@ -338,6 +342,7 @@ const AdminProducts = () => {
       occasion: product.occasion || '',
       region: product.region || '',
       return_days: (product as any).return_days?.toString() || '',
+      batch_number: product.batch_number != null ? String(product.batch_number) : '',
     });
     setSelectedCategories(product.category_ids || []);
     setExistingImages(product.images || []);
@@ -358,6 +363,7 @@ const AdminProducts = () => {
       occasion: '',
       region: '',
       return_days: '',
+      batch_number: '',
     });
     setSelectedCategories([]);
     setImageFiles([]);
