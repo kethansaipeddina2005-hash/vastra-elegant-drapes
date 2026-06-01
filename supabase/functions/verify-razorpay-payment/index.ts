@@ -12,6 +12,7 @@ interface VerifyPaymentRequest {
   razorpay_payment_id: string;
   razorpay_signature: string;
   order_id: string;
+  guest_token?: string | null;
 }
 
 serve(async (req) => {
@@ -20,30 +21,44 @@ serve(async (req) => {
   }
 
   try {
+    const authHeader = req.headers.get("Authorization");
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
       {
         global: {
-          headers: { Authorization: req.headers.get("Authorization")! },
+          headers: authHeader ? { Authorization: authHeader } : {},
         },
       }
     );
 
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser();
+    const { data: { user } } = await supabaseClient.auth.getUser();
 
-    if (!user) {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      order_id,
+      guest_token,
+    }: VerifyPaymentRequest = await req.json();
+
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Authorize: signed-in owner OR matching guest_token
+    const { data: ord } = await admin
+      .from("orders")
+      .select("id, user_id, guest_token")
+      .eq("id", order_id)
+      .maybeSingle();
+    const isGuest = !ord?.user_id;
+    const guestOk = isGuest && guest_token && ord?.guest_token === guest_token;
+    const userOk = !isGuest && user && ord?.user_id === user.id;
+    if (!ord || (!guestOk && !userOk)) {
       throw new Error("Unauthorized");
     }
-
-    const { 
-      razorpay_order_id, 
-      razorpay_payment_id, 
-      razorpay_signature,
-      order_id 
-    }: VerifyPaymentRequest = await req.json();
 
     const razorpayKeySecret = Deno.env.get("Live_Key_Secret");
 
@@ -75,16 +90,18 @@ serve(async (req) => {
       throw new Error("Invalid payment signature");
     }
 
-    // Update order status in database
-    const { error: updateError } = await supabaseClient
+    // Update order status in database via service role (works for guests too)
+    const updQuery = admin
       .from("orders")
       .update({
         payment_status: "completed",
         status: "processing",
         updated_at: new Date().toISOString(),
       })
-      .eq("id", order_id)
-      .eq("user_id", user.id);
+      .eq("id", order_id);
+    const { error: updateError } = isGuest
+      ? await updQuery.eq("guest_token", guest_token as string)
+      : await updQuery.eq("user_id", user!.id);
 
     if (updateError) {
       console.error("Error updating order:", updateError);

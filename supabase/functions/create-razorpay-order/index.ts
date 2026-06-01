@@ -17,6 +17,7 @@ interface CreateOrderRequest {
   coupon_code?: string | null;
   pricing_region?: "india" | "foreign";
   order_id?: string;
+  guest_token?: string | null;
 }
 
 serve(async (req) => {
@@ -25,26 +26,38 @@ serve(async (req) => {
   }
 
   try {
+    const authHeader = req.headers.get("Authorization");
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
       {
         global: {
-          headers: { Authorization: req.headers.get("Authorization")! },
+          headers: authHeader ? { Authorization: authHeader } : {},
         },
       }
     );
 
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser();
-
-    if (!user) {
-      throw new Error("Unauthorized");
-    }
+    const { data: { user } } = await supabaseClient.auth.getUser();
 
     const body: CreateOrderRequest = await req.json();
-    const { currency = "INR", receipt, notes, items, shipping, coupon_code, pricing_region, order_id } = body;
+    const { currency = "INR", receipt, notes, items, shipping, coupon_code, pricing_region, order_id, guest_token } = body;
+
+    // Allow either: authenticated user, OR a valid guest_token matching the order_id.
+    const adminClientForAuth = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    let isGuest = false;
+    if (!user) {
+      if (!order_id || !guest_token) throw new Error("Unauthorized");
+      const { data: ord } = await adminClientForAuth
+        .from("orders")
+        .select("id, guest_token, user_id")
+        .eq("id", order_id)
+        .maybeSingle();
+      if (!ord || ord.user_id || ord.guest_token !== guest_token) throw new Error("Unauthorized");
+      isGuest = true;
+    }
 
     // Recompute the charge amount server-side to prevent client-side price/discount tampering.
     let chargeAmount = body.amount ?? 0;
@@ -110,7 +123,7 @@ serve(async (req) => {
             coupon_code: discountPercent > 0 ? coupon_code : null,
           })
           .eq("id", order_id)
-          .eq("user_id", user.id);
+          .eq(isGuest ? "guest_token" : "user_id", isGuest ? (guest_token as string) : user!.id);
       }
     }
 
