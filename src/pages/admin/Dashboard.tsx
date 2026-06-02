@@ -230,6 +230,14 @@ const AdminDashboard = () => {
               <Mail className="mr-2 h-5 w-5" />
               Contact Messages
             </Button>
+            <Button
+              onClick={() => navigate('/admin/popup-ads')}
+              className="h-20 text-lg"
+              variant="outline"
+            >
+              <Tag className="mr-2 h-5 w-5" />
+              Popup Ads
+            </Button>
           </div>
         </div>
       </div>

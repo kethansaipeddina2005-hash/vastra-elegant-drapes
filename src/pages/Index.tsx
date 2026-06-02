@@ -6,6 +6,7 @@ import Newsletter from "@/components/Newsletter";
 import { RecentlyViewedProducts } from "@/components/RecentlyViewedProducts";
 import CategorySection from "@/components/CategorySection";
 import SEO, { getOrganizationSchema, getWebsiteSchema } from "@/components/SEO";
+import PopupAd from "@/components/PopupAd";
 
 const Index = () => {
   const structuredData = [
@@ -29,6 +30,7 @@ const Index = () => {
       </div>
       <About />
       <Newsletter />
+      <PopupAd />
     </Layout>
   );
 };
