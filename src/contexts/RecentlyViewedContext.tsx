@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product } from '@/types/product';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RecentlyViewedContextType {
   recentlyViewed: Product[];
@@ -17,13 +18,32 @@ export const RecentlyViewedProvider = ({ children }: { children: ReactNode }) =>
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setRecentlyViewed(JSON.parse(stored));
-      } catch (error) {
-        console.error('Error parsing recently viewed:', error);
-      }
+    if (!stored) return;
+    let parsed: Product[] = [];
+    try {
+      parsed = JSON.parse(stored);
+    } catch (error) {
+      console.error('Error parsing recently viewed:', error);
+      return;
     }
+    setRecentlyViewed(parsed);
+
+    // Prune any products that no longer exist (e.g. deleted by admin)
+    const ids = parsed.map((p) => p.id).filter((id) => id != null);
+    if (ids.length === 0) return;
+    supabase
+      .from('products')
+      .select('id')
+      .in('id', ids)
+      .then(({ data, error }) => {
+        if (error || !data) return;
+        const existing = new Set(data.map((p: { id: number }) => p.id));
+        const cleaned = parsed.filter((p) => existing.has(p.id));
+        if (cleaned.length !== parsed.length) {
+          setRecentlyViewed(cleaned);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+        }
+      });
   }, []);
 
   const addToRecentlyViewed = (product: Product) => {
