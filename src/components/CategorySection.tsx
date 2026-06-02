@@ -64,27 +64,27 @@ export const CategorySection = () => {
   if (categories.length === 0) return null;
 
   return (
-    <section className="py-12 md:py-20 px-4 md:px-6 bg-gradient-to-b from-background to-secondary/20">
-      <div className="container mx-auto">
+    <section className="py-8 md:py-12 px-3 md:px-4 bg-gradient-to-b from-background to-secondary/20">
+      <div className="container mx-auto px-2">
         {/* Header */}
-        <div className="text-center mb-10 md:mb-14 space-y-3">
-          <span className="inline-block text-xs tracking-[0.3em] uppercase text-primary font-medium">
+        <div className="mb-6 md:mb-8 space-y-1.5">
+          <span className="inline-block text-[10px] tracking-[0.2em] uppercase text-primary font-medium">
             Curated Collections
           </span>
-          <h2 className="text-3xl md:text-5xl font-playfair font-bold text-foreground">
+          <h2 className="text-2xl md:text-4xl font-playfair font-bold text-foreground">
             Shop by Category
           </h2>
-          <div className="w-16 h-[2px] bg-accent mx-auto mt-3" />
+          <div className="w-12 h-[2px] bg-accent mt-2" />
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3">
           {categories.map((category, index) => (
             <Link
               key={category.id}
               to={`/collections?category=${encodeURIComponent(category.name)}`}
               className={cn(
-                "group relative overflow-hidden rounded-2xl",
+                "group relative overflow-hidden rounded-xl",
                 // First two items span larger on larger screens
                 index === 0 && "md:col-span-2 md:row-span-2",
                 index === 0 ? "aspect-[3/4] md:aspect-auto" : "aspect-[3/4]"
@@ -110,27 +110,27 @@ export const CategorySection = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-accent/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
               {/* Content */}
-              <div className="absolute inset-x-0 bottom-0 p-4 md:p-6 flex items-end justify-between">
-                <div className="space-y-1">
+              <div className="absolute inset-x-0 bottom-0 p-3 md:p-4 flex items-end justify-between">
+                <div className="space-y-0.5">
                   {category.is_featured && category.featured_label && (
-                    <span className="inline-block text-[10px] md:text-xs tracking-widest uppercase text-accent font-medium mb-1">
+                    <span className="inline-block text-[9px] md:text-[10px] tracking-wider uppercase text-accent font-medium">
                       {category.featured_label}
                     </span>
                   )}
                   <h3 className={cn(
                     "font-playfair font-semibold text-white drop-shadow-lg",
-                    index === 0 ? "text-xl md:text-3xl" : "text-sm md:text-lg"
+                    index === 0 ? "text-base md:text-2xl" : "text-xs md:text-sm"
                   )}>
                     {category.name}
                   </h3>
                   {category.description && index === 0 && (
-                    <p className="text-white/70 text-xs md:text-sm line-clamp-2 max-w-xs">
+                    <p className="text-white/70 text-[10px] md:text-xs line-clamp-2 max-w-xs">
                       {category.description}
                     </p>
                   )}
                 </div>
-                <div className="flex-shrink-0 h-8 w-8 md:h-10 md:w-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/40 transition-all duration-300 group-hover:translate-x-1">
-                  <ArrowRight className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                <div className="flex-shrink-0 h-7 w-7 md:h-8 md:w-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/40 transition-all duration-300 group-hover:translate-x-1">
+                  <ArrowRight className="h-3 w-3 md:h-4 md:w-4 text-white" />
                 </div>
               </div>
 
