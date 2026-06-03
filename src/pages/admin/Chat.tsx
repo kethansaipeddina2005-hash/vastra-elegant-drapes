@@ -151,6 +151,38 @@ const AdminChat = () => {
                 title: 'New message',
                 description: newMsg.message?.slice(0, 60) || 'New image attachment',
               });
+
+              // Play notification sound
+              try {
+                const AudioCtx = (window.AudioContext || (window as any).webkitAudioContext);
+                if (AudioCtx) {
+                  const ctx = new AudioCtx();
+                  const o = ctx.createOscillator();
+                  const g = ctx.createGain();
+                  o.connect(g);
+                  g.connect(ctx.destination);
+                  o.frequency.value = 880;
+                  g.gain.setValueAtTime(0.15, ctx.currentTime);
+                  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+                  o.start();
+                  o.stop(ctx.currentTime + 0.4);
+                }
+              } catch {}
+
+              // Browser notification when tab is not focused
+              if (
+                typeof window !== 'undefined' &&
+                'Notification' in window &&
+                Notification.permission === 'granted' &&
+                document.visibilityState !== 'visible'
+              ) {
+                try {
+                  new Notification('New customer message', {
+                    body: newMsg.message?.slice(0, 100) || 'New image attachment',
+                    tag: `chat-${newMsg.conversation_id}`,
+                  });
+                } catch {}
+              }
             }
           }
         }
@@ -397,6 +429,35 @@ const AdminChat = () => {
   };
 
   const totalUnread = conversations.reduce((sum, c) => sum + (c.unread_count || 0), 0);
+
+  // Request browser notification permission once
+  useEffect(() => {
+    if (isAdmin && typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().catch(() => {});
+      }
+    }
+  }, [isAdmin]);
+
+  // Update document title with unread badge
+  useEffect(() => {
+    const base = 'Customer Chat — Vastra Admin';
+    document.title = totalUnread > 0 ? `(${totalUnread}) ${base}` : base;
+    return () => {
+      document.title = 'Vastra';
+    };
+  }, [totalUnread]);
+
+  // Polling fallback: refresh conversations every 20s in case realtime drops
+  useEffect(() => {
+    if (!isAdmin) return;
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        loadConversations();
+      }
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [isAdmin]);
 
   if (adminLoading) {
     return (
