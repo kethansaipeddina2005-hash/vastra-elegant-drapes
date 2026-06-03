@@ -629,6 +629,7 @@ export type Database = {
           comment: string | null
           created_at: string
           id: string
+          order_item_id: string | null
           photos: string[] | null
           product_id: number
           rating: number
@@ -639,6 +640,7 @@ export type Database = {
           comment?: string | null
           created_at?: string
           id?: string
+          order_item_id?: string | null
           photos?: string[] | null
           product_id: number
           rating: number
@@ -649,6 +651,7 @@ export type Database = {
           comment?: string | null
           created_at?: string
           id?: string
+          order_item_id?: string | null
           photos?: string[] | null
           product_id?: number
           rating?: number
@@ -743,6 +746,10 @@ export type Database = {
       restore_product_stock_for_order: {
         Args: { _order_id: string }
         Returns: undefined
+      }
+      user_can_review_product: {
+        Args: { _order_item_id: string; _product_id: number; _user_id: string }
+        Returns: boolean
       }
     }
     Enums: {

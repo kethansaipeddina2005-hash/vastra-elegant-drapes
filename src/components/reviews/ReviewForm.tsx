@@ -11,15 +11,19 @@ import { Link } from 'react-router-dom';
 interface ReviewFormProps {
   productId: number;
   onReviewAdded: () => void;
+  reviewableOrders: { orderItemId: string; orderNumber: string | null; deliveredAt: string }[];
 }
 
-export const ReviewForm = ({ productId, onReviewAdded }: ReviewFormProps) => {
+export const ReviewForm = ({ productId, onReviewAdded, reviewableOrders }: ReviewFormProps) => {
   const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedOrderItemId, setSelectedOrderItemId] = useState<string>(
+    reviewableOrders[0]?.orderItemId ?? ''
+  );
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -78,6 +82,11 @@ export const ReviewForm = ({ productId, onReviewAdded }: ReviewFormProps) => {
       return;
     }
 
+    if (!selectedOrderItemId) {
+      toast.error('No eligible delivered order found for this product');
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -93,11 +102,12 @@ export const ReviewForm = ({ productId, onReviewAdded }: ReviewFormProps) => {
         rating,
         comment: comment.trim() || null,
         photos: photoUrls,
+        order_item_id: selectedOrderItemId,
       });
 
       if (error) {
         if (error.code === '23505') {
-          toast.error('You have already reviewed this product');
+          toast.error("You've already reviewed this order");
         } else {
           throw error;
         }
@@ -135,7 +145,28 @@ export const ReviewForm = ({ productId, onReviewAdded }: ReviewFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-muted/30 rounded-lg">
       <h4 className="font-medium">Write a Review</h4>
-      
+
+      {reviewableOrders.length > 1 ? (
+        <div className="space-y-2">
+          <label className="text-sm text-muted-foreground">Reviewing order</label>
+          <select
+            value={selectedOrderItemId}
+            onChange={(e) => setSelectedOrderItemId(e.target.value)}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          >
+            {reviewableOrders.map((o) => (
+              <option key={o.orderItemId} value={o.orderItemId}>
+                {o.orderNumber || o.orderItemId.slice(0, 8)}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : reviewableOrders[0] ? (
+        <p className="text-xs text-muted-foreground">
+          Reviewing your order {reviewableOrders[0].orderNumber || ''}
+        </p>
+      ) : null}
+
       <div className="space-y-2">
         <label className="text-sm text-muted-foreground">Your Rating</label>
         <StarRating rating={rating} size="lg" interactive onChange={setRating} />
