@@ -398,6 +398,35 @@ const AdminChat = () => {
 
   const totalUnread = conversations.reduce((sum, c) => sum + (c.unread_count || 0), 0);
 
+  // Request browser notification permission once
+  useEffect(() => {
+    if (isAdmin && typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().catch(() => {});
+      }
+    }
+  }, [isAdmin]);
+
+  // Update document title with unread badge
+  useEffect(() => {
+    const base = 'Customer Chat — Vastra Admin';
+    document.title = totalUnread > 0 ? `(${totalUnread}) ${base}` : base;
+    return () => {
+      document.title = 'Vastra';
+    };
+  }, [totalUnread]);
+
+  // Polling fallback: refresh conversations every 20s in case realtime drops
+  useEffect(() => {
+    if (!isAdmin) return;
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        loadConversations();
+      }
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [isAdmin]);
+
   if (adminLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
