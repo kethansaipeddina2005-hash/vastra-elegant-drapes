@@ -13,6 +13,7 @@ interface Review {
   comment: string | null;
   photos: string[];
   created_at: string;
+  order_item_id: string | null;
   profiles?: {
     full_name: string | null;
   } | null;
