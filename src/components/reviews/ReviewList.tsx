@@ -68,9 +68,17 @@ export const ReviewList = ({ reviews, loading }: ReviewListProps) => {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-medium">
-                    {review.profiles?.full_name || 'Anonymous'}
-                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-medium">
+                      {review.profiles?.full_name || 'Anonymous'}
+                    </p>
+                    {review.order_item_id && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">
+                        <BadgeCheck className="h-3 w-3" />
+                        Verified Purchase
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     {format(new Date(review.created_at), 'MMM d, yyyy')}
                   </p>
