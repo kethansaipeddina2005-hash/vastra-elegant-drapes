@@ -238,6 +238,14 @@ const AdminDashboard = () => {
               <Tag className="mr-2 h-5 w-5" />
               Popup Ads
             </Button>
+            <Button
+              onClick={() => navigate('/admin/chat')}
+              className="h-20 text-lg"
+              variant="outline"
+            >
+              <Mail className="mr-2 h-5 w-5" />
+              Customer Chat
+            </Button>
           </div>
         </div>
       </div>
