@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { ReviewForm } from './ReviewForm';
 import { ReviewList } from './ReviewList';
 import { StarRating } from './StarRating';
@@ -24,10 +25,14 @@ interface ProductReviewsProps {
 }
 
 export const ProductReviews = ({ productId, productRating = 0, productReviewCount = 0 }: ProductReviewsProps) => {
+  const { user } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [displayCount, setDisplayCount] = useState(3);
+  const [reviewableOrders, setReviewableOrders] = useState<
+    { orderItemId: string; orderNumber: string | null; deliveredAt: string }[]
+  >([]);
 
   const fetchReviews = async () => {
     try {
@@ -69,6 +74,35 @@ export const ProductReviews = ({ productId, productRating = 0, productReviewCoun
     fetchReviews();
   }, [productId]);
 
+  useEffect(() => {
+    const loadReviewable = async () => {
+      if (!user) { setReviewableOrders([]); return; }
+      const { data: items } = await supabase
+        .from('order_items')
+        .select('id, order_id, orders!inner(id, order_number, status, user_id, updated_at)')
+        .eq('product_id', productId)
+        .eq('orders.user_id', user.id)
+        .eq('orders.status', 'delivered');
+
+      const { data: existing } = await supabase
+        .from('reviews')
+        .select('order_item_id')
+        .eq('product_id', productId)
+        .eq('user_id', user.id);
+      const used = new Set((existing || []).map((r: any) => r.order_item_id).filter(Boolean));
+
+      const eligible = (items || [])
+        .filter((it: any) => !used.has(it.id))
+        .map((it: any) => ({
+          orderItemId: it.id,
+          orderNumber: it.orders?.order_number ?? null,
+          deliveredAt: it.orders?.updated_at ?? '',
+        }));
+      setReviewableOrders(eligible);
+    };
+    loadReviewable();
+  }, [user, productId]);
+
   const ratingDistribution = [5, 4, 3, 2, 1].map((star) => ({
     star,
     count: reviews.filter((r) => r.rating === star).length,
@@ -108,25 +142,34 @@ export const ProductReviews = ({ productId, productRating = 0, productReviewCoun
         </div>
       </div>
 
-      {/* Write Review Toggle */}
-      <Button
-        variant="outline"
-        onClick={() => setShowForm(!showForm)}
-        className="w-full justify-between"
-      >
-        Write a Review
-        {showForm ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-      </Button>
+      {/* Write Review */}
+      {user && reviewableOrders.length === 0 ? (
+        <div className="p-4 bg-muted/30 rounded-lg text-center text-sm text-muted-foreground">
+          Only customers who purchased and received this product can write a review.
+        </div>
+      ) : (
+        <>
+          <Button
+            variant="outline"
+            onClick={() => setShowForm(!showForm)}
+            className="w-full justify-between"
+          >
+            Write a Review
+            {showForm ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </Button>
 
-      {/* Review Form */}
-      {showForm && (
-        <ReviewForm
-          productId={productId}
-          onReviewAdded={() => {
-            fetchReviews();
-            setShowForm(false);
-          }}
-        />
+          {showForm && (
+            <ReviewForm
+              productId={productId}
+              reviewableOrders={reviewableOrders}
+              onReviewAdded={() => {
+                fetchReviews();
+                setShowForm(false);
+                setReviewableOrders((prev) => prev.slice(1));
+              }}
+            />
+          )}
+        </>
       )}
 
       {/* Reviews List */}
