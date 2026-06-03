@@ -39,7 +39,7 @@ export const ProductReviews = ({ productId, productRating = 0, productReviewCoun
     try {
       const { data: reviewsData, error } = await supabase
         .from('reviews')
-        .select('id, rating, comment, photos, created_at, user_id')
+        .select('id, rating, comment, photos, created_at, user_id, order_item_id')
         .eq('product_id', productId)
         .order('created_at', { ascending: false });
 

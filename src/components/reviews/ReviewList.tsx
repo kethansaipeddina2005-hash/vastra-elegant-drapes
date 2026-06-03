@@ -3,6 +3,7 @@ import { StarRating } from './StarRating';
 import { format } from 'date-fns';
 import { ImageLightbox } from '@/components/ImageLightbox';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { BadgeCheck } from 'lucide-react';
 
 interface Review {
   id: string;
@@ -10,6 +11,7 @@ interface Review {
   comment: string | null;
   photos: string[];
   created_at: string;
+  order_item_id?: string | null;
   profiles?: {
     full_name: string | null;
   } | null;
