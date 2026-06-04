@@ -494,6 +494,30 @@ const ProductDetail = () => {
         {/* Recently Viewed Products */}
         <RecentlyViewedProducts excludeProductId={product.id} maxItems={4} />
       </div>
+      {/* Sticky mobile CTA */}
+      <div className="lg:hidden fixed bottom-14 left-0 right-0 z-40 bg-background/95 backdrop-blur border-t border-border px-3 py-2 flex items-center gap-2 shadow-lg">
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] text-muted-foreground truncate">{product.name}</p>
+          <p className="text-sm font-bold text-primary">{formatPrice(product.price, product.foreignPrice)}</p>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-9 px-3"
+          disabled={product.stockQuantity <= 0}
+          onClick={() => handleAddToCart()}
+        >
+          <ShoppingCart className="h-4 w-4" />
+        </Button>
+        <Button
+          size="sm"
+          className="h-9 px-4 bg-gradient-to-r from-primary to-primary/90"
+          disabled={product.stockQuantity <= 0}
+          onClick={() => { handleAddToCart(); navigate('/checkout'); }}
+        >
+          Buy Now
+        </Button>
+      </div>
     </Layout>
     <WhatsAppButton
       productName={product.name}
