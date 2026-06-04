@@ -214,6 +214,8 @@ const ProductDetail = () => {
     rating: product.rating,
     reviewCount: product.reviews,
     inStock: product.stockQuantity > 0,
+    sku: product.id,
+    brand: 'Vastra',
   });
 
   const breadcrumbSchema = getBreadcrumbSchema([
