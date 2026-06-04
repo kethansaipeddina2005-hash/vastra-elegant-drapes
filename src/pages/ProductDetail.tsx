@@ -328,9 +328,15 @@ const ProductDetail = () => {
                 </div>
               </div>
               <div className="pt-2 border-t border-border/50 flex items-center justify-between">
-                <p className={`text-xs font-semibold ${product.stockQuantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {product.stockQuantity > 0 ? `✓ In Stock (${product.stockQuantity})` : 'Out of Stock'}
-                </p>
+                {product.stockQuantity <= 0 ? (
+                  <p className="text-xs font-semibold text-red-600">Out of Stock</p>
+                ) : product.stockQuantity <= 5 ? (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-900 bg-gold/30 border border-gold/60 px-2 py-0.5 rounded-full animate-pulse">
+                    🔥 Only {product.stockQuantity} left
+                  </span>
+                ) : (
+                  <p className="text-xs font-semibold text-green-600">✓ In Stock ({product.stockQuantity})</p>
+                )}
                 <p className="text-xs font-semibold text-muted-foreground">
                   {product.returnDays && product.returnDays > 0
                     ? `↩ ${product.returnDays}-Day Returns`
