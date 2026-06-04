@@ -105,16 +105,25 @@ export const getProductSchema = (product: {
   rating?: number;
   reviewCount?: number;
   inStock?: boolean;
+  sku?: string | number;
+  brand?: string;
+  currency?: string;
+  reviews?: { author: string; rating: number; text: string; date: string }[];
 }) => ({
   '@context': 'https://schema.org',
   '@type': 'Product',
   name: product.name,
   description: product.description,
   image: product.images,
+  ...(product.sku !== undefined && { sku: String(product.sku) }),
+  brand: {
+    '@type': 'Brand',
+    name: product.brand || 'Vastra',
+  },
   offers: {
     '@type': 'Offer',
     price: product.price,
-    priceCurrency: 'INR',
+    priceCurrency: product.currency || 'INR',
     availability: product.inStock !== false 
       ? 'https://schema.org/InStock' 
       : 'https://schema.org/OutOfStock',
@@ -129,6 +138,15 @@ export const getProductSchema = (product: {
       ratingValue: product.rating,
       reviewCount: product.reviewCount,
     },
+  }),
+  ...(product.reviews && product.reviews.length > 0 && {
+    review: product.reviews.map((r) => ({
+      '@type': 'Review',
+      author: { '@type': 'Person', name: r.author },
+      reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 },
+      reviewBody: r.text,
+      datePublished: r.date,
+    })),
   }),
 });
 

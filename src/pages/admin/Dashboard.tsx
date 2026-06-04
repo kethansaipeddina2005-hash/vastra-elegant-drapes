@@ -6,8 +6,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
-import { Package, ShoppingCart, Users, DollarSign, Plus, List, UserCog, Tag, Shield, CreditCard, FolderOpen, Mail } from 'lucide-react';
+import { Package, ShoppingCart, Users, DollarSign, Plus, List, UserCog, Tag, Shield, CreditCard, FolderOpen, Mail, MessageSquare, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import AdminCharts from '@/components/admin/AdminCharts';
 
 interface Stats {
   totalProducts: number;
@@ -85,6 +86,41 @@ const AdminDashboard = () => {
     return null;
   }
 
+  const sections = [
+    {
+      title: 'Catalog',
+      actions: [
+        { label: 'Products', icon: Plus, path: '/admin/products' },
+        { label: 'Categories', icon: FolderOpen, path: '/admin/categories' },
+        { label: 'Banners', icon: ImageIcon, path: '/admin/banners' },
+        { label: 'Popup Ads', icon: Tag, path: '/admin/popup-ads' },
+      ],
+    },
+    {
+      title: 'Sales',
+      actions: [
+        { label: 'Orders', icon: List, path: '/admin/orders' },
+        { label: 'Payments', icon: CreditCard, path: '/admin/payments' },
+        { label: 'Coupons', icon: Tag, path: '/admin/coupons' },
+      ],
+    },
+    {
+      title: 'Customers',
+      actions: [
+        { label: 'Customers', icon: UserCog, path: '/admin/customers' },
+        { label: 'Admins', icon: Shield, path: '/admin/users' },
+        { label: 'Live Chat', icon: MessageSquare, path: '/admin/chat' },
+        { label: 'Contact Messages', icon: Mail, path: '/admin/messages' },
+      ],
+    },
+    {
+      title: 'Marketing',
+      actions: [
+        { label: 'Subscriptions', icon: Mail, path: '/admin/subscriptions' },
+      ],
+    },
+  ];
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
@@ -146,107 +182,30 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Button
-              onClick={() => navigate('/admin/products')}
-              className="h-20 text-lg"
-              variant="outline"
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              Add Product
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/orders')}
-              className="h-20 text-lg"
-              variant="outline"
-            >
-              <List className="mr-2 h-5 w-5" />
-              View Orders
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/customers')}
-              className="h-20 text-lg"
-              variant="outline"
-            >
-              <UserCog className="mr-2 h-5 w-5" />
-              Manage Customers
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/banners')}
-              className="h-20 text-lg"
-              variant="outline"
-            >
-              <Package className="mr-2 h-5 w-5" />
-              Manage Banners
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/coupons')}
-              className="h-20 text-lg"
-              variant="outline"
-            >
-              <Tag className="mr-2 h-5 w-5" />
-              Manage Coupons
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/users')}
-              className="h-20 text-lg"
-              variant="outline"
-            >
-              <Shield className="mr-2 h-5 w-5" />
-              Manage Admins
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/payments')}
-              className="h-20 text-lg"
-              variant="outline"
-            >
-              <CreditCard className="mr-2 h-5 w-5" />
-              Manage Payments
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/categories')}
-              className="h-20 text-lg"
-              variant="outline"
-            >
-              <FolderOpen className="mr-2 h-5 w-5" />
-              Manage Categories
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/subscriptions')}
-              className="h-20 text-lg"
-              variant="outline"
-            >
-              <Mail className="mr-2 h-5 w-5" />
-              Manage Subscriptions
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/messages')}
-              className="h-20 text-lg"
-              variant="outline"
-            >
-              <Mail className="mr-2 h-5 w-5" />
-              Contact Messages
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/popup-ads')}
-              className="h-20 text-lg"
-              variant="outline"
-            >
-              <Tag className="mr-2 h-5 w-5" />
-              Popup Ads
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/chat')}
-              className="h-20 text-lg"
-              variant="outline"
-            >
-              <Mail className="mr-2 h-5 w-5" />
-              Customer Chat
-            </Button>
-          </div>
+        <AdminCharts />
+
+        {/* Quick Actions, grouped */}
+        <div className="space-y-6">
+          {sections.map((section) => (
+            <div key={section.title}>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-3">
+                {section.title}
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {section.actions.map((a) => (
+                  <Button
+                    key={a.path}
+                    onClick={() => navigate(a.path)}
+                    variant="outline"
+                    className="h-16 justify-start text-sm"
+                  >
+                    <a.icon className="mr-2 h-4 w-4" />
+                    {a.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </Layout>

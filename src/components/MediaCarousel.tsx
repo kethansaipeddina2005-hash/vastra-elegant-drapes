@@ -101,6 +101,8 @@ export const MediaCarousel = ({ images = [], videos = [], className, productName
                   alt={`Media ${currentIndex + 1}`}
                   className="w-full h-full object-contain cursor-pointer"
                   onClick={handleImageClick}
+                  loading={currentIndex === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
                 />
                 <Button
                   variant="ghost"
@@ -187,6 +189,8 @@ export const MediaCarousel = ({ images = [], videos = [], className, productName
                     src={item.url}
                     alt={`Thumbnail ${index + 1}`}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : item.type === 'fitcheck' ? (
                   <div className="relative w-full h-full bg-gradient-to-br from-primary/10 to-accent/20 flex items-center justify-center">
