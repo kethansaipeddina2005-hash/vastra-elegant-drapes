@@ -1,0 +1,1 @@
+ALTER TABLE public.coupons ADD COLUMN IF NOT EXISTS usage_limit_per_user integer;
