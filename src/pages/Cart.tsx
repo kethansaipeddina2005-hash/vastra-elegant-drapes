@@ -106,6 +106,31 @@ const Cart = () => {
       return;
     }
 
+    // Check per-user usage limit
+    const limit = (data as any).usage_limit_per_user as number | null;
+    if (limit && limit > 0) {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        setMessage("Please sign in to use this coupon ❌");
+        setDiscountPercent(0);
+        return;
+      }
+      const { count } = await supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userData.user.id)
+        .eq("coupon_code", data.code);
+      if ((count ?? 0) >= limit) {
+        setMessage(
+          limit === 1
+            ? "This coupon is only valid on your first purchase ❌"
+            : `You've already used this coupon ${limit} time(s) ❌`
+        );
+        setDiscountPercent(0);
+        return;
+      }
+    }
+
     setDiscountPercent(data.discount_percent);
     saveDiscountPercent(data.discount_percent);
     savePromoCode(promoCode.trim().toUpperCase());
