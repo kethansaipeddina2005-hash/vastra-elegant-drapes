@@ -276,6 +276,7 @@ export type Database = {
           is_active: boolean | null
           min_amount: number | null
           updated_at: string | null
+          usage_limit_per_user: number | null
         }
         Insert: {
           code: string
@@ -286,6 +287,7 @@ export type Database = {
           is_active?: boolean | null
           min_amount?: number | null
           updated_at?: string | null
+          usage_limit_per_user?: number | null
         }
         Update: {
           code?: string
@@ -296,6 +298,7 @@ export type Database = {
           is_active?: boolean | null
           min_amount?: number | null
           updated_at?: string | null
+          usage_limit_per_user?: number | null
         }
         Relationships: []
       }
