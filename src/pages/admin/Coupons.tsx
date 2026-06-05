@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Loading } from '@/components/ui/loading';
-import { Plus, Edit, Trash2, Tag, Calendar, Percent } from 'lucide-react';
+import { Plus, Edit, Trash2, Tag, Calendar, Percent, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -34,6 +34,19 @@ const AdminCoupons = () => {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+  const [redemptionsOpen, setRedemptionsOpen] = useState(false);
+  const [redemptionsCoupon, setRedemptionsCoupon] = useState<Coupon | null>(null);
+  const [redemptions, setRedemptions] = useState<
+    Array<{
+      user_id: string | null;
+      customer_name: string | null;
+      customer_email: string | null;
+      count: number;
+      total_discount: number;
+      last_used: string;
+    }>
+  >([]);
+  const [redemptionsLoading, setRedemptionsLoading] = useState(false);
   const [formData, setFormData] = useState({
     code: '',
     discount_percent: '',
@@ -176,6 +189,54 @@ const AdminCoupons = () => {
   };
 
   const isExpired = (date: string) => new Date(date) < new Date();
+
+  const handleViewRedemptions = async (coupon: Coupon) => {
+    setRedemptionsCoupon(coupon);
+    setRedemptionsOpen(true);
+    setRedemptionsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('user_id, customer_name, customer_email, final_amount, total_amount, discount_percent, created_at, coupon_code')
+        .ilike('coupon_code', coupon.code)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const grouped = new Map<string, typeof redemptions[number]>();
+      (data || []).forEach((o: any) => {
+        const key = o.user_id || `guest:${o.customer_email || 'unknown'}`;
+        const discount =
+          (Number(o.total_amount) || 0) - (Number(o.final_amount) || 0);
+        const existing = grouped.get(key);
+        if (existing) {
+          existing.count += 1;
+          existing.total_discount += discount;
+          if (new Date(o.created_at) > new Date(existing.last_used)) {
+            existing.last_used = o.created_at;
+          }
+        } else {
+          grouped.set(key, {
+            user_id: o.user_id,
+            customer_name: o.customer_name,
+            customer_email: o.customer_email,
+            count: 1,
+            total_discount: discount,
+            last_used: o.created_at,
+          });
+        }
+      });
+
+      setRedemptions(
+        Array.from(grouped.values()).sort((a, b) => b.count - a.count)
+      );
+    } catch (e) {
+      console.error('Error loading redemptions:', e);
+      toast.error('Failed to load redemptions');
+    } finally {
+      setRedemptionsLoading(false);
+    }
+  };
 
   if (adminLoading || loading) {
     return (
@@ -387,6 +448,9 @@ const AdminCoupons = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
+                          <Button size="sm" variant="outline" onClick={() => handleViewRedemptions(coupon)}>
+                            <Users className="h-4 w-4" />
+                          </Button>
                           <Button size="sm" variant="outline" onClick={() => handleEdit(coupon)}>
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -406,6 +470,74 @@ const AdminCoupons = () => {
             )}
           </CardContent>
         </Card>
+
+        <Dialog open={redemptionsOpen} onOpenChange={setRedemptionsOpen}>
+          <DialogContent className="max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>
+                Redemptions — {redemptionsCoupon?.code}
+              </DialogTitle>
+            </DialogHeader>
+            {redemptionsLoading ? (
+              <div className="py-8 flex justify-center">
+                <Loading size="md" />
+              </div>
+            ) : redemptions.length === 0 ? (
+              <div className="py-8 text-center text-muted-foreground">
+                No customers have used this coupon yet.
+              </div>
+            ) : (
+              <div className="max-h-[60vh] overflow-auto">
+                <div className="mb-4 flex gap-4 text-sm">
+                  <Badge variant="secondary">
+                    {redemptions.length} unique customer{redemptions.length !== 1 ? 's' : ''}
+                  </Badge>
+                  <Badge variant="secondary">
+                    {redemptions.reduce((s, r) => s + r.count, 0)} total redemptions
+                  </Badge>
+                  <Badge variant="secondary">
+                    ₹{redemptions.reduce((s, r) => s + r.total_discount, 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })} total discount
+                  </Badge>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead className="text-center">Times Used</TableHead>
+                      <TableHead>Total Discount</TableHead>
+                      <TableHead>Last Used</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {redemptions.map((r, i) => (
+                      <TableRow key={`${r.user_id || r.customer_email}-${i}`}>
+                        <TableCell>
+                          {r.customer_name || 'Guest'}
+                          {!r.user_id && (
+                            <Badge variant="outline" className="ml-2 text-xs">Guest</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {r.customer_email || '—'}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge>{r.count}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          ₹{r.total_discount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {format(new Date(r.last_used), 'dd MMM yyyy')}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
