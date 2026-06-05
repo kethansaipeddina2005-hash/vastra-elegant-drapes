@@ -24,6 +24,7 @@ interface Coupon {
   expiry_date: string;
   is_active: boolean;
   created_at: string;
+  usage_limit_per_user: number | null;
 }
 
 const AdminCoupons = () => {
@@ -39,6 +40,7 @@ const AdminCoupons = () => {
     min_amount: '',
     expiry_date: '',
     is_active: true,
+    usage_limit_per_user: '' as string, // '' = unlimited
   });
 
   useEffect(() => {
@@ -81,6 +83,10 @@ const AdminCoupons = () => {
         min_amount: parseFloat(formData.min_amount) || 0,
         expiry_date: new Date(formData.expiry_date).toISOString(),
         is_active: formData.is_active,
+        usage_limit_per_user:
+          formData.usage_limit_per_user === '' || formData.usage_limit_per_user === '0'
+            ? null
+            : parseInt(formData.usage_limit_per_user),
       };
 
       if (editingCoupon) {
@@ -152,6 +158,7 @@ const AdminCoupons = () => {
       min_amount: coupon.min_amount?.toString() || '0',
       expiry_date: format(new Date(coupon.expiry_date), 'yyyy-MM-dd'),
       is_active: coupon.is_active,
+      usage_limit_per_user: coupon.usage_limit_per_user ? String(coupon.usage_limit_per_user) : '',
     });
     setIsDialogOpen(true);
   };
@@ -164,6 +171,7 @@ const AdminCoupons = () => {
       min_amount: '',
       expiry_date: '',
       is_active: true,
+      usage_limit_per_user: '',
     });
   };
 
@@ -251,6 +259,55 @@ const AdminCoupons = () => {
                     required
                   />
                 </div>
+                <div>
+                  <Label htmlFor="usageLimit">Usage Limit Per User</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="usageLimit"
+                      type="number"
+                      min="1"
+                      value={formData.usage_limit_per_user}
+                      onChange={(e) =>
+                        setFormData({ ...formData, usage_limit_per_user: e.target.value })
+                      }
+                      placeholder="Unlimited"
+                      disabled={formData.usage_limit_per_user === ''}
+                    />
+                    <Button
+                      type="button"
+                      variant={formData.usage_limit_per_user === '' ? 'default' : 'outline'}
+                      onClick={() =>
+                        setFormData({
+                          ...formData,
+                          usage_limit_per_user: formData.usage_limit_per_user === '' ? '1' : '',
+                        })
+                      }
+                    >
+                      {formData.usage_limit_per_user === '' ? 'Unlimited' : 'Set Unlimited'}
+                    </Button>
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setFormData({ ...formData, usage_limit_per_user: '1' })}
+                    >
+                      First purchase only (1)
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setFormData({ ...formData, usage_limit_per_user: '3' })}
+                    >
+                      Up to 3 uses
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Leave Unlimited to allow this customer to redeem the coupon any number of times.
+                  </p>
+                </div>
                 <div className="flex items-center justify-between">
                   <Label htmlFor="active">Active</Label>
                   <Switch
@@ -286,6 +343,7 @@ const AdminCoupons = () => {
                     <TableHead>Code</TableHead>
                     <TableHead>Discount</TableHead>
                     <TableHead>Min. Order</TableHead>
+                    <TableHead>Per-User Limit</TableHead>
                     <TableHead>Expiry Date</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
@@ -304,6 +362,13 @@ const AdminCoupons = () => {
                       </TableCell>
                       <TableCell>
                         {coupon.min_amount > 0 ? `₹${coupon.min_amount.toLocaleString()}` : 'No minimum'}
+                      </TableCell>
+                      <TableCell>
+                        {coupon.usage_limit_per_user
+                          ? coupon.usage_limit_per_user === 1
+                            ? 'First purchase only'
+                            : `${coupon.usage_limit_per_user} times`
+                          : 'Unlimited'}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
