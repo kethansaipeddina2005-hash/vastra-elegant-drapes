@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
 import { Package, ShoppingCart, Users, DollarSign, Plus, List, UserCog, Tag, Shield, CreditCard, FolderOpen, Mail, MessageSquare, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import AdminCharts from '@/components/admin/AdminCharts';
+
 
 interface Stats {
   totalProducts: number;
@@ -182,7 +182,6 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        <AdminCharts />
 
         {/* Quick Actions, grouped */}
         <div className="space-y-6">
