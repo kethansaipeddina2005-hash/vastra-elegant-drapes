@@ -127,18 +127,18 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-transparent" />
       </div>
       
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="max-w-xl md:max-w-2xl space-y-5 md:space-y-6 animate-fade-in text-left">
-          <h2 className="text-[2.25rem] leading-[1.1] sm:text-5xl md:text-7xl font-playfair font-bold text-foreground text-balance break-words">
+      <div className="container mx-auto px-6 relative z-10 py-12 md:py-16">
+        <div className="max-w-xl md:max-w-2xl animate-fade-in text-left">
+          <h2 className="text-[2.25rem] leading-[1.1] sm:text-5xl md:text-7xl font-playfair font-bold text-foreground text-balance break-words mb-3 sm:mb-4 md:mb-6">
             {activeBanner?.title || "Grace in Every Drape"}
           </h2>
-          <p className="text-base sm:text-xl md:text-2xl text-muted-foreground font-light max-w-md md:max-w-xl text-pretty">
+          <p className="text-base sm:text-xl md:text-2xl text-muted-foreground font-light max-w-md md:max-w-xl text-pretty leading-relaxed mb-6 sm:mb-8 md:mb-10">
             {activeBanner?.subtitle || "The Essence of Indian Elegance"}
           </p>
-          <Link to={activeBanner?.link_url || "/collections"}>
-            <Button 
+          <Link to={activeBanner?.link_url || "/collections"} className="inline-block">
+            <Button
               size="lg"
-              className="bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-lg hover:shadow-xl px-8 py-6 text-lg"
+              className="bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-lg hover:shadow-xl px-7 sm:px-8 py-5 sm:py-6 text-base sm:text-lg"
             >
               Shop Now
             </Button>
