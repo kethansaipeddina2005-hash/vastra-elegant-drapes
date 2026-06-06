@@ -115,7 +115,7 @@ const Hero = () => {
   return (
     <section
       id="home"
-      className="relative min-h-[75vh] md:min-h-[700px] flex items-center overflow-hidden"
+      className="relative min-h-[90vh] md:min-h-[700px] flex items-center overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
