@@ -79,11 +79,11 @@ const FeaturedSarees = () => {
   return (
     <section id="collections" className="py-20">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12 space-y-4">
-          <h2 className="text-4xl md:text-5xl font-playfair font-bold text-foreground">
+        <div className="text-center mb-10 md:mb-12 space-y-3 md:space-y-4 px-2">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-playfair font-bold text-foreground text-balance leading-tight">
             Featured Collection
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base md:text-lg text-muted-foreground max-w-md md:max-w-2xl mx-auto text-pretty leading-relaxed">
             Handpicked sarees that celebrate tradition and timeless beauty
           </p>
         </div>
