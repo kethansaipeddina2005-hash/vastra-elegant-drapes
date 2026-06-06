@@ -71,7 +71,7 @@ export const CategorySection = () => {
           <span className="inline-block text-[10px] tracking-[0.2em] uppercase text-primary font-medium">
             Curated Collections
           </span>
-          <h2 className="text-2xl md:text-4xl font-playfair font-bold text-foreground">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-playfair font-bold text-foreground text-balance leading-tight">
             Shop by Category
           </h2>
           <div className="w-12 h-[2px] bg-accent mt-2" />
