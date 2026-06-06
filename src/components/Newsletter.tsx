@@ -66,7 +66,7 @@ const Newsletter = () => {
         <h2 className="text-3xl md:text-4xl font-playfair font-bold text-foreground mb-4">
           Stay Connected
         </h2>
-        <p className="text-muted-foreground mb-8">
+        <p className="text-muted-foreground mb-8 text-center text-balance max-w-md mx-auto leading-relaxed">
           Subscribe to receive updates about new collections, exclusive offers, and style inspiration.
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">

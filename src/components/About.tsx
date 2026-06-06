@@ -5,7 +5,7 @@ const About = () => {
         <h2 className="text-4xl md:text-5xl font-playfair font-bold text-foreground">
           About Vastra
         </h2>
-        <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+        <p className="text-base md:text-xl text-muted-foreground leading-relaxed text-center text-balance max-w-2xl mx-auto">
           Vastra celebrates Indian tradition through elegant sarees that blend timeless 
           craftsmanship with modern style. Each saree is designed to reflect grace, culture, 
           and confidence.
