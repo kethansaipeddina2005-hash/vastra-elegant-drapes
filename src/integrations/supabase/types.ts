@@ -192,6 +192,66 @@ export type Database = {
           },
         ]
       }
+      collaborator_commissions: {
+        Row: {
+          collaborator_email: string
+          commission_amount: number
+          commission_percent: number
+          coupon_code: string
+          coupon_id: string | null
+          created_at: string
+          id: string
+          order_amount: number
+          order_id: string
+          paid_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          collaborator_email: string
+          commission_amount?: number
+          commission_percent?: number
+          coupon_code: string
+          coupon_id?: string | null
+          created_at?: string
+          id?: string
+          order_amount?: number
+          order_id: string
+          paid_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          collaborator_email?: string
+          commission_amount?: number
+          commission_percent?: number
+          coupon_code?: string
+          coupon_id?: string | null
+          created_at?: string
+          id?: string
+          order_amount?: number
+          order_id?: string
+          paid_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collaborator_commissions_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collaborator_commissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           created_at: string
@@ -269,6 +329,9 @@ export type Database = {
       coupons: {
         Row: {
           code: string
+          collaborator_email: string | null
+          collaborator_name: string | null
+          commission_percent: number
           created_at: string | null
           discount_percent: number
           expiry_date: string
@@ -280,6 +343,9 @@ export type Database = {
         }
         Insert: {
           code: string
+          collaborator_email?: string | null
+          collaborator_name?: string | null
+          commission_percent?: number
           created_at?: string | null
           discount_percent: number
           expiry_date: string
@@ -291,6 +357,9 @@ export type Database = {
         }
         Update: {
           code?: string
+          collaborator_email?: string | null
+          collaborator_name?: string | null
+          commission_percent?: number
           created_at?: string | null
           discount_percent?: number
           expiry_date?: string
@@ -746,6 +815,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_collaborator: { Args: { _email: string }; Returns: boolean }
       restore_product_stock_for_order: {
         Args: { _order_id: string }
         Returns: undefined

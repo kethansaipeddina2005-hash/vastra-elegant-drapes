@@ -25,6 +25,9 @@ interface Coupon {
   is_active: boolean;
   created_at: string;
   usage_limit_per_user: number | null;
+  collaborator_name?: string | null;
+  collaborator_email?: string | null;
+  commission_percent?: number | null;
 }
 
 const AdminCoupons = () => {
@@ -54,6 +57,9 @@ const AdminCoupons = () => {
     expiry_date: '',
     is_active: true,
     usage_limit_per_user: '' as string, // '' = unlimited
+    collaborator_name: '',
+    collaborator_email: '',
+    commission_percent: '10',
   });
 
   useEffect(() => {
@@ -100,7 +106,17 @@ const AdminCoupons = () => {
           formData.usage_limit_per_user === '' || formData.usage_limit_per_user === '0'
             ? null
             : parseInt(formData.usage_limit_per_user),
+        collaborator_name: formData.collaborator_name.trim() || null,
+        collaborator_email: formData.collaborator_email.trim().toLowerCase() || null,
+        commission_percent: formData.collaborator_email.trim()
+          ? parseFloat(formData.commission_percent || '10')
+          : 0,
       };
+
+      if (couponData.collaborator_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(couponData.collaborator_email)) {
+        toast.error('Please enter a valid collaborator email');
+        return;
+      }
 
       if (editingCoupon) {
         const { error } = await supabase
@@ -172,6 +188,9 @@ const AdminCoupons = () => {
       expiry_date: format(new Date(coupon.expiry_date), 'yyyy-MM-dd'),
       is_active: coupon.is_active,
       usage_limit_per_user: coupon.usage_limit_per_user ? String(coupon.usage_limit_per_user) : '',
+      collaborator_name: coupon.collaborator_name || '',
+      collaborator_email: coupon.collaborator_email || '',
+      commission_percent: coupon.commission_percent != null ? String(coupon.commission_percent) : '10',
     });
     setIsDialogOpen(true);
   };
@@ -185,6 +204,9 @@ const AdminCoupons = () => {
       expiry_date: '',
       is_active: true,
       usage_limit_per_user: '',
+      collaborator_name: '',
+      collaborator_email: '',
+      commission_percent: '10',
     });
   };
 
@@ -258,6 +280,11 @@ const AdminCoupons = () => {
             <h1 className="text-4xl font-bold mb-2">Coupon Management</h1>
             <p className="text-muted-foreground">Create and manage discount coupons</p>
           </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/admin/collaborators')}>
+              <Users className="mr-2 h-4 w-4" />
+              Collaborators
+            </Button>
           <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
             <DialogTrigger asChild>
               <Button>
@@ -377,12 +404,57 @@ const AdminCoupons = () => {
                     onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                   />
                 </div>
+                <div className="border-t pt-4 space-y-3">
+                  <div>
+                    <Label className="text-sm font-semibold">Collaborator (optional)</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Adding a collaborator email turns this coupon into a referral coupon and unlocks the Collaborator Dashboard for that user.
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="collabName">Collaborator Name</Label>
+                    <Input
+                      id="collabName"
+                      value={formData.collaborator_name}
+                      onChange={(e) => setFormData({ ...formData, collaborator_name: e.target.value })}
+                      placeholder="e.g., Priya Sharma"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="collabEmail">Collaborator Email</Label>
+                    <Input
+                      id="collabEmail"
+                      type="email"
+                      value={formData.collaborator_email}
+                      onChange={(e) => setFormData({ ...formData, collaborator_email: e.target.value })}
+                      placeholder="collaborator@example.com"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="commission">Commission Percentage</Label>
+                    <div className="relative">
+                      <Input
+                        id="commission"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        value={formData.commission_percent}
+                        onChange={(e) => setFormData({ ...formData, commission_percent: e.target.value })}
+                        placeholder="10"
+                        disabled={!formData.collaborator_email.trim()}
+                      />
+                      <Percent className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </div>
+                </div>
                 <Button type="submit" className="w-full">
                   {editingCoupon ? 'Update Coupon' : 'Create Coupon'}
                 </Button>
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         <Card>
@@ -403,6 +475,7 @@ const AdminCoupons = () => {
                   <TableRow>
                     <TableHead>Code</TableHead>
                     <TableHead>Discount</TableHead>
+                    <TableHead>Collaborator</TableHead>
                     <TableHead>Min. Order</TableHead>
                     <TableHead>Per-User Limit</TableHead>
                     <TableHead>Expiry Date</TableHead>
@@ -420,6 +493,16 @@ const AdminCoupons = () => {
                       </TableCell>
                       <TableCell>
                         <span className="font-semibold text-primary">{coupon.discount_percent}%</span>
+                      </TableCell>
+                      <TableCell>
+                        {coupon.collaborator_email ? (
+                          <div className="text-xs">
+                            <div className="font-medium">{coupon.collaborator_name || coupon.collaborator_email}</div>
+                            <div className="text-muted-foreground">{Number(coupon.commission_percent || 0)}% commission</div>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {coupon.min_amount > 0 ? `₹${coupon.min_amount.toLocaleString()}` : 'No minimum'}
