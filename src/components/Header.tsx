@@ -111,6 +111,13 @@ const Header = () => {
                       Dashboard
                     </Link>
                   </DropdownMenuItem>
+                  {isCollaborator && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/collaborator/dashboard" className="w-full cursor-pointer">
+                        Collaborator Portal
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link to="/account/orders" className="w-full cursor-pointer">
                       Orders
