@@ -25,6 +25,9 @@ interface Coupon {
   is_active: boolean;
   created_at: string;
   usage_limit_per_user: number | null;
+  collaborator_name?: string | null;
+  collaborator_email?: string | null;
+  commission_percent?: number | null;
 }
 
 const AdminCoupons = () => {
@@ -54,6 +57,9 @@ const AdminCoupons = () => {
     expiry_date: '',
     is_active: true,
     usage_limit_per_user: '' as string, // '' = unlimited
+    collaborator_name: '',
+    collaborator_email: '',
+    commission_percent: '10',
   });
 
   useEffect(() => {
@@ -100,7 +106,17 @@ const AdminCoupons = () => {
           formData.usage_limit_per_user === '' || formData.usage_limit_per_user === '0'
             ? null
             : parseInt(formData.usage_limit_per_user),
+        collaborator_name: formData.collaborator_name.trim() || null,
+        collaborator_email: formData.collaborator_email.trim().toLowerCase() || null,
+        commission_percent: formData.collaborator_email.trim()
+          ? parseFloat(formData.commission_percent || '10')
+          : 0,
       };
+
+      if (couponData.collaborator_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(couponData.collaborator_email)) {
+        toast.error('Please enter a valid collaborator email');
+        return;
+      }
 
       if (editingCoupon) {
         const { error } = await supabase
@@ -172,6 +188,9 @@ const AdminCoupons = () => {
       expiry_date: format(new Date(coupon.expiry_date), 'yyyy-MM-dd'),
       is_active: coupon.is_active,
       usage_limit_per_user: coupon.usage_limit_per_user ? String(coupon.usage_limit_per_user) : '',
+      collaborator_name: coupon.collaborator_name || '',
+      collaborator_email: coupon.collaborator_email || '',
+      commission_percent: coupon.commission_percent != null ? String(coupon.commission_percent) : '10',
     });
     setIsDialogOpen(true);
   };
@@ -185,6 +204,9 @@ const AdminCoupons = () => {
       expiry_date: '',
       is_active: true,
       usage_limit_per_user: '',
+      collaborator_name: '',
+      collaborator_email: '',
+      commission_percent: '10',
     });
   };
 
