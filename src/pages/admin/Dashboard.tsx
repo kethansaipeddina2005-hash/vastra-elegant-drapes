@@ -117,6 +117,7 @@ const AdminDashboard = () => {
       title: 'Marketing',
       actions: [
         { label: 'Subscriptions', icon: Mail, path: '/admin/subscriptions' },
+        { label: 'Collaborators', icon: Users, path: '/admin/collaborators' },
       ],
     },
   ];
