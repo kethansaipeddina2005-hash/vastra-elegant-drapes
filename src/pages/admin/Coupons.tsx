@@ -399,6 +399,50 @@ const AdminCoupons = () => {
                     onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                   />
                 </div>
+                <div className="border-t pt-4 space-y-3">
+                  <div>
+                    <Label className="text-sm font-semibold">Collaborator (optional)</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Adding a collaborator email turns this coupon into a referral coupon and unlocks the Collaborator Dashboard for that user.
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="collabName">Collaborator Name</Label>
+                    <Input
+                      id="collabName"
+                      value={formData.collaborator_name}
+                      onChange={(e) => setFormData({ ...formData, collaborator_name: e.target.value })}
+                      placeholder="e.g., Priya Sharma"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="collabEmail">Collaborator Email</Label>
+                    <Input
+                      id="collabEmail"
+                      type="email"
+                      value={formData.collaborator_email}
+                      onChange={(e) => setFormData({ ...formData, collaborator_email: e.target.value })}
+                      placeholder="collaborator@example.com"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="commission">Commission Percentage</Label>
+                    <div className="relative">
+                      <Input
+                        id="commission"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.5"
+                        value={formData.commission_percent}
+                        onChange={(e) => setFormData({ ...formData, commission_percent: e.target.value })}
+                        placeholder="10"
+                        disabled={!formData.collaborator_email.trim()}
+                      />
+                      <Percent className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </div>
+                </div>
                 <Button type="submit" className="w-full">
                   {editingCoupon ? 'Update Coupon' : 'Create Coupon'}
                 </Button>
