@@ -8,6 +8,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdmin } from "@/hooks/useAdmin";
+import { useCollaborator } from "@/hooks/useCollaborator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +24,7 @@ const Header = () => {
   const { wishlistCount } = useWishlist();
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
+  const { isCollaborator } = useCollaborator();
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
