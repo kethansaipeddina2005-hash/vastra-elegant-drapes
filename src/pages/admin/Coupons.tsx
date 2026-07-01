@@ -280,6 +280,11 @@ const AdminCoupons = () => {
             <h1 className="text-4xl font-bold mb-2">Coupon Management</h1>
             <p className="text-muted-foreground">Create and manage discount coupons</p>
           </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/admin/collaborators')}>
+              <Users className="mr-2 h-4 w-4" />
+              Collaborators
+            </Button>
           <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
             <DialogTrigger asChild>
               <Button>
@@ -449,6 +454,7 @@ const AdminCoupons = () => {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         <Card>
@@ -469,6 +475,7 @@ const AdminCoupons = () => {
                   <TableRow>
                     <TableHead>Code</TableHead>
                     <TableHead>Discount</TableHead>
+                    <TableHead>Collaborator</TableHead>
                     <TableHead>Min. Order</TableHead>
                     <TableHead>Per-User Limit</TableHead>
                     <TableHead>Expiry Date</TableHead>
@@ -486,6 +493,16 @@ const AdminCoupons = () => {
                       </TableCell>
                       <TableCell>
                         <span className="font-semibold text-primary">{coupon.discount_percent}%</span>
+                      </TableCell>
+                      <TableCell>
+                        {coupon.collaborator_email ? (
+                          <div className="text-xs">
+                            <div className="font-medium">{coupon.collaborator_name || coupon.collaborator_email}</div>
+                            <div className="text-muted-foreground">{Number(coupon.commission_percent || 0)}% commission</div>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {coupon.min_amount > 0 ? `₹${coupon.min_amount.toLocaleString()}` : 'No minimum'}
