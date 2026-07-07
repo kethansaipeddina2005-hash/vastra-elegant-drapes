@@ -215,7 +215,7 @@ const ProductDetail = () => {
     reviewCount: product.reviews,
     inStock: product.stockQuantity > 0,
     sku: product.id,
-    brand: 'Vastra',
+    brand: 'Vastra Luxe',
   });
 
   const breadcrumbSchema = getBreadcrumbSchema([
@@ -228,8 +228,8 @@ const ProductDetail = () => {
     <>
     <Layout>
       <SEO 
-        title={`${product.name} | Vastra — Handcrafted Indian Sarees`}
-        description={product.description.slice(0, 155) + '...'}
+        title={`${product.name} | Luxury Designer Saree — Vastra Luxe`}
+        description={`Buy ${product.name} online at Vastra Luxe. ${product.description.slice(0, 110)}${product.description.length > 110 ? '…' : ''} Worldwide shipping.`.slice(0, 158)}
         canonical={`/product/${product.id}`}
         ogType="product"
         ogImage={product.images[0]}
