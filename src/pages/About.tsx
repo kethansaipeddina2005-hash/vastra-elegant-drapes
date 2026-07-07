@@ -6,8 +6,8 @@ const About = () => {
   return (
     <Layout>
       <SEO 
-        title="About Us | Vastra — Preserving Traditional Indian Textile Art"
-        description="Learn about Vastra's mission to preserve traditional Indian textile artistry. We work directly with skilled artisans to bring you authentic handcrafted sarees."
+        title="About Vastra Luxe | Luxury Designer Saree Boutique"
+        description="Vastra Luxe is a premium saree boutique offering exclusive handcrafted Kanchipuram, Banarasi and bridal silk sarees, working directly with master weavers across India."
         canonical="/about"
       />
       <div className="container mx-auto px-6 py-16">
