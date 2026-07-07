@@ -73,8 +73,8 @@ const Collections = () => {
   return (
     <Layout>
       <SEO 
-        title="Saree Collections | Vastra — Shop Traditional Indian Sarees"
-        description="Explore our curated collection of handcrafted Indian sarees. Filter by fabric, color, occasion, and region. Free shipping on orders above ₹2000."
+        title="Luxury Saree Collections | Designer Silk & Bridal — Vastra Luxe"
+        description="Shop exclusive luxury designer sarees — Kanchipuram silk, Banarasi silk, soft silk, bridal & wedding sarees. Filter by fabric, occasion & region. Ships worldwide."
         canonical="/collections"
         structuredData={breadcrumbSchema}
       />
@@ -95,7 +95,7 @@ const Collections = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-2xl md:text-4xl font-playfair font-bold text-foreground mb-1 md:mb-2">
-                Our Collections
+                Luxury Designer Saree Collections
               </h1>
               <p className="text-sm md:text-base text-muted-foreground">
                 {products.length} {products.length === 1 ? 'saree' : 'sarees'} found
