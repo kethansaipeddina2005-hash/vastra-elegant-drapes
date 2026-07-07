@@ -84,8 +84,8 @@ const Contact = () => {
   return (
     <Layout>
       <SEO 
-        title="Contact Us | Vastra — Get in Touch"
-        description="Have questions about our sarees? Contact Vastra for inquiries about orders, returns, or styling advice. We typically respond within 24 hours."
+        title="Contact Vastra Luxe | WhatsApp Video Shopping & Support"
+        description="Contact Vastra Luxe for luxury saree inquiries, WhatsApp video shopping, worldwide shipping and styling advice. Real-time support, typically within 24 hours."
         canonical="/contact"
       />
       <div className="container mx-auto px-6 py-16">
