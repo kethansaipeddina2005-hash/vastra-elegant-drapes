@@ -11,8 +11,8 @@ interface SEOProps {
 }
 
 const SEO = ({
-  title = 'Vastra — Grace in Every Drape',
-  description = 'Discover elegant handcrafted Indian sarees at Vastra. Traditional craftsmanship meets modern style. Shop authentic Banarasi, Kanjivaram, Chanderi sarees.',
+  title = 'Vastra Luxe — Luxury Designer Sarees | Grace in Every Drape',
+  description = 'Shop luxury designer sarees at Vastra Luxe. Exclusive handcrafted Kanchipuram, Banarasi & bridal silk sarees with worldwide shipping and WhatsApp video shopping.',
   canonical,
   ogImage = '/og-image.jpg',
   ogType = 'website',
@@ -42,7 +42,7 @@ const SEO = ({
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={fullOgImage} />
-      <meta property="og:site_name" content="Vastra" />
+      <meta property="og:site_name" content="Vastra Luxe" />
       <meta property="og:locale" content="en_IN" />
       
       {/* Twitter */}
@@ -68,19 +68,19 @@ export default SEO;
 export const getOrganizationSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'Organization',
-  name: 'Vastra',
-  description: 'Elegant handcrafted Indian sarees with traditional craftsmanship',
+  name: 'Vastra Luxe',
+  description: 'Luxury designer sarees — exclusive handcrafted Kanchipuram, Banarasi and bridal silk sarees with worldwide shipping.',
   url: window.location.origin,
   logo: `${window.location.origin}/logo.jpg`,
   sameAs: [
-    'https://www.instagram.com/vastra',
-    'https://www.facebook.com/vastra',
+    'https://www.instagram.com/vastraluxe',
+    'https://www.facebook.com/vastraluxe',
   ],
   contactPoint: {
     '@type': 'ContactPoint',
-    telephone: '+91-9876543210',
+    telephone: '+91-79979-09061',
     contactType: 'customer service',
-    areaServed: 'IN',
+    areaServed: ['IN', 'US', 'CA', 'GB', 'AU', 'AE', 'SG', 'DE'],
     availableLanguage: ['English', 'Hindi'],
   },
 });
@@ -88,13 +88,39 @@ export const getOrganizationSchema = () => ({
 export const getWebsiteSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'Vastra',
+  name: 'Vastra Luxe',
   url: window.location.origin,
   potentialAction: {
     '@type': 'SearchAction',
     target: `${window.location.origin}/collections?search={search_term_string}`,
     'query-input': 'required name=search_term_string',
   },
+});
+
+export const getFAQSchema = (faqs: { question: string; answer: string }[]) => ({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+});
+
+export const getLocalBusinessSchema = () => ({
+  '@context': 'https://schema.org',
+  '@type': 'Store',
+  name: 'Vastra Luxe',
+  image: `${window.location.origin}/logo.jpg`,
+  '@id': window.location.origin,
+  url: window.location.origin,
+  telephone: '+91-79979-09061',
+  priceRange: '₹₹₹',
+  address: {
+    '@type': 'PostalAddress',
+    addressCountry: 'IN',
+  },
+  areaServed: ['IN', 'US', 'CA', 'GB', 'AU', 'AE', 'SG', 'DE'],
 });
 
 export const getProductSchema = (product: {
