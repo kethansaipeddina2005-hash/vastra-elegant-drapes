@@ -17,63 +17,20 @@ interface PricingContextType {
 const PricingContext = createContext<PricingContextType | undefined>(undefined);
 
 export const PricingProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
-  const [pricingRegion, setPricingRegionState] = useState<PricingRegion>(() => {
-    const saved = localStorage.getItem('vastra-pricing-region');
-    return (saved as PricingRegion) || 'india';
-  });
-  const [loading, setLoading] = useState(false);
+  // Storefront is INR-only. International customers still see rupee pricing;
+  // an extra shipping fee is applied at checkout instead.
+  const pricingRegion: PricingRegion = 'india';
+  const setPricingRegion = (_region: PricingRegion) => {};
+  const currencySymbol = '₹';
+  const currencyCode = 'INR';
+  const loading = false;
 
-  // Load user's country_type from profile on login
-  useEffect(() => {
-    if (user) {
-      loadUserCountryType();
-    }
-  }, [user]);
-
-  const loadUserCountryType = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('country_type')
-        .eq('id', user.id)
-        .single();
-
-      if (data?.country_type) {
-        const region = data.country_type === 'foreign' ? 'foreign' : 'india';
-        setPricingRegionState(region);
-        localStorage.setItem('vastra-pricing-region', region);
-      }
-    } catch (error) {
-      console.error('Error loading country type:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const setPricingRegion = (region: PricingRegion) => {
-    setPricingRegionState(region);
-    localStorage.setItem('vastra-pricing-region', region);
-  };
-
-  const currencySymbol = pricingRegion === 'foreign' ? '$' : '₹';
-  const currencyCode = pricingRegion === 'foreign' ? 'USD' : 'INR';
-
-  const getDisplayPrice = (indianPrice: number, foreignPrice?: number | null): number => {
-    if (pricingRegion === 'foreign' && foreignPrice != null && foreignPrice > 0) {
-      return foreignPrice;
-    }
+  const getDisplayPrice = (indianPrice: number, _foreignPrice?: number | null): number => {
     return indianPrice;
   };
 
-  const formatPrice = (indianPrice: number, foreignPrice?: number | null): string => {
-    const price = getDisplayPrice(indianPrice, foreignPrice);
-    if (pricingRegion === 'foreign' && foreignPrice != null && foreignPrice > 0) {
-      return `$${price.toLocaleString('en-US')}`;
-    }
-    return `₹${price.toLocaleString('en-IN')}`;
+  const formatPrice = (indianPrice: number, _foreignPrice?: number | null): string => {
+    return `₹${indianPrice.toLocaleString('en-IN')}`;
   };
 
   return (

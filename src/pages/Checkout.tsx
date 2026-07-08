@@ -63,6 +63,7 @@ const Checkout = () => {
     state: "",
     pincode: "",
   });
+  const [isInternational, setIsInternational] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -74,25 +75,32 @@ const Checkout = () => {
 
   const { pricingRegion, setPricingRegion, currencySymbol, getDisplayPrice } = usePricing();
 
+  // International if user chose it OR pincode isn't a 6-digit Indian PIN
+  const pincodeLooksIntl =
+    shippingData.pincode.trim().length > 0 &&
+    !/^\d{6}$/.test(shippingData.pincode.trim());
+  const internationalOrder = isInternational || pincodeLooksIntl;
+  const INTERNATIONAL_SHIPPING = 4000;
+
   // Calculate display totals based on pricing region
   const displayTotal = cart.reduce((total, item) => {
     return total + getDisplayPrice(item.price, (item as any).foreignPrice) * item.quantity;
   }, 0);
-  const shipping = displayTotal > 2000 ? 0 : 200;
+  const shipping = internationalOrder
+    ? INTERNATIONAL_SHIPPING
+    : displayTotal > 2000
+      ? 0
+      : 200;
   const discountAmount = Math.floor((discountPercent / 100) * displayTotal);
   const total = displayTotal + shipping - discountAmount;
 
   const { user } = useAuth();
 
-  // Switch pricing when address country changes
+  // Detect international shipping when a saved address is selected
   const handleAddressSelect = (addressId: string) => {
     setSelectedAddressId(addressId);
     const addr = savedAddresses.find(a => a.id === addressId);
-    if (addr?.country && addr.country.toLowerCase() !== 'india') {
-      setPricingRegion('foreign');
-    } else {
-      setPricingRegion('india');
-    }
+    setIsInternational(!!addr?.country && addr.country.toLowerCase() !== 'india');
   };
 
   // Fetch saved addresses (only for signed-in users)
@@ -585,6 +593,21 @@ const Checkout = () => {
                       {/* New Address Form */}
                       {(useNewAddress || savedAddresses.length === 0) && (
                         <>
+                          <div className="flex items-start gap-3 p-3 border rounded-lg bg-accent/5">
+                            <input
+                              id="intl"
+                              type="checkbox"
+                              className="mt-1 h-4 w-4"
+                              checked={isInternational}
+                              onChange={(e) => setIsInternational(e.target.checked)}
+                            />
+                            <Label htmlFor="intl" className="cursor-pointer flex-1">
+                              <div className="font-medium">Shipping outside India (International)</div>
+                              <div className="text-xs text-muted-foreground mt-0.5">
+                                A flat ₹4,000 international shipping fee will be added.
+                              </div>
+                            </Label>
+                          </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <Label htmlFor="fullName">Full Name</Label>
@@ -645,13 +668,20 @@ const Checkout = () => {
                               />
                             </div>
                             <div>
-                              <Label htmlFor="pincode">Pincode</Label>
+                              <Label htmlFor="pincode">
+                                {internationalOrder ? "Postal / ZIP Code" : "Pincode"}
+                              </Label>
                               <Input 
                                 id="pincode" 
                                 required
                                 value={shippingData.pincode}
                                 onChange={(e) => setShippingData({...shippingData, pincode: e.target.value})}
                               />
+                              {!isInternational && pincodeLooksIntl && (
+                                <p className="text-xs text-amber-700 mt-1">
+                                  Looks like an international code — ₹4,000 shipping will apply.
+                                </p>
+                              )}
                             </div>
                           </div>
                         </>
@@ -768,7 +798,9 @@ const Checkout = () => {
                       <span>- ₹{discountAmount.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Shipping</span>
+                      <span className="text-muted-foreground">
+                        {internationalOrder ? "International Shipping" : "Shipping"}
+                      </span>
                       <span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
                     </div>
                   </div>
