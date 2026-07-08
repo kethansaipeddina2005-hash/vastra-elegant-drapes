@@ -17,6 +17,7 @@ export interface Product {
   rating?: number;
   reviews?: number;
   returnDays?: number | null;
+  discountPercentage?: number;
   categoryIds?: string[];
   categoryNames?: string[];
 }

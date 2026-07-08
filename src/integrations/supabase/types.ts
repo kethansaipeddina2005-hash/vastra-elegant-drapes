@@ -593,6 +593,7 @@ export type Database = {
           color: string | null
           created_at: string | null
           description: string | null
+          discount_percentage: number
           fabric_type: string | null
           foreign_price: number | null
           id: number
@@ -616,6 +617,7 @@ export type Database = {
           color?: string | null
           created_at?: string | null
           description?: string | null
+          discount_percentage?: number
           fabric_type?: string | null
           foreign_price?: number | null
           id?: number
@@ -639,6 +641,7 @@ export type Database = {
           color?: string | null
           created_at?: string | null
           description?: string | null
+          discount_percentage?: number
           fabric_type?: string | null
           foreign_price?: number | null
           id?: number
