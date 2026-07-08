@@ -36,6 +36,7 @@ interface Product {
   category_ids?: string[];
   batch_number?: number | null;
   product_code?: string | null;
+  discount_percentage?: number | null;
 }
 
 const AdminProducts = () => {
@@ -63,6 +64,7 @@ const AdminProducts = () => {
     region: '',
     return_days: '',
     batch_number: '',
+    discount_percentage: '',
   });
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -250,6 +252,7 @@ const AdminProducts = () => {
         stock_quantity: parseInt(formData.stock_quantity),
         return_days: formData.return_days ? parseInt(formData.return_days) : null,
         batch_number: formData.batch_number ? parseInt(formData.batch_number) : null,
+        discount_percentage: formData.discount_percentage ? parseFloat(formData.discount_percentage) : 0,
         images: imageUrls,
         videos: videoUrls,
         is_new: true,
@@ -343,6 +346,7 @@ const AdminProducts = () => {
       region: product.region || '',
       return_days: (product as any).return_days?.toString() || '',
       batch_number: product.batch_number != null ? String(product.batch_number) : '',
+      discount_percentage: (product as any).discount_percentage != null ? String((product as any).discount_percentage) : '',
     });
     setSelectedCategories(product.category_ids || []);
     setExistingImages(product.images || []);
@@ -364,6 +368,7 @@ const AdminProducts = () => {
       region: '',
       return_days: '',
       batch_number: '',
+      discount_percentage: '',
     });
     setSelectedCategories([]);
     setImageFiles([]);
