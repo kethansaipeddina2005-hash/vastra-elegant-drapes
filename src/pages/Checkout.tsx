@@ -63,6 +63,7 @@ const Checkout = () => {
     state: "",
     pincode: "",
   });
+  const [isInternational, setIsInternational] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -74,25 +75,32 @@ const Checkout = () => {
 
   const { pricingRegion, setPricingRegion, currencySymbol, getDisplayPrice } = usePricing();
 
+  // International if user chose it OR pincode isn't a 6-digit Indian PIN
+  const pincodeLooksIntl =
+    shippingData.pincode.trim().length > 0 &&
+    !/^\d{6}$/.test(shippingData.pincode.trim());
+  const internationalOrder = isInternational || pincodeLooksIntl;
+  const INTERNATIONAL_SHIPPING = 4000;
+
   // Calculate display totals based on pricing region
   const displayTotal = cart.reduce((total, item) => {
     return total + getDisplayPrice(item.price, (item as any).foreignPrice) * item.quantity;
   }, 0);
-  const shipping = displayTotal > 2000 ? 0 : 200;
+  const shipping = internationalOrder
+    ? INTERNATIONAL_SHIPPING
+    : displayTotal > 2000
+      ? 0
+      : 200;
   const discountAmount = Math.floor((discountPercent / 100) * displayTotal);
   const total = displayTotal + shipping - discountAmount;
 
   const { user } = useAuth();
 
-  // Switch pricing when address country changes
+  // Detect international shipping when a saved address is selected
   const handleAddressSelect = (addressId: string) => {
     setSelectedAddressId(addressId);
     const addr = savedAddresses.find(a => a.id === addressId);
-    if (addr?.country && addr.country.toLowerCase() !== 'india') {
-      setPricingRegion('foreign');
-    } else {
-      setPricingRegion('india');
-    }
+    setIsInternational(!!addr?.country && addr.country.toLowerCase() !== 'india');
   };
 
   // Fetch saved addresses (only for signed-in users)
