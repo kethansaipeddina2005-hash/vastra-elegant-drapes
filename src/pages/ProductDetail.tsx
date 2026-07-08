@@ -285,9 +285,29 @@ const ProductDetail = () => {
                 {product.name}
               </h1>
               <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-bold text-primary">
-                  {formatPrice(product.price, product.foreignPrice)}
-                </p>
+                {(() => {
+                  const d = product.discountPercentage || 0;
+                  const hasDiscount = d > 0 && d < 100;
+                  const mrpInr = hasDiscount ? product.price / (1 - d / 100) : product.price * 1.25;
+                  const mrpUsd = product.foreignPrice != null
+                    ? (hasDiscount ? product.foreignPrice / (1 - d / 100) : product.foreignPrice * 1.25)
+                    : null;
+                  return (
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <p className="text-2xl font-bold text-primary">
+                        {formatPrice(product.price, product.foreignPrice)}
+                      </p>
+                      <p className="text-sm text-muted-foreground line-through">
+                        {formatPrice(Math.round(mrpInr), mrpUsd != null ? Math.round(mrpUsd) : null)}
+                      </p>
+                      {hasDiscount && (
+                        <span className="text-xs font-semibold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                          {Math.round(d)}% OFF
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
                 {product.rating != null && product.rating > 0 && (
                   <div className="flex items-center gap-1">
                     <div className="flex">
