@@ -512,6 +512,24 @@ const AdminProducts = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
+                    <Label htmlFor="discount_percentage">Discount % (off MRP)</Label>
+                    <Input
+                      id="discount_percentage"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="99"
+                      placeholder="e.g. 20"
+                      value={formData.discount_percentage}
+                      onChange={(e) => setFormData({ ...formData, discount_percentage: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Price above is the final price. MRP is calculated from this discount.
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
                     <Label htmlFor="fabric">Fabric Type</Label>
                     <Input
                       id="fabric"
