@@ -798,7 +798,9 @@ const Checkout = () => {
                       <span>- ₹{discountAmount.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Shipping</span>
+                      <span className="text-muted-foreground">
+                        {internationalOrder ? "International Shipping" : "Shipping"}
+                      </span>
                       <span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
                     </div>
                   </div>
