@@ -84,6 +84,7 @@ const ProductDetail = () => {
         rating: Number(data.rating) || 0,
         reviews: data.reviews || 0,
         returnDays: (data as any).return_days || null,
+        discountPercentage: Number((data as any).discount_percentage) || 0,
         categoryIds,
         categoryNames,
       };
