@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, Package, ArrowRight } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
+import { trackPurchase } from "@/lib/analytics";
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
@@ -24,10 +25,26 @@ const PaymentSuccess = () => {
     if (!orderId) return;
     supabase
       .from("orders")
-      .select("order_number")
+      .select("order_number, total_amount, final_amount, coupon_code, order_items(price, quantity, product_id, products(name))")
       .eq("id", orderId)
       .maybeSingle()
-      .then(({ data }) => setOrderNumber(data?.order_number ?? null));
+      .then(({ data }) => {
+        if (!data) return;
+        setOrderNumber(data.order_number ?? null);
+        const value = Number((data as any).final_amount ?? data.total_amount) || 0;
+        const items = ((data as any).order_items || []).map((oi: any) => ({
+          id: oi.product_id,
+          name: oi.products?.name || `Product ${oi.product_id}`,
+          price: Number(oi.price) || 0,
+          quantity: oi.quantity,
+        }));
+        trackPurchase({
+          transactionId: data.order_number ?? orderId,
+          value,
+          items,
+          coupon: (data as any).coupon_code,
+        });
+      });
   }, [orderId]);
 
   return (

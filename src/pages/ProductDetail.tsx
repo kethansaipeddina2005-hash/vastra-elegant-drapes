@@ -13,6 +13,7 @@ import ProductDetailSkeleton from "@/components/skeletons/ProductDetailSkeleton"
 import { useCart } from "@/contexts/CartContext";
 import { usePricing } from "@/contexts/PricingContext";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { trackViewItem } from "@/lib/analytics";
 import { useRecentlyViewed } from "@/contexts/RecentlyViewedContext";
 import { toast } from "@/hooks/use-toast";
 import { Loading } from "@/components/ui/loading";
@@ -91,6 +92,12 @@ const ProductDetail = () => {
 
       setProduct(transformedProduct);
       addToRecentlyViewed(transformedProduct);
+      trackViewItem({
+        id: transformedProduct.id,
+        name: transformedProduct.name,
+        price: transformedProduct.price,
+        categoryNames: transformedProduct.categoryNames,
+      });
 
       // Fetch related products based on multiple criteria
       const { data: relatedData } = await supabase

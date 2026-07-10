@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product } from '@/types/product';
 import { toast } from '@/hooks/use-toast';
+import { trackAddToCart } from '@/lib/analytics';
 
 interface CartItem extends Product {
   quantity: number;
@@ -49,6 +50,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [promoCode, discountPercent]);
 
   const addToCart = (product: Product, quantity = 1) => {
+    trackAddToCart(
+      {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        categoryNames: product.categoryNames,
+      },
+      quantity,
+    );
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
       const currentQty = existingItem ? existingItem.quantity : 0;

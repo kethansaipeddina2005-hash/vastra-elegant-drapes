@@ -11,6 +11,7 @@ import { WishlistProvider } from "@/contexts/WishlistContext";
 import { RecentlyViewedProvider } from "@/contexts/RecentlyViewedContext";
 import { PricingProvider } from "@/contexts/PricingContext";
 import LoadingScreen from "@/components/LoadingScreen";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 // Eagerly load the home page for fastest initial render
 import Index from "./pages/Index";
@@ -99,6 +100,7 @@ const App = () => {
                   <Toaster />
                   <Sonner />
                   <BrowserRouter>
+                    <AnalyticsTracker />
                     <Suspense fallback={<PageFallback />}>
                       <Routes>
                         <Route path="/" element={<Index />} />
