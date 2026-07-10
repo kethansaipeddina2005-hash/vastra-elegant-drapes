@@ -22,4 +22,4 @@ Disallow: /checkout
 Disallow: /payment/*
 
 # Sitemap location
-Sitemap: https://vastra-elegant-drapes.lovable.app/sitemap.xml
+Sitemap: https://vastraluxe.co.in/sitemap.xml

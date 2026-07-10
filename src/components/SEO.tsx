@@ -1,5 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 
+// Canonical production domain — used for absolute URLs so canonicals/OG stay
+// stable across preview/staging origins.
+const SITE_URL = 'https://vastraluxe.co.in';
+
 interface SEOProps {
   title?: string;
   description?: string;
@@ -19,9 +23,13 @@ const SEO = ({
   noIndex = false,
   structuredData,
 }: SEOProps) => {
-  const siteUrl = window.location.origin;
-  const fullCanonical = canonical ? `${siteUrl}${canonical}` : window.location.href;
-  const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+  const path =
+    canonical ??
+    (typeof window !== 'undefined'
+      ? window.location.pathname + window.location.search
+      : '/');
+  const fullCanonical = path.startsWith('http') ? path : `${SITE_URL}${path}`;
+  const fullOgImage = ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage}`;
 
   return (
     <Helmet>
@@ -70,8 +78,8 @@ export const getOrganizationSchema = () => ({
   '@type': 'Organization',
   name: 'Vastra Luxe',
   description: 'Luxury designer sarees — exclusive handcrafted Kanchipuram, Banarasi and bridal silk sarees with worldwide shipping.',
-  url: window.location.origin,
-  logo: `${window.location.origin}/logo.jpg`,
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo.jpg`,
   sameAs: [
     'https://www.instagram.com/vastraluxe',
     'https://www.facebook.com/vastraluxe',
@@ -89,10 +97,10 @@ export const getWebsiteSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Vastra Luxe',
-  url: window.location.origin,
+  url: SITE_URL,
   potentialAction: {
     '@type': 'SearchAction',
-    target: `${window.location.origin}/collections?search={search_term_string}`,
+    target: `${SITE_URL}/collections?search={search_term_string}`,
     'query-input': 'required name=search_term_string',
   },
 });
@@ -111,9 +119,9 @@ export const getLocalBusinessSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'Store',
   name: 'Vastra Luxe',
-  image: `${window.location.origin}/logo.jpg`,
-  '@id': window.location.origin,
-  url: window.location.origin,
+  image: `${SITE_URL}/logo.jpg`,
+  '@id': SITE_URL,
+  url: SITE_URL,
   telephone: '+91-79979-09061',
   priceRange: '₹₹₹',
   address: {
@@ -183,7 +191,7 @@ export const getBreadcrumbSchema = (items: { name: string; url: string }[]) => (
     '@type': 'ListItem',
     position: index + 1,
     name: item.name,
-    item: `${window.location.origin}${item.url}`,
+    item: `${SITE_URL}${item.url}`,
   })),
 });
 
@@ -207,7 +215,7 @@ export const getArticleSchema = (article: {
     name: 'Vastra',
     logo: {
       '@type': 'ImageObject',
-      url: `${window.location.origin}/logo.jpg`,
+      url: `${SITE_URL}/logo.jpg`,
     },
   },
 });

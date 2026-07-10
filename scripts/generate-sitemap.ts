@@ -4,7 +4,7 @@ import { writeFileSync } from "fs";
 import { resolve } from "path";
 import { createClient } from "@supabase/supabase-js";
 
-const BASE_URL = "https://vastra-elegant-drapes.lovable.app";
+const BASE_URL = "https://vastraluxe.co.in";
 
 interface SitemapEntry {
   path: string;
