@@ -1,146 +1,344 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/</loc>
+    <loc>https://vastraluxe.co.in/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/collections</loc>
+    <loc>https://vastraluxe.co.in/collections</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/blog</loc>
+    <loc>https://vastraluxe.co.in/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/about</loc>
+    <loc>https://vastraluxe.co.in/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/contact</loc>
+    <loc>https://vastraluxe.co.in/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/reels</loc>
+    <loc>https://vastraluxe.co.in/reels</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/blog/how-to-drape-saree</loc>
+    <loc>https://vastraluxe.co.in/blog/how-to-drape-saree</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/blog/caring-for-silk-sarees</loc>
+    <loc>https://vastraluxe.co.in/blog/caring-for-silk-sarees</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/blog/banarasi-silk-history</loc>
+    <loc>https://vastraluxe.co.in/blog/banarasi-silk-history</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/blog/wedding-saree-guide</loc>
+    <loc>https://vastraluxe.co.in/blog/wedding-saree-guide</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/blog/sustainable-sarees</loc>
+    <loc>https://vastraluxe.co.in/blog/sustainable-sarees</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/blog/regional-saree-styles</loc>
+    <loc>https://vastraluxe.co.in/blog/regional-saree-styles</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/18</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/10</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/17</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/11</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/16</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/12</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/15</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/13</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/14</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/14</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/13</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/15</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/12</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/16</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/11</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/17</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/9</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/18</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/8</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/19</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/7</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/20</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/6</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/21</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/4</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/22</loc>
+    <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://vastra-elegant-drapes.lovable.app/product/10</loc>
-    <lastmod>2026-05-30</lastmod>
+    <loc>https://vastraluxe.co.in/product/23</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/26</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/27</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/28</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/29</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/31</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/32</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/33</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/34</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/35</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/36</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/37</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/38</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/39</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/40</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/41</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/42</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/43</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/44</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/45</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/46</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/47</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/48</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/49</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/50</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/51</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/52</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/9</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/8</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/7</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/6</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/4</loc>
+    <lastmod>2026-07-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/25</loc>
+    <lastmod>2026-06-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vastraluxe.co.in/product/24</loc>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
