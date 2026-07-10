@@ -1,5 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 
+// Canonical production domain — used for absolute URLs so canonicals/OG stay
+// stable across preview/staging origins.
+const SITE_URL = 'https://vastraluxe.co.in';
+
 interface SEOProps {
   title?: string;
   description?: string;
@@ -19,9 +23,13 @@ const SEO = ({
   noIndex = false,
   structuredData,
 }: SEOProps) => {
-  const siteUrl = window.location.origin;
-  const fullCanonical = canonical ? `${siteUrl}${canonical}` : window.location.href;
-  const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+  const path =
+    canonical ??
+    (typeof window !== 'undefined'
+      ? window.location.pathname + window.location.search
+      : '/');
+  const fullCanonical = path.startsWith('http') ? path : `${SITE_URL}${path}`;
+  const fullOgImage = ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage}`;
 
   return (
     <Helmet>
