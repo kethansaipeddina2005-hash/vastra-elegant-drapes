@@ -115,6 +115,22 @@ const Checkout = () => {
     }
   }, [user]);
 
+  // Fire GA4 begin_checkout once when the checkout page has cart items
+  useEffect(() => {
+    if (cart.length === 0) return;
+    trackBeginCheckout(
+      cart.map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        categoryNames: item.categoryNames,
+      })),
+      cartTotal,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const fetchSavedAddresses = async () => {
     try {
       const { data, error } = await supabase
