@@ -91,6 +91,12 @@ const ProductDetail = () => {
 
       setProduct(transformedProduct);
       addToRecentlyViewed(transformedProduct);
+      trackViewItem({
+        id: transformedProduct.id,
+        name: transformedProduct.name,
+        price: transformedProduct.price,
+        categoryNames: transformedProduct.categoryNames,
+      });
 
       // Fetch related products based on multiple criteria
       const { data: relatedData } = await supabase
