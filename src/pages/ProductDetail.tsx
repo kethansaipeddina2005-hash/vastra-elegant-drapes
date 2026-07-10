@@ -13,6 +13,7 @@ import ProductDetailSkeleton from "@/components/skeletons/ProductDetailSkeleton"
 import { useCart } from "@/contexts/CartContext";
 import { usePricing } from "@/contexts/PricingContext";
 import { useWishlist } from "@/contexts/WishlistContext";
+import { trackViewItem } from "@/lib/analytics";
 import { useRecentlyViewed } from "@/contexts/RecentlyViewedContext";
 import { toast } from "@/hooks/use-toast";
 import { Loading } from "@/components/ui/loading";
