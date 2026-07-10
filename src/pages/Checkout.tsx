@@ -15,6 +15,7 @@ import { Check, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 import SEO from "@/components/SEO";
+import { trackBeginCheckout } from "@/lib/analytics";
 
 declare global {
   interface Window {
