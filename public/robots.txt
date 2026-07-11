@@ -22,4 +22,4 @@ Disallow: /checkout
 Disallow: /payment/*
 
 # Sitemap location
-Sitemap: https://vastraluxe.co.in/sitemap.xml
+Sitemap: https://vastraluxe.com/sitemap.xml

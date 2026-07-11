@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 
 // Canonical production domain — used for absolute URLs so canonicals/OG stay
 // stable across preview/staging origins.
-const SITE_URL = 'https://vastraluxe.co.in';
+const SITE_URL = 'https://vastraluxe.com';
 
 interface SEOProps {
   title?: string;
