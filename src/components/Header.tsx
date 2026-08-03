@@ -33,9 +33,9 @@ const Header = () => {
           <Link to="/" className="flex items-center gap-2 md:gap-3 flex-shrink-0">
             <img src={logo} alt="Vastra Logo" className="h-10 w-10 md:h-12 md:w-12 object-contain" />
             <div className="flex flex-col leading-none">
-              <h1 className="text-xl md:text-3xl font-playfair font-semibold text-foreground">
+              <span className="text-xl md:text-3xl font-playfair font-semibold text-foreground">
                 Vastra
-              </h1>
+              </span>
               <span className="text-[10px] md:text-xs uppercase tracking-[0.35em] text-primary font-semibold text-right">
                 Luxe
               </span>
@@ -74,13 +74,13 @@ const Header = () => {
           
           <div className="flex items-center gap-1 md:gap-3">
             <Link to="/reels" className="flex-shrink-0">
-              <Button variant="ghost" size="icon" className="h-9 w-9 lg:h-10 lg:w-10">
+              <Button variant="ghost" size="icon" aria-label="Watch saree reels" className="h-9 w-9 lg:h-10 lg:w-10">
                 <Play className="h-5 w-5" />
               </Button>
             </Link>
 
             <Link to="/account/wishlist" className="hidden lg:block flex-shrink-0">
-              <Button variant="ghost" size="icon" className="relative h-10 w-10">
+              <Button variant="ghost" size="icon" aria-label="View wishlist" className="relative h-10 w-10">
                 <Heart className="h-5 w-5" />
                 {wishlistCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -93,7 +93,7 @@ const Header = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="hidden lg:flex h-10 w-10 flex-shrink-0">
+                  <Button variant="ghost" size="icon" aria-label="Account menu" className="hidden lg:flex h-10 w-10 flex-shrink-0">
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -131,7 +131,7 @@ const Header = () => {
               </DropdownMenu>
             ) : (
               <Link to="/account/login" className="hidden lg:block flex-shrink-0">
-                <Button variant="ghost" size="icon" className="h-10 w-10">
+                <Button variant="ghost" size="icon" aria-label="Sign in" className="h-10 w-10">
                   <User className="h-5 w-5" />
                 </Button>
               </Link>

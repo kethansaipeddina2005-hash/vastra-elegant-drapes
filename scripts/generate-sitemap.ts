@@ -23,6 +23,7 @@ const staticEntries: SitemapEntry[] = [
 ];
 
 const blogSlugs = [
+  "kanchipuram-silk-saree-guide",
   "how-to-drape-saree",
   "caring-for-silk-sarees",
   "banarasi-silk-history",

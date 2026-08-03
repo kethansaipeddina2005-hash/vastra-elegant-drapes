@@ -1,0 +1,25 @@
+# Vastra Luxe
+
+> Luxury designer sarees — handcrafted Kanchipuram, Banarasi and bridal silk sarees, shipped worldwide from India.
+
+Vastra Luxe is an Indian ethnic wear house specialising in limited-edition, handwoven silk sarees. Each piece is sourced from master weavers, photographed in detail, and shipped with premium packaging. Shoppers can browse by fabric, occasion and region, watch saree reels, and get styling help over WhatsApp video.
+
+## Pages
+
+- [Home](/): Featured collections, new arrivals and the brand story.
+- [Collections](/collections): Full saree catalogue with filters for fabric, occasion, region, colour and price.
+- [About](/about): Brand heritage, artisan partnerships and quality promise.
+- [Contact](/contact): Support channels, WhatsApp video shopping and frequently asked questions.
+- [Reels](/reels): Short videos showing drape, fall and fabric detail of individual sarees.
+
+## Blog
+
+- [Kanchipuram Silk Saree Guide](/blog/kanchipuram-silk-saree-guide): History, weaving techniques and how to identify authentic Kanchipuram silk.
+- [5 Ways to Drape a Saree](/blog/how-to-drape-saree): Nivi, Bengali, Gujarati, Maharashtrian and lehenga drapes.
+- [Caring for Silk Sarees](/blog/caring-for-silk-sarees): Washing, storing and preserving silk.
+- [History of Banarasi Silk](/blog/banarasi-silk-history): Mughal-era origins and modern weaving.
+- [Wedding Saree Guide](/blog/wedding-saree-guide): Choosing fabric, colour and drape for bridal wear.
+
+## Optional
+
+- [Blog index](/blog): All styling, care and cultural articles.

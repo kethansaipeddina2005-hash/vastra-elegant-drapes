@@ -15,6 +15,16 @@ import blogRegional from "@/assets/blog-regional.jpg";
 
 const blogPosts = [
   {
+    slug: "kanchipuram-silk-saree-guide",
+    title: "Kanchipuram Silk Sarees: The Complete Buyer's Guide",
+    excerpt:
+      "History, weaving techniques and the authenticity markers that separate a genuine Kanchipuram silk saree from a blend — plus how to buy one online with confidence.",
+    category: "Cultural",
+    date: "August 3, 2026",
+    readTime: "10 min read",
+    image: blogBanarasi,
+  },
+  {
     slug: "how-to-drape-saree",
     title: "5 Different Ways to Drape a Saree",
     excerpt:

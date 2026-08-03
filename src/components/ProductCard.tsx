@@ -55,6 +55,7 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
             variant="ghost"
             size="icon"
             disabled={outOfStock}
+            aria-label={`Add ${product.name} to cart`}
             className="absolute bottom-2 right-2 z-10 h-8 w-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md opacity-0 group-hover:opacity-100 md:opacity-0 max-md:opacity-100 transition-opacity"
             onClick={(e) => { e.preventDefault(); if (!outOfStock) addToCart(product); }}
           >
@@ -71,6 +72,7 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
         <Button
           variant="ghost"
           size="icon"
+          aria-label={inWishlist ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
           className="absolute top-2 right-2 z-10 h-8 w-8 bg-background/80 hover:bg-background shadow-sm"
           onClick={toggleWishlist}
         >
