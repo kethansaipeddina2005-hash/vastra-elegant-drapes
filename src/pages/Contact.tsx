@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Mail, Phone, MapPin, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import SEO from "@/components/SEO";
+import SEO, { getFAQSchema, getLocalBusinessSchema } from "@/components/SEO";
 import { z } from "zod";
 
 const contactSchema = z.object({
@@ -16,6 +16,29 @@ const contactSchema = z.object({
   subject: z.string().trim().min(1, "Subject is required").max(200),
   message: z.string().trim().min(1, "Message is required").max(2000),
 });
+
+const faqs = [
+  {
+    question: "What is your return policy?",
+    answer:
+      "We offer a 7-day return policy for all products. Items must be unused and in original packaging.",
+  },
+  {
+    question: "How long does shipping take?",
+    answer:
+      "Delivery typically takes 5-7 business days within India. International shipping is available and takes 10-15 business days.",
+  },
+  {
+    question: "Do you offer international shipping?",
+    answer:
+      "Yes, we ship worldwide. Shipping costs and delivery times vary by location.",
+  },
+  {
+    question: "How can I track my order?",
+    answer:
+      "Once your order ships, you'll receive a tracking number via email. You can also view order status in your account dashboard.",
+  },
+];
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -87,6 +110,7 @@ const Contact = () => {
         title="Contact Vastra Luxe | WhatsApp Video Shopping & Support"
         description="Contact Vastra Luxe for luxury saree inquiries, WhatsApp video shopping, worldwide shipping and styling advice. Real-time support, typically within 24 hours."
         canonical="/contact"
+        structuredData={[getFAQSchema(faqs), getLocalBusinessSchema()]}
       />
       <div className="container mx-auto px-6 py-16">
         <div className="max-w-5xl mx-auto">
@@ -206,30 +230,12 @@ const Contact = () => {
               Frequently Asked Questions
             </h2>
             <div className="space-y-4 max-w-3xl mx-auto">
-              <div>
-                <h3 className="font-semibold mb-2">What is your return policy?</h3>
-                <p className="text-muted-foreground">
-                  We offer a 7-day return policy for all products. Items must be unused and in original packaging.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">How long does shipping take?</h3>
-                <p className="text-muted-foreground">
-                  Delivery typically takes 5-7 business days within India. International shipping is available and takes 10-15 business days.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Do you offer international shipping?</h3>
-                <p className="text-muted-foreground">
-                  Yes, we ship worldwide. Shipping costs and delivery times vary by location.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">How can I track my order?</h3>
-                <p className="text-muted-foreground">
-                  Once your order ships, you'll receive a tracking number via email. You can also view order status in your account dashboard.
-                </p>
-              </div>
+              {faqs.map((faq) => (
+                <div key={faq.question}>
+                  <h3 className="font-semibold mb-2">{faq.question}</h3>
+                  <p className="text-muted-foreground">{faq.answer}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>

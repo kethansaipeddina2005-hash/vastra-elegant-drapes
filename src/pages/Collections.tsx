@@ -73,8 +73,8 @@ const Collections = () => {
   return (
     <Layout>
       <SEO 
-        title="Luxury Saree Collections | Designer Silk & Bridal — Vastra Luxe"
-        description="Shop exclusive luxury designer sarees — Kanchipuram silk, Banarasi silk, soft silk, bridal & wedding sarees. Filter by fabric, occasion & region. Ships worldwide."
+        title="Saree Collections | Silk & Bridal — Vastra Luxe"
+        description="Shop luxury designer sarees — Kanchipuram, Banarasi, soft silk and bridal. Filter by fabric, occasion and region. Worldwide shipping."
         canonical="/collections"
         structuredData={breadcrumbSchema}
       />
