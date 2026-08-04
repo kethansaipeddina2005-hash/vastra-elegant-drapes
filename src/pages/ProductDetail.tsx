@@ -81,6 +81,7 @@ const ProductDetail = () => {
         occasion: data.occasion || '',
         region: data.region || '',
         stockQuantity: data.stock_quantity || 0,
+        showLowStockBadge: (data as any).show_low_stock_badge !== false,
         isNew: data.is_new || false,
         rating: Number(data.rating) || 0,
         reviews: data.reviews || 0,
@@ -358,7 +359,7 @@ const ProductDetail = () => {
               <div className="pt-2 border-t border-border/50 flex items-center justify-between">
                 {product.stockQuantity <= 0 ? (
                   <p className="text-xs font-semibold text-red-600">Out of Stock</p>
-                ) : product.stockQuantity <= 5 ? (
+                ) : product.stockQuantity <= 5 && product.showLowStockBadge !== false ? (
                   <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-900 bg-gold/30 border border-gold/60 px-2 py-0.5 rounded-full animate-pulse">
                     🔥 Only {product.stockQuantity} left
                   </span>

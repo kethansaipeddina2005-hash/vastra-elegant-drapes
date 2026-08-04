@@ -18,6 +18,7 @@ export interface Product {
   reviews?: number;
   returnDays?: number | null;
   discountPercentage?: number;
+  showLowStockBadge?: boolean;
   categoryIds?: string[];
   categoryNames?: string[];
 }

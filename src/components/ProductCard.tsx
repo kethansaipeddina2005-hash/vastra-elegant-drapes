@@ -31,7 +31,7 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
   const formattedPrice = formatPrice(product.price, product.foreignPrice);
   const stockQty = product.stockQuantity ?? 0;
   const outOfStock = stockQty <= 0;
-  const lowStock = !outOfStock && stockQty <= 3;
+  const lowStock = !outOfStock && stockQty <= 3 && product.showLowStockBadge !== false;
 
   return (
     <Card className="group relative overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">

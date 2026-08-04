@@ -607,6 +607,7 @@ export type Database = {
           region: string | null
           return_days: number | null
           reviews: number | null
+          show_low_stock_badge: boolean
           stock_quantity: number | null
           updated_at: string | null
           videos: string[] | null
@@ -631,6 +632,7 @@ export type Database = {
           region?: string | null
           return_days?: number | null
           reviews?: number | null
+          show_low_stock_badge?: boolean
           stock_quantity?: number | null
           updated_at?: string | null
           videos?: string[] | null
@@ -655,6 +657,7 @@ export type Database = {
           region?: string | null
           return_days?: number | null
           reviews?: number | null
+          show_low_stock_badge?: boolean
           stock_quantity?: number | null
           updated_at?: string | null
           videos?: string[] | null

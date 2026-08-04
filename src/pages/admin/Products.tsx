@@ -5,6 +5,7 @@ import { useAdmin } from '@/hooks/useAdmin';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,6 +38,7 @@ interface Product {
   batch_number?: number | null;
   product_code?: string | null;
   discount_percentage?: number | null;
+  show_low_stock_badge?: boolean | null;
 }
 
 const AdminProducts = () => {
@@ -65,6 +67,7 @@ const AdminProducts = () => {
     return_days: '',
     batch_number: '',
     discount_percentage: '',
+    show_low_stock_badge: true,
   });
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -253,6 +256,7 @@ const AdminProducts = () => {
         return_days: formData.return_days ? parseInt(formData.return_days) : null,
         batch_number: formData.batch_number ? parseInt(formData.batch_number) : null,
         discount_percentage: formData.discount_percentage ? parseFloat(formData.discount_percentage) : 0,
+        show_low_stock_badge: formData.show_low_stock_badge,
         images: imageUrls,
         videos: videoUrls,
         is_new: true,
@@ -347,6 +351,7 @@ const AdminProducts = () => {
       return_days: (product as any).return_days?.toString() || '',
       batch_number: product.batch_number != null ? String(product.batch_number) : '',
       discount_percentage: (product as any).discount_percentage != null ? String((product as any).discount_percentage) : '',
+      show_low_stock_badge: (product as any).show_low_stock_badge !== false,
     });
     setSelectedCategories(product.category_ids || []);
     setExistingImages(product.images || []);
@@ -369,6 +374,7 @@ const AdminProducts = () => {
       return_days: '',
       batch_number: '',
       discount_percentage: '',
+      show_low_stock_badge: true,
     });
     setSelectedCategories([]);
     setImageFiles([]);
@@ -509,6 +515,19 @@ const AdminProducts = () => {
                     />
                     <p className="text-xs text-muted-foreground mt-1">Leave empty or 0 for no return</p>
                   </div>
+                </div>
+                <div className="flex items-start justify-between gap-4 rounded-md border border-border p-3">
+                  <div>
+                    <Label htmlFor="show_low_stock_badge">Show "Only N left" badge</Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Turn off to hide the low-stock urgency badge for this saree.
+                    </p>
+                  </div>
+                  <Switch
+                    id="show_low_stock_badge"
+                    checked={formData.show_low_stock_badge}
+                    onCheckedChange={(checked) => setFormData({ ...formData, show_low_stock_badge: checked })}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
