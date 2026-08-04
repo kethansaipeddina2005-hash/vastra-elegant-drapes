@@ -113,6 +113,8 @@ const App = () => {
                         <Route path="/checkout" element={<Checkout />} />
                         <Route path="/payment/success" element={<PaymentSuccess />} />
                         <Route path="/payment/failure" element={<PaymentFailure />} />
+                        <Route path="/thank-you" element={<ThankYou />} />
+
                         <Route path="/account/login" element={<Login />} />
                         <Route path="/account/register" element={<Register />} />
                         <Route path="/account/forgot-password" element={<ForgotPassword />} />
