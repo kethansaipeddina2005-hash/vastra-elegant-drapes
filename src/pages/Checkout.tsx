@@ -417,7 +417,7 @@ const Checkout = () => {
   };
 
   // ----------------- Razorpay Payment -----------------
-  const handleRazorpayPayment = async (orderId: string, amount: number) => {
+  const handleRazorpayPayment = async (orderId: string, amount: number, shippingAddressString: string) => {
     try {
       const guestToken = !user ? localStorage.getItem(GUEST_TOKEN_KEY) : null;
       const scriptLoaded = await loadRazorpayScript();
@@ -478,8 +478,7 @@ const Checkout = () => {
               title: "Payment Successful!",
               description: `Order has been confirmed.`,
             });
-            clearCart();
-            navigate(user ? "/account/orders" : "/");
+            navigate("/thank-you", { state: { orderId, shippingAddress: shippingAddressString } });
           } catch (error) {
             console.error('Payment verification failed:', error);
             toast({
@@ -524,6 +523,7 @@ const Checkout = () => {
       setIsProcessing(false);
     }
   };
+
 
   // ----------------- Redirect if Cart is Empty -----------------
   if (cart.length === 0) {
