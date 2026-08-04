@@ -371,9 +371,16 @@ const Checkout = () => {
         // Don't fail the order if email fails
       }
 
+      const shippingAddressString = [
+        shippingData.address,
+        shippingData.city,
+        `${shippingData.state} - ${shippingData.pincode}`,
+        isInternational ? "International" : "India",
+      ].filter(Boolean).join(", ");
+
       // Handle payment
       if (paymentMethod === "razorpay") {
-        await handleRazorpayPayment(order.id, total);
+        await handleRazorpayPayment(order.id, total, shippingAddressString);
       } else if (paymentMethod === "cod") {
         // Server-side recompute & persist authoritative final_amount for COD
         // (defends against client-tampered prices/discounts).
@@ -393,11 +400,10 @@ const Checkout = () => {
           title: "Order Placed Successfully!",
           description: `${order.order_number ?? `Order #${order.id.slice(0, 8)}`} confirmed. Pay on delivery.`,
         });
-        clearCart();
-        clearPromo();
-        navigate(user ? "/account/orders" : "/");
+        navigate("/thank-you", { state: { orderId: order.id, shippingAddress: shippingAddressString } });
         setIsProcessing(false);
       }
+
 
     } catch (error) {
       console.error('Error placing order:', error);
