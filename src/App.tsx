@@ -54,6 +54,8 @@ const AdminCollaborators = lazy(() => import("./pages/admin/Collaborators"));
 const CollaboratorDashboard = lazy(() => import("./pages/CollaboratorDashboard"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentFailure = lazy(() => import("./pages/PaymentFailure"));
+const ThankYou = lazy(() => import("./pages/ThankYou"));
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
