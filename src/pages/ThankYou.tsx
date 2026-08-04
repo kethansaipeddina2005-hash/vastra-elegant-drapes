@@ -91,12 +91,11 @@ const ThankYou = () => {
             final_amount,
             discount_percent,
             coupon_code,
-            shipping_amount,
             created_at,
             customer_name,
             customer_email,
             customer_phone,
-            shipping_address,
+            shipping_address_id,
             order_items(
               id,
               product_id,
@@ -106,6 +105,7 @@ const ThankYou = () => {
             )
           `)
           .eq("id", orderId);
+
 
         if (!user) {
           query = query.eq("guest_token", guestToken);
