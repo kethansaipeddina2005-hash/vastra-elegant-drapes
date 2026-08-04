@@ -131,6 +131,30 @@ const ThankYou = () => {
           image: oi.products?.image || "/placeholder.svg",
         }));
 
+        // Fetch shipping address from saved addresses if available
+        let shippingAddress = location.state?.shippingAddress || "";
+        const shippingAddressId = (data as any).shipping_address_id;
+        if (!shippingAddress && shippingAddressId) {
+          try {
+            const { data: addr } = await supabase
+              .from("addresses")
+              .select("full_name, address_line1, address_line2, city, state, postal_code, country")
+              .eq("id", shippingAddressId)
+              .maybeSingle();
+            if (addr) {
+              shippingAddress = [
+                addr.full_name,
+                addr.address_line1,
+                addr.address_line2,
+                `${addr.city}, ${addr.state} - ${addr.postal_code}`,
+                addr.country,
+              ].filter(Boolean).join("\n");
+            }
+          } catch {
+            // ignore address fetch errors
+          }
+        }
+
         const orderDetails: OrderDetails = {
           id: data.id,
           order_number: data.order_number || data.id.slice(0, 8).toUpperCase(),
@@ -141,16 +165,17 @@ const ThankYou = () => {
           final_amount: Number(data.final_amount) || Number(data.total_amount) || 0,
           discount_percent: Number(data.discount_percent) || 0,
           coupon_code: data.coupon_code,
-          shipping_amount: Number(data.shipping_amount) || 0,
           created_at: data.created_at,
           customer_name: data.customer_name || "",
           customer_email: data.customer_email || "",
           customer_phone: data.customer_phone || "",
-          shipping_address: data.shipping_address || "",
+          shipping_address: shippingAddress,
+          shipping_address_id: shippingAddressId || null,
           items,
         };
 
         setOrder(orderDetails);
+
 
         // Track purchase once
         if (!sessionStorage.getItem(`thankyou-tracked-${orderId}`)) {
