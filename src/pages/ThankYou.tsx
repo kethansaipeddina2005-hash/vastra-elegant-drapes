@@ -347,12 +347,13 @@ const ThankYou = () => {
                         <span>Subtotal</span>
                         <span>{formatPrice(order.total_amount)}</span>
                       </div>
-                      {order.shipping_amount > 0 && (
+                      {shippingAmount > 0 && (
                         <div className="flex justify-between text-[#5a4a3a]">
                           <span>Shipping</span>
-                          <span>{formatPrice(order.shipping_amount)}</span>
+                          <span>{formatPrice(shippingAmount)}</span>
                         </div>
                       )}
+
                       {order.discount_percent > 0 && (
                         <div className="flex justify-between text-green-700">
                           <span>Discount ({order.discount_percent}%)</span>
