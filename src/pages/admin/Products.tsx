@@ -37,6 +37,7 @@ interface Product {
   batch_number?: number | null;
   product_code?: string | null;
   discount_percentage?: number | null;
+  show_low_stock_badge?: boolean | null;
 }
 
 const AdminProducts = () => {
@@ -65,6 +66,7 @@ const AdminProducts = () => {
     return_days: '',
     batch_number: '',
     discount_percentage: '',
+    show_low_stock_badge: true,
   });
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
@@ -253,6 +255,7 @@ const AdminProducts = () => {
         return_days: formData.return_days ? parseInt(formData.return_days) : null,
         batch_number: formData.batch_number ? parseInt(formData.batch_number) : null,
         discount_percentage: formData.discount_percentage ? parseFloat(formData.discount_percentage) : 0,
+        show_low_stock_badge: formData.show_low_stock_badge,
         images: imageUrls,
         videos: videoUrls,
         is_new: true,
@@ -347,6 +350,7 @@ const AdminProducts = () => {
       return_days: (product as any).return_days?.toString() || '',
       batch_number: product.batch_number != null ? String(product.batch_number) : '',
       discount_percentage: (product as any).discount_percentage != null ? String((product as any).discount_percentage) : '',
+      show_low_stock_badge: (product as any).show_low_stock_badge !== false,
     });
     setSelectedCategories(product.category_ids || []);
     setExistingImages(product.images || []);

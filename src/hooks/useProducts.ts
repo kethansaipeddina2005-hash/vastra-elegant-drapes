@@ -105,6 +105,7 @@ export const useProducts = () => {
           occasion: product.occasion || '',
           region: product.region || '',
           stockQuantity: product.stock_quantity || 0,
+          showLowStockBadge: (product as any).show_low_stock_badge !== false,
           isNew: product.is_new || false,
           rating: Number(product.rating) || 0,
           reviews: product.reviews || 0,
