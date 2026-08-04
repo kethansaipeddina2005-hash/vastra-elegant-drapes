@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS show_low_stock_badge boolean NOT NULL DEFAULT true;
