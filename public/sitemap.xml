@@ -66,6 +66,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://vastraluxe.com/product/52</loc>
+    <lastmod>2026-08-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://vastraluxe.com/product/10</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
@@ -295,12 +301,6 @@
   </url>
   <url>
     <loc>https://vastraluxe.com/product/51</loc>
-    <lastmod>2026-07-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://vastraluxe.com/product/52</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

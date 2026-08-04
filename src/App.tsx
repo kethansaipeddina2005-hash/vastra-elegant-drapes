@@ -54,6 +54,8 @@ const AdminCollaborators = lazy(() => import("./pages/admin/Collaborators"));
 const CollaboratorDashboard = lazy(() => import("./pages/CollaboratorDashboard"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentFailure = lazy(() => import("./pages/PaymentFailure"));
+const ThankYou = lazy(() => import("./pages/ThankYou"));
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -111,6 +113,8 @@ const App = () => {
                         <Route path="/checkout" element={<Checkout />} />
                         <Route path="/payment/success" element={<PaymentSuccess />} />
                         <Route path="/payment/failure" element={<PaymentFailure />} />
+                        <Route path="/thank-you" element={<ThankYou />} />
+
                         <Route path="/account/login" element={<Login />} />
                         <Route path="/account/register" element={<Register />} />
                         <Route path="/account/forgot-password" element={<ForgotPassword />} />
