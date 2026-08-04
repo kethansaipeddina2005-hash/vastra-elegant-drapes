@@ -39,16 +39,17 @@ interface OrderDetails {
   final_amount: number;
   discount_percent: number;
   coupon_code: string | null;
-  shipping_amount: number;
   created_at: string;
   customer_name: string;
   customer_email: string;
   customer_phone: string;
   shipping_address: string;
+  shipping_address_id: string | null;
   items: OrderItem[];
 }
 
 const GUEST_TOKEN_KEY = "vastra_guest_token";
+
 
 const ThankYou = () => {
   const navigate = useNavigate();
