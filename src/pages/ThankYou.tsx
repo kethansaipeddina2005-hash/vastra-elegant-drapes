@@ -222,6 +222,12 @@ const ThankYou = () => {
     ? Math.floor((order.discount_percent / 100) * order.total_amount)
     : 0;
 
+  // final_amount = total_amount - discount + shipping
+  const shippingAmount = order
+    ? Math.max(0, order.final_amount - order.total_amount + discountAmount)
+    : 0;
+
+
   return (
     <Layout>
       <SEO
