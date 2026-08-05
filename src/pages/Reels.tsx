@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import Layout from '@/components/Layout';
 import { Loading } from '@/components/ui/loading';
+import SEO, { getBreadcrumbSchema } from '@/components/SEO';
 
 interface Reel {
   id: number;
@@ -206,9 +207,22 @@ const Reels = () => {
     window.open(whatsappUrl, '_blank');
   };
 
+  const reelsSeo = (
+    <SEO
+      title="Saree Reels — Watch Luxury Silk Sarees in Motion | Vastra Luxe"
+      description="Watch short videos of our handpicked luxury sarees — see drape, zari sheen and fabric fall in motion before you buy. Shop directly from every reel."
+      canonical="/reels"
+      structuredData={getBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Reels', url: '/reels' },
+      ])}
+    />
+  );
+
   if (loading) {
     return (
       <Layout>
+        {reelsSeo}
         <div className="flex items-center justify-center min-h-[60vh]">
           <Loading size="lg" />
         </div>
@@ -219,6 +233,7 @@ const Reels = () => {
   if (reels.length === 0) {
     return (
       <Layout>
+        {reelsSeo}
         <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
           <Play className="h-16 w-16 text-muted-foreground mb-4" />
           <h2 className="text-2xl font-playfair font-semibold mb-2">No Reels Yet</h2>
@@ -235,6 +250,7 @@ const Reels = () => {
 
   return (
     <div className="fixed inset-0 bg-background z-50">
+      {reelsSeo}
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-background via-background/80 to-transparent">
         <div className="flex items-center justify-between">
