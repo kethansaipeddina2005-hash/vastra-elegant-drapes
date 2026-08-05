@@ -9,8 +9,11 @@ import SEO, { getArticleSchema, getBreadcrumbSchema } from "@/components/SEO";
 
 const BlogPost = () => {
   const { slug } = useParams();
-  
-  // TODO: Fetch actual blog post data based on slug
+
+  // Only this slug has real, unique content today. Any other slug renders the
+  // same article, so keep those variants out of the index to avoid duplicates.
+  const isCanonicalSlug = slug === "how-to-drape-saree";
+
   const articleSchema = getArticleSchema({
     title: '5 Different Ways to Drape a Saree',
     description: 'Master the art of saree draping with these simple techniques for different occasions.',
@@ -35,9 +38,10 @@ const BlogPost = () => {
       <SEO 
         title="5 Different Ways to Drape a Saree | Vastra Blog"
         description="Master the art of saree draping with these simple techniques for different occasions. Learn Nivi, Bengali, Gujarati, Maharashtrian, and Lehenga styles."
-        canonical={`/blog/${slug}`}
+        canonical="/blog/how-to-drape-saree"
+        noIndex={!isCanonicalSlug}
         ogType="article"
-        structuredData={[articleSchema, breadcrumbSchema]}
+        structuredData={isCanonicalSlug ? [articleSchema, breadcrumbSchema] : undefined}
       />
       <article className="container mx-auto px-6 py-16">
         <div className="max-w-4xl mx-auto">

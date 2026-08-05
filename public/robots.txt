@@ -20,6 +20,9 @@ Disallow: /admin/*
 Disallow: /cart
 Disallow: /checkout
 Disallow: /payment/*
+Disallow: /thank-you
+Disallow: /collaborator/*
+Disallow: /*?search=
 
 # Sitemap location
 Sitemap: https://vastraluxe.com/sitemap.xml

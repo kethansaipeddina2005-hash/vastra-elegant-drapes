@@ -12,6 +12,7 @@ import { RecentlyViewedProvider } from "@/contexts/RecentlyViewedContext";
 import { PricingProvider } from "@/contexts/PricingContext";
 import LoadingScreen from "@/components/LoadingScreen";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import RouteMeta from "@/components/RouteMeta";
 
 // Eagerly load the home page for fastest initial render
 import Index from "./pages/Index";
@@ -104,6 +105,7 @@ const App = () => {
                   <Sonner />
                   <BrowserRouter>
                     <AnalyticsTracker />
+                    <RouteMeta />
                     <Suspense fallback={<PageFallback />}>
                       <Routes>
                         <Route path="/" element={<Index />} />
