@@ -25,11 +25,6 @@ const staticEntries: SitemapEntry[] = [
 const blogSlugs = [
   "kanchipuram-silk-saree-guide",
   "how-to-drape-saree",
-  "caring-for-silk-sarees",
-  "banarasi-silk-history",
-  "wedding-saree-guide",
-  "sustainable-sarees",
-  "regional-saree-styles",
 ];
 
 async function fetchProductEntries(): Promise<SitemapEntry[]> {
