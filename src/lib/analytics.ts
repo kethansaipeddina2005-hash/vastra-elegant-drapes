@@ -8,7 +8,7 @@ declare global {
   }
 }
 
-const MEASUREMENT_ID = "G-XCDLFVQXJ2";
+const MEASUREMENT_ID = "G-ERFZZPZXWE";
 
 const gtag = (...args: any[]) => {
   if (typeof window === "undefined") return;
