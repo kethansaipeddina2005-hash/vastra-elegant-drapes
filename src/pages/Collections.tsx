@@ -208,7 +208,7 @@ const Collections = () => {
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-                {products.map((product) => (
+                {products.map((product, index) => (
                   <ProductCard key={product.id} {...product} priority={index < 2} />
                 ))}
               </div>
