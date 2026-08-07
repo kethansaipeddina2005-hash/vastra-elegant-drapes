@@ -54,7 +54,7 @@ const SmartImage = ({
       width={intrinsicWidth}
       height={intrinsicHeight}
       loading={priority ? "eager" : "lazy"}
-      fetchPriority={priority ? "high" : "auto"}
+      {...(priority ? { fetchpriority: "high" } : {})}
       decoding={priority ? "sync" : "async"}
       {...rest}
     />

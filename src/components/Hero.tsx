@@ -143,7 +143,7 @@ const Hero = () => {
           width={1600}
           height={900}
           loading="eager"
-          fetchPriority="high"
+          {...{ fetchpriority: "high" }}
           decoding="sync"
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
