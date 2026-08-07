@@ -96,13 +96,18 @@ export const MediaCarousel = ({ images = [], videos = [], className, productName
           <div className="absolute inset-0 transition-transform duration-500 ease-out">
             {currentMedia.type === 'image' ? (
               <div className="relative w-full h-full group/image">
-                <img
+                <SmartImage
                   src={currentMedia.url}
-                  alt={`Media ${currentIndex + 1}`}
+                  alt={`${productName || 'Product'} photo ${currentIndex + 1}`}
+                  widths={PRODUCT_DETAIL_WIDTHS}
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  intrinsicWidth={1024}
+                  intrinsicHeight={768}
+                  resize="contain"
+                  quality={88}
+                  priority={currentIndex === 0}
                   className="w-full h-full object-contain cursor-pointer"
                   onClick={handleImageClick}
-                  loading={currentIndex === 0 ? 'eager' : 'lazy'}
-                  decoding="async"
                 />
                 <Button
                   variant="ghost"
@@ -185,12 +190,14 @@ export const MediaCarousel = ({ images = [], videos = [], className, productName
                 )}
               >
                 {item.type === 'image' ? (
-                  <img
+                  <SmartImage
                     src={item.url}
                     alt={`Thumbnail ${index + 1}`}
+                    widths={THUMBNAIL_WIDTHS}
+                    sizes="80px"
+                    intrinsicWidth={160}
+                    intrinsicHeight={160}
                     className="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
                   />
                 ) : item.type === 'fitcheck' ? (
                   <div className="relative w-full h-full bg-gradient-to-br from-primary/10 to-accent/20 flex items-center justify-center">
