@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils';
 import { ImageLightbox } from './ImageLightbox';
 import FitCheckSlide from './FitCheckSlide';
 import { useIsMobile } from '@/hooks/use-mobile';
+import SmartImage from './SmartImage';
+import { PRODUCT_DETAIL_WIDTHS, THUMBNAIL_WIDTHS } from '@/lib/image';
 
 interface MediaCarouselProps {
   images?: string[];
