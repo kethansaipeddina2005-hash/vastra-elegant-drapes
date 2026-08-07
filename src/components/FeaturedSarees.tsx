@@ -91,7 +91,7 @@ const FeaturedSarees = () => {
         
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {products.map((saree) => (
-            <ProductCard key={saree.id} {...saree} />
+            <ProductCard key={saree.id} {...saree} priority={index < 2} />
           ))}
         </div>
       </div>
