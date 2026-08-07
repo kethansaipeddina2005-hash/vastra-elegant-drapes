@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import heroImage from "@/assets/hero-saree.jpg";
+import { Helmet } from "react-helmet-async";
+import { buildSrcSet, optimizedImage, HERO_WIDTHS } from "@/lib/image";
 
 interface Banner {
   id: string;
@@ -111,6 +113,9 @@ const Hero = () => {
   };
 
   const activeBanner = banners.length > 0 ? banners[currentBanner] : null;
+  const heroSrc = activeBanner?.image_url || heroImage;
+  const heroSrcSet = buildSrcSet(heroSrc, HERO_WIDTHS, { quality: 85, aspectRatio: 16 / 9 });
+  const heroPreloadHref = optimizedImage(heroSrc, { width: 1280, height: 720, quality: 85 });
 
   return (
     <section
@@ -120,10 +125,28 @@ const Hero = () => {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-700 ease-in-out"
-        style={{ backgroundImage: `url(${activeBanner?.image_url || heroImage})` }}
-      >
+      {/* Preload the LCP hero image */}
+      <Helmet>
+        <link
+          rel="preload"
+          as="image"
+          href={heroPreloadHref}
+          {...(heroSrcSet ? { imagesrcset: heroSrcSet, imagesizes: "100vw" } : {})}
+        />
+      </Helmet>
+      <div className="absolute inset-0 transition-all duration-700 ease-in-out">
+        <img
+          src={optimizedImage(heroSrc, { width: 1600, height: 900, quality: 85 })}
+          srcSet={heroSrcSet}
+          sizes="100vw"
+          alt={activeBanner?.title || "Handcrafted luxury saree from Vastra Luxe"}
+          width={1600}
+          height={900}
+          loading="eager"
+          {...{ fetchpriority: "high" }}
+          decoding="sync"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
         <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-transparent" />
       </div>
       

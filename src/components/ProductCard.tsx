@@ -7,13 +7,17 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { useCart } from "@/contexts/CartContext";
 import { usePricing } from "@/contexts/PricingContext";
 import { Product } from "@/types/product";
+import SmartImage from "./SmartImage";
+import { PRODUCT_CARD_WIDTHS } from "@/lib/image";
 
 interface ProductCardProps extends Product {
   hideWishlistIcon?: boolean;
   actionButton?: React.ReactNode;
+  /** Set on the first above-the-fold card so it can be the LCP candidate. */
+  priority?: boolean;
 }
 
-const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: ProductCardProps) => {
+const ProductCard = ({ hideWishlistIcon = false, actionButton, priority = false, ...product }: ProductCardProps) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
   const { formatPrice, getDisplayPrice, currencySymbol } = usePricing();
@@ -37,10 +41,14 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, ...product }: Pro
     <Card className="group relative overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer">
       <Link to={`/product/${product.id}`}>
         <div className="relative overflow-hidden aspect-[3/4]">
-          <img
+          <SmartImage
             src={product.image}
             alt={product.name}
-            loading="lazy"
+            widths={PRODUCT_CARD_WIDTHS}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 300px"
+            intrinsicWidth={600}
+            intrinsicHeight={800}
+            priority={priority}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
           {(product.isNew || product.isOnSale || outOfStock || lowStock) && (

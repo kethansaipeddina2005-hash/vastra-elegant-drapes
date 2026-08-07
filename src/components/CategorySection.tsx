@@ -5,6 +5,8 @@ import * as LucideIcons from 'lucide-react';
 import { Loading } from './ui/loading';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import SmartImage from './SmartImage';
+import { PRODUCT_CARD_WIDTHS } from '@/lib/image';
 
 interface Category {
   id: string;
@@ -92,9 +94,13 @@ export const CategorySection = () => {
             >
               {/* Image or Fallback */}
               {category.image_url ? (
-                <img
+                <SmartImage
                   src={category.image_url}
                   alt={category.name}
+                  widths={PRODUCT_CARD_WIDTHS}
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                  intrinsicWidth={600}
+                  intrinsicHeight={800}
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                 />
               ) : (
