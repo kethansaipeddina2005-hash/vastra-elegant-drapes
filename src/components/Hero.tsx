@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Globe, Video, ShieldCheck, Gift } from "lucide-react";
 import heroImage from "@/assets/hero-saree.jpg";
 import { Helmet } from "react-helmet-async";
 import { buildSrcSet, optimizedImage, HERO_WIDTHS } from "@/lib/image";
@@ -19,8 +19,8 @@ interface Banner {
 const Hero = () => {
   const defaultBanner: Banner = {
     id: 'default',
-    title: 'Grace in Every Drape',
-    subtitle: 'The Essence of Indian Elegance',
+    title: 'Only 50 Exclusive Silk Sarees Per Collection',
+    subtitle: 'Every design is released only once. Once sold out, it is never restocked.',
     image_url: heroImage,
     link_url: '/collections',
     display_order: 0
@@ -152,20 +152,56 @@ const Hero = () => {
       
       <div className="container mx-auto px-6 relative z-10 py-12 md:py-16">
         <div className="max-w-xl md:max-w-2xl animate-fade-in text-left">
-          <h2 className="text-[2.25rem] leading-[1.1] sm:text-5xl md:text-7xl font-playfair font-bold text-foreground text-balance break-words mb-3 sm:mb-4 md:mb-6">
-            {activeBanner?.title || "Grace in Every Drape"}
-          </h2>
-          <p className="text-base sm:text-xl md:text-2xl text-muted-foreground font-light max-w-md md:max-w-xl text-pretty leading-relaxed mb-6 sm:mb-8 md:mb-10">
-            {activeBanner?.subtitle || "The Essence of Indian Elegance"}
+          <p className="uppercase tracking-[0.28em] text-[0.65rem] sm:text-xs text-primary font-medium mb-3 sm:mb-4">
+            Grace in Every Drape
           </p>
-          <Link to={activeBanner?.link_url || "/collections"} className="inline-block">
-            <Button
-              size="lg"
-              className="bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-lg hover:shadow-xl px-7 sm:px-8 py-5 sm:py-6 text-base sm:text-lg"
+          <h1 className="text-[2rem] leading-[1.12] sm:text-5xl md:text-6xl font-playfair font-bold text-foreground text-balance break-words mb-3 sm:mb-4 md:mb-5">
+            {activeBanner?.title || "Only 50 Exclusive Silk Sarees Per Collection"}
+          </h1>
+          <p className="text-base sm:text-xl md:text-2xl text-muted-foreground font-light max-w-md md:max-w-xl text-pretty leading-relaxed mb-5 sm:mb-7">
+            {activeBanner?.subtitle || "Every design is released only once. Once sold out, it is never restocked."}
+          </p>
+
+          {/* Trust highlights */}
+          <ul className="flex flex-wrap gap-x-4 gap-y-2 mb-6 sm:mb-8 max-w-lg">
+            {[
+              { icon: Globe, label: "Worldwide Delivery" },
+              { icon: Video, label: "Video Call Shopping" },
+              { icon: ShieldCheck, label: "Secure Payments" },
+              { icon: Gift, label: "Premium Packaging" },
+            ].map(({ icon: Icon, label }) => (
+              <li key={label} className="flex items-center gap-1.5 text-xs sm:text-sm text-foreground/80">
+                <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" aria-hidden="true" />
+                {label}
+              </li>
+            ))}
+          </ul>
+
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <Link to={activeBanner?.link_url || "/collections"} className="inline-block">
+              <Button
+                size="lg"
+                className="w-full sm:w-auto bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-lg hover:shadow-xl px-7 sm:px-8 py-5 sm:py-6 text-base sm:text-lg"
+              >
+                Shop Collection
+              </Button>
+            </Link>
+            <a
+              href={`https://wa.me/917997909061?text=${encodeURIComponent("Hi Vastra Luxe! I'd like to book a video call shopping session.")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block"
             >
-              Shop Now
-            </Button>
-          </Link>
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto border-primary/40 bg-background/60 backdrop-blur-sm text-foreground hover:bg-primary/10 transition-all duration-300 px-7 sm:px-8 py-5 sm:py-6 text-base sm:text-lg"
+              >
+                <Video className="w-4 h-4 mr-2" aria-hidden="true" />
+                Book Video Call Shopping
+              </Button>
+            </a>
+          </div>
         </div>
       </div>
 
