@@ -180,7 +180,15 @@ const Cart = () => {
               <Card key={item.id}>
                 <CardContent className="p-3 sm:p-6">
                   <div className="flex gap-3 sm:gap-6">
-                    <img src={item.image} alt={item.name} className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded flex-shrink-0" />
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      width={96}
+                      height={96}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded flex-shrink-0"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start gap-2">
                         <h3 className="font-semibold text-sm sm:text-lg leading-tight truncate">{item.name}</h3>
