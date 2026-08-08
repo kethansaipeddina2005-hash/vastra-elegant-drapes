@@ -473,6 +473,24 @@ const ProductDetail = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
+
+              <a
+                href={`https://wa.me/917997909061?text=${encodeURIComponent(`Hi Vastra Luxe! I'd like a video call shopping session for: ${product.name}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <Button variant="outline" size="sm" className="w-full h-9 text-sm rounded-lg border-primary/40">
+                  Book Video Call Shopping
+                </Button>
+              </a>
+
+              <ul className="grid grid-cols-2 gap-y-1.5 gap-x-3 pt-1 text-[11px] text-muted-foreground">
+                <li>✓ Premium packaging</li>
+                <li>✓ Worldwide delivery</li>
+                <li>✓ Secure checkout</li>
+                <li>✓ WhatsApp assistance</li>
+              </ul>
             </div>
           </div>
         </div>
