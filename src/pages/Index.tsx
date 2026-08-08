@@ -5,6 +5,7 @@ import About from "@/components/About";
 import Newsletter from "@/components/Newsletter";
 import { RecentlyViewedProducts } from "@/components/RecentlyViewedProducts";
 import CategorySection from "@/components/CategorySection";
+import TrustStrip from "@/components/TrustStrip";
 import SEO, { getOrganizationSchema, getWebsiteSchema, getFAQSchema, getLocalBusinessSchema } from "@/components/SEO";
 import PopupAd from "@/components/PopupAd";
 
@@ -32,6 +33,7 @@ const Index = () => {
         structuredData={structuredData}
       />
       <Hero />
+      <TrustStrip />
       <CategorySection />
       <FeaturedSarees />
       <div className="container mx-auto px-4">

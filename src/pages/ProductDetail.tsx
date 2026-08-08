@@ -408,6 +408,15 @@ const ProductDetail = () => {
 
             {/* Action Buttons - Compact and Proportionate */}
             <div className="space-y-2 mt-auto">
+              {/* Scarcity + trust */}
+              <div className="rounded-lg border border-gold/50 bg-gold/10 px-3 py-2.5">
+                <p className="text-xs font-semibold text-foreground leading-relaxed">
+                  Only 50 pieces in this collection.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Once sold out, <span className="font-semibold text-foreground">never restocked</span>.
+                </p>
+              </div>
               <Button 
                 size="sm"
                 className="w-full h-9 text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
