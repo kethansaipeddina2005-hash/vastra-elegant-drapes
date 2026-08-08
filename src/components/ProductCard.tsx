@@ -51,14 +51,15 @@ const ProductCard = ({ hideWishlistIcon = false, actionButton, priority = false,
             priority={priority}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          {(product.isNew || product.isOnSale || outOfStock || lowStock) && (
-            <div className="absolute top-4 left-4 flex flex-col gap-2">
+          <div className="absolute top-4 left-4 flex flex-col gap-2 items-start">
+            <Badge className="bg-background/85 backdrop-blur-sm text-foreground border border-gold/50 text-[10px] tracking-[0.14em] uppercase font-medium">
+              Limited Edition
+            </Badge>
               {outOfStock && <Badge className="bg-destructive text-destructive-foreground">Out of Stock</Badge>}
               {lowStock && <Badge className="bg-gold text-foreground">Only {stockQty} left</Badge>}
               {!outOfStock && product.isNew && <Badge className="bg-accent text-accent-foreground">New</Badge>}
               {!outOfStock && product.isOnSale && <Badge className="bg-destructive text-destructive-foreground">Sale</Badge>}
-            </div>
-          )}
+          </div>
           <Button
             variant="ghost"
             size="icon"
