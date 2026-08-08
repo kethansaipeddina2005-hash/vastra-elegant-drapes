@@ -99,6 +99,10 @@ const PopupAd = () => {
           <img
             src={ad.image_url}
             alt={ad.title}
+            width={800}
+            height={384}
+            loading="lazy"
+            decoding="async"
             className="w-full h-48 object-cover"
           />
         )}
