@@ -1,13 +1,20 @@
+import { lazy, Suspense } from "react";
 import Layout from "@/components/Layout";
 import Hero from "@/components/Hero";
 import FeaturedSarees from "@/components/FeaturedSarees";
-import About from "@/components/About";
-import Newsletter from "@/components/Newsletter";
-import { RecentlyViewedProducts } from "@/components/RecentlyViewedProducts";
 import CategorySection from "@/components/CategorySection";
 import TrustStrip from "@/components/TrustStrip";
+import LazySection from "@/components/LazySection";
+import DeferUntilIdle from "@/components/DeferUntilIdle";
 import SEO, { getOrganizationSchema, getWebsiteSchema, getFAQSchema, getLocalBusinessSchema } from "@/components/SEO";
-import PopupAd from "@/components/PopupAd";
+
+// Below-the-fold sections: split into their own chunks and mounted on approach
+const About = lazy(() => import("@/components/About"));
+const Newsletter = lazy(() => import("@/components/Newsletter"));
+const RecentlyViewedProducts = lazy(() =>
+  import("@/components/RecentlyViewedProducts").then((m) => ({ default: m.RecentlyViewedProducts })),
+);
+const PopupAd = lazy(() => import("@/components/PopupAd"));
 
 const Index = () => {
   const faqSchema = getFAQSchema([
@@ -36,12 +43,20 @@ const Index = () => {
       <TrustStrip />
       <CategorySection />
       <FeaturedSarees />
-      <div className="container mx-auto px-4">
-        <RecentlyViewedProducts maxItems={4} />
-      </div>
-      <About />
-      <Newsletter />
-      <PopupAd />
+      <Suspense fallback={null}>
+        <LazySection minHeight={0} className="container mx-auto px-4">
+          <RecentlyViewedProducts maxItems={4} />
+        </LazySection>
+        <LazySection minHeight={420}>
+          <About />
+        </LazySection>
+        <LazySection minHeight={280}>
+          <Newsletter />
+        </LazySection>
+        <DeferUntilIdle>
+          <PopupAd />
+        </DeferUntilIdle>
+      </Suspense>
     </Layout>
   );
 };

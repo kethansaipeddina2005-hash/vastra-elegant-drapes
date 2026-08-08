@@ -1,8 +1,11 @@
-import { ReactNode } from 'react';
+import { ReactNode, lazy, Suspense } from 'react';
 import Header from './Header';
 import Footer from './Footer';
-import CustomerChat from './chat/CustomerChat';
 import MobileBottomNav from './MobileBottomNav';
+import DeferUntilIdle from './DeferUntilIdle';
+
+// Chat is a non-critical widget — keep it out of the initial bundle/render.
+const CustomerChat = lazy(() => import('./chat/CustomerChat'));
 
 interface LayoutProps {
   children: ReactNode;
@@ -14,7 +17,11 @@ const Layout = ({ children }: LayoutProps) => {
       <Header />
       <main className="flex-1 pb-14 lg:pb-0">{children}</main>
       <Footer className="hidden lg:block" />
-      <CustomerChat />
+      <DeferUntilIdle>
+        <Suspense fallback={null}>
+          <CustomerChat />
+        </Suspense>
+      </DeferUntilIdle>
       <MobileBottomNav />
     </div>
   );
