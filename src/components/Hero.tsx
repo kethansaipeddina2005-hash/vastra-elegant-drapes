@@ -19,8 +19,8 @@ interface Banner {
 const Hero = () => {
   const defaultBanner: Banner = {
     id: 'default',
-    title: 'Handwoven Luxury Sarees',
-    subtitle: 'Discover timeless elegance in every drape, crafted by master weavers for the modern woman.',
+    title: 'Grace in Every Drape',
+    subtitle: 'The Essence of Indian Elegance',
     image_url: heroImage,
     link_url: '/collections',
     display_order: 0
