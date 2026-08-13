@@ -41,6 +41,7 @@ const Index = () => {
         structuredData={structuredData}
       />
       <Hero />
+      <ScarcityRibbon />
       <TrustStrip />
       <CategorySection />
       <FeaturedSarees />
