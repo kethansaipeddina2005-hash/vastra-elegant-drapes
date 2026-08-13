@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Globe, Video, ShieldCheck, Gift } from "lucide-react";
+import { ChevronLeft, ChevronRight, Video } from "lucide-react";
 import heroImage from "@/assets/hero-saree.jpg";
 import { Helmet } from "react-helmet-async";
 import { buildSrcSet, optimizedImage, HERO_WIDTHS } from "@/lib/image";
