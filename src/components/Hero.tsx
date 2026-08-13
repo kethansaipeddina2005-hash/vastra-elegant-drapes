@@ -19,8 +19,8 @@ interface Banner {
 const Hero = () => {
   const defaultBanner: Banner = {
     id: 'default',
-    title: 'Only 50 Exclusive Silk Sarees Per Collection',
-    subtitle: 'Every design is released only once. Once sold out, it is never restocked.',
+    title: 'Handwoven Luxury Sarees',
+    subtitle: 'Discover timeless elegance in every drape, crafted by master weavers for the modern woman.',
     image_url: heroImage,
     link_url: '/collections',
     display_order: 0
