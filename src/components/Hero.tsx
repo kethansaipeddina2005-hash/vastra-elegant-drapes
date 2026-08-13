@@ -19,8 +19,8 @@ interface Banner {
 const Hero = () => {
   const defaultBanner: Banner = {
     id: 'default',
-    title: 'Only 50 Exclusive Silk Sarees Per Collection',
-    subtitle: 'Every design is released only once. Once sold out, it is never restocked.',
+    title: 'Handwoven Luxury Sarees',
+    subtitle: 'Discover timeless elegance in every drape, crafted by master weavers for the modern woman.',
     image_url: heroImage,
     link_url: '/collections',
     display_order: 0
@@ -156,10 +156,10 @@ const Hero = () => {
             Grace in Every Drape
           </p>
           <h1 className="text-[2rem] leading-[1.12] sm:text-5xl md:text-6xl font-playfair font-bold text-foreground text-balance break-words mb-3 sm:mb-4 md:mb-5">
-            {activeBanner?.title || "Only 50 Exclusive Silk Sarees Per Collection"}
+            {activeBanner?.title || "Handwoven Luxury Sarees"}
           </h1>
           <p className="text-base sm:text-xl md:text-2xl text-muted-foreground font-light max-w-md md:max-w-xl text-pretty leading-relaxed mb-5 sm:mb-7">
-            {activeBanner?.subtitle || "Every design is released only once. Once sold out, it is never restocked."}
+            {activeBanner?.subtitle || "Discover timeless elegance in every drape, crafted by master weavers for the modern woman."}
           </p>
 
           {/* Trust highlights */}
