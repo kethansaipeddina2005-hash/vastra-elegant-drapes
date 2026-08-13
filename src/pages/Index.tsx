@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import Layout from "@/components/Layout";
 import Hero from "@/components/Hero";
+import ScarcityRibbon from "@/components/ScarcityRibbon";
 import FeaturedSarees from "@/components/FeaturedSarees";
 import CategorySection from "@/components/CategorySection";
 import TrustStrip from "@/components/TrustStrip";
