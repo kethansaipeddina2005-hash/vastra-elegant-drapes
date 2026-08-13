@@ -19,8 +19,8 @@ interface Banner {
 const Hero = () => {
   const defaultBanner: Banner = {
     id: 'default',
-    title: 'Handwoven Luxury Sarees',
-    subtitle: 'Discover timeless elegance in every drape, crafted by master weavers for the modern woman.',
+    title: 'Grace in Every Drape',
+    subtitle: 'The Essence of Indian Elegance',
     image_url: heroImage,
     link_url: '/collections',
     display_order: 0
@@ -152,14 +152,11 @@ const Hero = () => {
       
       <div className="container mx-auto px-6 relative z-10 py-12 md:py-16">
         <div className="max-w-xl md:max-w-2xl animate-fade-in text-left">
-          <p className="uppercase tracking-[0.28em] text-[0.65rem] sm:text-xs text-primary font-medium mb-3 sm:mb-4">
-            Grace in Every Drape
-          </p>
           <h1 className="text-[2rem] leading-[1.12] sm:text-5xl md:text-6xl font-playfair font-bold text-foreground text-balance break-words mb-3 sm:mb-4 md:mb-5">
-            {activeBanner?.title || "Handwoven Luxury Sarees"}
+            {activeBanner?.title || "Grace in Every Drape"}
           </h1>
           <p className="text-base sm:text-xl md:text-2xl text-muted-foreground font-light max-w-md md:max-w-xl text-pretty leading-relaxed mb-5 sm:mb-7">
-            {activeBanner?.subtitle || "Discover timeless elegance in every drape, crafted by master weavers for the modern woman."}
+            {activeBanner?.subtitle || "The Essence of Indian Elegance"}
           </p>
 
           {/* Trust highlights */}
