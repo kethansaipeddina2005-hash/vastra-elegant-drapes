@@ -156,10 +156,10 @@ const Hero = () => {
             Grace in Every Drape
           </p>
           <h1 className="text-[2rem] leading-[1.12] sm:text-5xl md:text-6xl font-playfair font-bold text-foreground text-balance break-words mb-3 sm:mb-4 md:mb-5">
-            {activeBanner?.title || "Handwoven Luxury Sarees"}
+            {activeBanner?.title || "Grace in Every Drape"}
           </h1>
           <p className="text-base sm:text-xl md:text-2xl text-muted-foreground font-light max-w-md md:max-w-xl text-pretty leading-relaxed mb-5 sm:mb-7">
-            {activeBanner?.subtitle || "Discover timeless elegance in every drape, crafted by master weavers for the modern woman."}
+            {activeBanner?.subtitle || "The Essence of Indian Elegance"}
           </p>
 
           {/* Trust highlights */}
