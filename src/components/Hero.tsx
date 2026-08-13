@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Globe, Video, ShieldCheck, Gift } from "lucide-react";
+import { ChevronLeft, ChevronRight, Video } from "lucide-react";
 import heroImage from "@/assets/hero-saree.jpg";
 import { Helmet } from "react-helmet-async";
 import { buildSrcSet, optimizedImage, HERO_WIDTHS } from "@/lib/image";
@@ -159,22 +159,7 @@ const Hero = () => {
             {activeBanner?.subtitle || "The Essence of Indian Elegance"}
           </p>
 
-          {/* Trust highlights */}
-          <ul className="flex flex-wrap gap-x-4 gap-y-2 mb-6 sm:mb-8 max-w-lg">
-            {[
-              { icon: Globe, label: "Worldwide Delivery" },
-              { icon: Video, label: "Video Call Shopping" },
-              { icon: ShieldCheck, label: "Secure Payments" },
-              { icon: Gift, label: "Premium Packaging" },
-            ].map(({ icon: Icon, label }) => (
-              <li key={label} className="flex items-center gap-1.5 text-xs sm:text-sm text-foreground/80">
-                <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" aria-hidden="true" />
-                {label}
-              </li>
-            ))}
-          </ul>
-
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2">
             <Link to={activeBanner?.link_url || "/collections"} className="inline-block">
               <Button
                 size="lg"
