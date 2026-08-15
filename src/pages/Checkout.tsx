@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
@@ -11,11 +12,10 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePricing } from "@/contexts/PricingContext";
 import { toast } from "@/hooks/use-toast";
-import { Check, Loader2 } from "lucide-react";
+import { Loader2, Lock, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
 import SEO from "@/components/SEO";
-import { trackBeginCheckout } from "@/lib/analytics";
+import { trackBeginCheckout, trackAddPaymentInfo } from "@/lib/analytics";
 
 declare global {
   interface Window {
@@ -25,6 +25,7 @@ declare global {
 
 const GUEST_TOKEN_KEY = "vastra_guest_token";
 const GUEST_ORDER_KEY = "vastra_guest_order_id";
+const DETAILS_KEY = "vastra_checkout_details";
 
 interface SavedAddress {
   id: string;
@@ -39,83 +40,106 @@ interface SavedAddress {
   is_default: boolean;
 }
 
+const emptyDetails = {
+  fullName: "",
+  email: "",
+  phone: "",
+  address: "",
+  pincode: "",
+};
+
 const Checkout = () => {
   const navigate = useNavigate();
-  const { 
-    cart, 
-    cartTotal, 
-    clearCart, 
-    promoCode: savedPromoCode, 
+  const {
+    cart,
+    cartTotal,
+    promoCode: savedPromoCode,
     discountPercent: savedDiscountPercent,
-    clearPromo,
     updateQuantity,
-    removeFromCart
+    removeFromCart,
   } = useCart();
-  const [step, setStep] = useState(1);
-  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
-  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
-  const [useNewAddress, setUseNewAddress] = useState(false);
-  const [shippingData, setShippingData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    pincode: "",
+
+  const { user } = useAuth();
+  const { pricingRegion, getDisplayPrice } = usePricing();
+
+  // Guest checkout is the default. Details persist so an abandoned checkout resumes instantly.
+  const [shippingData, setShippingData] = useState(() => {
+    try {
+      const saved = localStorage.getItem(DETAILS_KEY);
+      return saved ? { ...emptyDetails, ...JSON.parse(saved) } : emptyDetails;
+    } catch {
+      return emptyDetails;
+    }
   });
+
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [isInternational, setIsInternational] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Coupon states - Load from cart context
   const [promoCode, setPromoCode] = useState(savedPromoCode);
   const [discountPercent, setDiscountPercent] = useState(savedDiscountPercent);
-  const [couponMessage, setCouponMessage] = useState(savedPromoCode ? `${savedDiscountPercent}% discount applied ✅` : "");
+  const [couponMessage, setCouponMessage] = useState(
+    savedPromoCode ? `${savedDiscountPercent}% discount applied ✅` : ""
+  );
   const [couponLoading, setCouponLoading] = useState(false);
 
-  const { pricingRegion, setPricingRegion, currencySymbol, getDisplayPrice } = usePricing();
+  // Reuse the same draft order across payment retries so we never create duplicates.
+  const draftOrderRef = useRef<string | null>(null);
+  const paymentInfoTracked = useRef(false);
 
-  // International if user chose it OR pincode isn't a 6-digit Indian PIN
+  useEffect(() => {
+    try {
+      localStorage.setItem(DETAILS_KEY, JSON.stringify(shippingData));
+    } catch {}
+  }, [shippingData]);
+
   const pincodeLooksIntl =
-    shippingData.pincode.trim().length > 0 &&
-    !/^\d{6}$/.test(shippingData.pincode.trim());
+    shippingData.pincode.trim().length > 0 && !/^\d{6}$/.test(shippingData.pincode.trim());
   const internationalOrder = isInternational || pincodeLooksIntl;
   const INTERNATIONAL_SHIPPING = 4000;
 
-  // Calculate display totals based on pricing region
-  const displayTotal = cart.reduce((total, item) => {
-    return total + getDisplayPrice(item.price, (item as any).foreignPrice) * item.quantity;
-  }, 0);
-  const shipping = internationalOrder
-    ? INTERNATIONAL_SHIPPING
-    : displayTotal > 2000
-      ? 0
-      : 200;
+  const displayTotal = cart.reduce(
+    (t, item) => t + getDisplayPrice(item.price, (item as any).foreignPrice) * item.quantity,
+    0
+  );
+  const shipping = internationalOrder ? INTERNATIONAL_SHIPPING : displayTotal > 2000 ? 0 : 200;
   const discountAmount = Math.floor((discountPercent / 100) * displayTotal);
   const total = displayTotal + shipping - discountAmount;
 
-  const { user } = useAuth();
-
-  // Detect international shipping when a saved address is selected
-  const handleAddressSelect = (addressId: string) => {
-    setSelectedAddressId(addressId);
-    const addr = savedAddresses.find(a => a.id === addressId);
-    setIsInternational(!!addr?.country && addr.country.toLowerCase() !== 'india');
-  };
-
-  // Fetch saved addresses (only for signed-in users)
+  // Signed-in shoppers get their saved address pre-filled — no extra step.
   useEffect(() => {
-    if (user) {
-      fetchSavedAddresses();
-    } else {
+    if (!user) {
       setSavedAddresses([]);
-      setSelectedAddressId(null);
-      setUseNewAddress(true);
+      return;
     }
+    (async () => {
+      const { data } = await supabase
+        .from("addresses")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("is_default", { ascending: false });
+      setSavedAddresses(data || []);
+      const def = data?.find((a: any) => a.is_default) || data?.[0];
+      if (def) applySavedAddress(def as SavedAddress);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // Fire GA4 begin_checkout once when the checkout page has cart items
+  const applySavedAddress = (addr: SavedAddress) => {
+    setIsInternational(!!addr.country && addr.country.toLowerCase() !== "india");
+    setShippingData((prev) => ({
+      ...prev,
+      fullName: addr.full_name || prev.fullName,
+      email: prev.email || user?.email || "",
+      phone: addr.phone || prev.phone,
+      address: [addr.address_line1, addr.address_line2, addr.city, addr.state]
+        .filter(Boolean)
+        .join(", "),
+      pincode: addr.postal_code || prev.pincode,
+    }));
+  };
+
   useEffect(() => {
     if (cart.length === 0) return;
     trackBeginCheckout(
@@ -126,63 +150,33 @@ const Checkout = () => {
         quantity: item.quantity,
         categoryNames: item.categoryNames,
       })),
-      cartTotal,
+      cartTotal
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fetchSavedAddresses = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("addresses")
-        .select("*")
-        .eq("user_id", user?.id)
-        .order("is_default", { ascending: false });
+  const gaItems = () =>
+    cart.map((item) => ({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      categoryNames: item.categoryNames,
+    }));
 
-      if (error) throw error;
-      setSavedAddresses(data || []);
-      
-      // Auto-select default address and set pricing
-      const defaultAddr = data?.find(addr => addr.is_default);
-      if (defaultAddr) {
-        handleAddressSelect(defaultAddr.id);
-      }
-    } catch (error) {
-      console.error("Error fetching addresses:", error);
-    }
-  };
-
-  const loadSelectedAddress = () => {
-    const selected = savedAddresses.find(addr => addr.id === selectedAddressId);
-    if (selected) {
-      setShippingData({
-        fullName: selected.full_name,
-        email: user?.email || "",
-        phone: selected.phone,
-        address: selected.address_line1 + (selected.address_line2 ? `, ${selected.address_line2}` : ""),
-        city: selected.city,
-        state: selected.state,
-        pincode: selected.postal_code,
-      });
-    }
-  };
-
-  // ----------------- Coupon Handling -----------------
+  // ----------------- Coupon -----------------
   const handleApplyCoupon = async () => {
     if (!promoCode.trim()) {
       setCouponMessage("Please enter a coupon code");
       return;
     }
-
     setCouponLoading(true);
-
     const { data, error } = await supabase
       .from("coupons")
       .select("*")
       .eq("code", promoCode.trim().toUpperCase())
       .eq("is_active", true)
       .maybeSingle();
-
     setCouponLoading(false);
 
     if (error || !data) {
@@ -190,17 +184,20 @@ const Checkout = () => {
       setDiscountPercent(0);
       return;
     }
-
     if (new Date(data.expiry_date) < new Date()) {
       setCouponMessage("Coupon expired ❌");
       setDiscountPercent(0);
       return;
     }
-
+    const minAmount = data.min_amount || 0;
+    if (minAmount > 0 && displayTotal < minAmount) {
+      setCouponMessage(`Minimum order ₹${minAmount.toLocaleString()} required ❌`);
+      setDiscountPercent(0);
+      return;
+    }
     const limit = (data as any).usage_limit_per_user as number | null;
     if (limit && limit > 0) {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData?.user) {
+      if (!user) {
         setCouponMessage("Please sign in to use this coupon ❌");
         setDiscountPercent(0);
         return;
@@ -208,7 +205,7 @@ const Checkout = () => {
       const { count } = await supabase
         .from("orders")
         .select("id", { count: "exact", head: true })
-        .eq("user_id", userData.user.id)
+        .eq("user_id", user.id)
         .eq("coupon_code", data.code);
       if ((count ?? 0) >= limit) {
         setCouponMessage(
@@ -220,55 +217,51 @@ const Checkout = () => {
         return;
       }
     }
-
     setDiscountPercent(data.discount_percent);
     setCouponMessage(`Success! ${data.discount_percent}% off applied ✅`);
   };
 
-  // ----------------- Shipping Submit -----------------
-  const handleShippingSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // If using saved address, load it
-    if (!useNewAddress && selectedAddressId) {
-      loadSelectedAddress();
-    }
-    
-    setStep(2);
-  };
-
-  // ----------------- Razorpay Script Loader -----------------
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      if (window.Razorpay) {
-        resolve(true);
-        return;
-      }
+  const loadRazorpayScript = () =>
+    new Promise((resolve) => {
+      if (window.Razorpay) return resolve(true);
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
       document.body.appendChild(script);
     });
-  };
+
+  const shippingAddressString = [
+    shippingData.address,
+    shippingData.pincode,
+    internationalOrder ? "International" : "India",
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   // ----------------- Place Order -----------------
-  const handlePlaceOrder = async () => {
-    // Guest checkout supported — no auth gate here.
-    if (!shippingData.email || !shippingData.fullName || !shippingData.phone) {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isProcessing) return;
+
+    if (!shippingData.email || !shippingData.fullName || !shippingData.phone || !shippingData.address || !shippingData.pincode) {
       toast({
         title: "Missing details",
-        description: "Please complete shipping information first.",
+        description: "Please fill in your name, phone, email, address and pincode.",
         variant: "destructive",
       });
-      setStep(1);
       return;
     }
 
     setIsProcessing(true);
 
+    if (!paymentInfoTracked.current) {
+      paymentInfoTracked.current = true;
+      trackAddPaymentInfo(gaItems(), total, paymentMethod, promoCode || null);
+    }
+
     try {
-      // Live stock re-validation: prevent oversells if inventory dropped after add-to-cart
+      // Live stock re-validation to prevent oversells
       const ids = cart.map((i) => i.id);
       if (ids.length > 0) {
         const { data: liveStock, error: stockErr } = await supabase
@@ -298,95 +291,84 @@ const Checkout = () => {
         }
       }
 
-      // Guests get a random token used for later lookup & to authorize edge-function calls.
-      const guestToken =
-        !user && typeof crypto !== "undefined" && "randomUUID" in crypto
-          ? crypto.randomUUID()
-          : null;
+      let guestToken = !user ? localStorage.getItem(GUEST_TOKEN_KEY) : null;
+      let orderId = draftOrderRef.current;
 
-      // Create order in database first
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user?.id ?? null,
-          guest_token: user ? null : guestToken,
-          total_amount: cartTotal,
-          discount_percent: discountPercent,
-          coupon_code: promoCode || null,
-          final_amount: total,
-          shipping_address_id: null,
-          status: "processing",
-          payment_method: paymentMethod,
-          // Always start as pending — Razorpay flips to 'completed' only after server-side signature verification
-          payment_status: "pending",
-          customer_name: shippingData.fullName,
-          customer_email: shippingData.email,
-          customer_phone: shippingData.phone,
-        })
-        .select()
-        .single();
+      if (!orderId) {
+        if (!user) {
+          guestToken =
+            typeof crypto !== "undefined" && "randomUUID" in crypto
+              ? crypto.randomUUID()
+              : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        }
 
-      if (orderError) throw orderError;
+        const { data: order, error: orderError } = await supabase
+          .from("orders")
+          .insert({
+            user_id: user?.id ?? null,
+            guest_token: user ? null : guestToken,
+            total_amount: cartTotal,
+            discount_percent: discountPercent,
+            coupon_code: promoCode || null,
+            final_amount: total,
+            shipping_address_id: null,
+            status: "processing",
+            payment_method: paymentMethod,
+            payment_status: "pending",
+            customer_name: shippingData.fullName,
+            customer_email: shippingData.email,
+            customer_phone: shippingData.phone,
+          })
+          .select()
+          .single();
 
-      // Persist guest token locally so the user can look up their order later
-      if (!user && guestToken) {
-        try {
-          localStorage.setItem(GUEST_TOKEN_KEY, guestToken);
-          localStorage.setItem(GUEST_ORDER_KEY, order.id);
-        } catch {}
-      }
+        if (orderError) throw orderError;
+        orderId = order.id;
+        draftOrderRef.current = order.id;
 
-      // Create order items
-      const orderItems = cart.map(item => ({
-        order_id: order.id,
-        product_id: item.id,
-        quantity: item.quantity,
-        price: item.price
-      }));
+        if (!user && guestToken) {
+          try {
+            localStorage.setItem(GUEST_TOKEN_KEY, guestToken);
+            localStorage.setItem(GUEST_ORDER_KEY, order.id);
+          } catch {}
+        }
 
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      // Send order notification emails
-      try {
-        await supabase.functions.invoke('send-order-notification', {
-          body: {
-            orderId: order.id,
-            customerName: shippingData.fullName,
-            customerEmail: shippingData.email,
-            customerPhone: shippingData.phone,
-            totalAmount: total,
-            orderItems: cart.map(item => ({
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price * item.quantity
-            }))
-          }
-        });
-      } catch (emailError) {
-        console.error('Error sending order notification:', emailError);
-        // Don't fail the order if email fails
-      }
-
-      const shippingAddressString = [
-        shippingData.address,
-        shippingData.city,
-        `${shippingData.state} - ${shippingData.pincode}`,
-        isInternational ? "International" : "India",
-      ].filter(Boolean).join(", ");
-
-      // Handle payment
-      if (paymentMethod === "razorpay") {
-        await handleRazorpayPayment(order.id, total, shippingAddressString);
-      } else if (paymentMethod === "cod") {
-        // Server-side recompute & persist authoritative final_amount for COD
-        // (defends against client-tampered prices/discounts).
-        const { error: finalizeErr } = await supabase.functions.invoke('finalize-cod-order', {
-          body: {
+        const { error: itemsError } = await supabase.from("order_items").insert(
+          cart.map((item) => ({
             order_id: order.id,
+            product_id: item.id,
+            quantity: item.quantity,
+            price: item.price,
+          }))
+        );
+        if (itemsError) throw itemsError;
+
+        try {
+          await supabase.functions.invoke("send-order-notification", {
+            body: {
+              orderId: order.id,
+              customerName: shippingData.fullName,
+              customerEmail: shippingData.email,
+              customerPhone: shippingData.phone,
+              totalAmount: total,
+              orderItems: cart.map((item) => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price * item.quantity,
+              })),
+            },
+          });
+        } catch (emailError) {
+          console.error("Error sending order notification:", emailError);
+        }
+      }
+
+      if (paymentMethod === "razorpay") {
+        await handleRazorpayPayment(orderId!, guestToken);
+      } else {
+        const { error: finalizeErr } = await supabase.functions.invoke("finalize-cod-order", {
+          body: {
+            order_id: orderId,
             items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity })),
             shipping,
             coupon_code: promoCode || null,
@@ -396,32 +378,25 @@ const Checkout = () => {
         });
         if (finalizeErr) throw finalizeErr;
 
-        toast({
-          title: "Order Placed Successfully!",
-          description: `${order.order_number ?? `Order #${order.id.slice(0, 8)}`} confirmed. Pay on delivery.`,
-        });
-        navigate("/thank-you", { state: { orderId: order.id, shippingAddress: shippingAddressString } });
+        toast({ title: "Order Placed Successfully!", description: "Pay on delivery." });
+        navigate("/thank-you", { state: { orderId, shippingAddress: shippingAddressString } });
         setIsProcessing(false);
       }
-
-
     } catch (error) {
-      console.error('Error placing order:', error);
+      console.error("Error placing order:", error);
       toast({
         title: "Order Failed",
-        description: "There was an error placing your order. Please try again.",
+        description: "There was an error placing your order. Your cart is safe — please try again.",
         variant: "destructive",
       });
       setIsProcessing(false);
     }
   };
 
-  // ----------------- Razorpay Payment -----------------
-  const handleRazorpayPayment = async (orderId: string, amount: number, shippingAddressString: string) => {
+  // ----------------- Razorpay -----------------
+  const handleRazorpayPayment = async (orderId: string, guestToken: string | null) => {
     try {
-      const guestToken = !user ? localStorage.getItem(GUEST_TOKEN_KEY) : null;
       const scriptLoaded = await loadRazorpayScript();
-      
       if (!scriptLoaded) {
         toast({
           title: "Payment Gateway Error",
@@ -432,28 +407,24 @@ const Checkout = () => {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('create-razorpay-order', {
+      const { data, error } = await supabase.functions.invoke("create-razorpay-order", {
         body: {
-          amount: amount,
-          currency: 'INR',
+          amount: total,
+          currency: "INR",
           receipt: orderId,
-          notes: {
-            order_id: orderId,
-            user_id: user?.id ?? "guest",
-          },
-          // Server re-validates pricing & coupon to prevent client-side tampering
+          notes: { order_id: orderId, user_id: user?.id ?? "guest" },
           items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity })),
-          shipping: shipping,
+          shipping,
           coupon_code: promoCode || null,
           pricing_region: pricingRegion,
           order_id: orderId,
           guest_token: guestToken,
-        }
+        },
       });
 
       if (error) throw error;
 
-      const options = {
+      const rzp = new window.Razorpay({
         key: data.keyId,
         amount: data.amount,
         currency: data.currency,
@@ -462,25 +433,25 @@ const Checkout = () => {
         order_id: data.orderId,
         handler: async function (response: any) {
           try {
-            const { error: verifyError } = await supabase.functions.invoke('verify-razorpay-payment', {
-              body: {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                order_id: orderId,
-                guest_token: guestToken,
+            const { error: verifyError } = await supabase.functions.invoke(
+              "verify-razorpay-payment",
+              {
+                body: {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  order_id: orderId,
+                  guest_token: guestToken,
+                },
               }
-            });
-
+            );
             if (verifyError) throw verifyError;
 
-            toast({
-              title: "Payment Successful!",
-              description: `Order has been confirmed.`,
-            });
+            draftOrderRef.current = null;
+            toast({ title: "Payment Successful!", description: "Order has been confirmed." });
             navigate("/thank-you", { state: { orderId, shippingAddress: shippingAddressString } });
-          } catch (error) {
-            console.error('Payment verification failed:', error);
+          } catch (err) {
+            console.error("Payment verification failed:", err);
             toast({
               title: "Payment Verification Failed",
               description: "Please contact support with your order ID.",
@@ -495,37 +466,31 @@ const Checkout = () => {
           email: shippingData.email,
           contact: shippingData.phone,
         },
-        theme: {
-          color: "#c2a079",
-        },
+        theme: { color: "#c2a079" },
         modal: {
-          ondismiss: function() {
+          ondismiss: function () {
+            // Cart and details stay intact so the shopper can retry instantly.
             toast({
               title: "Payment Cancelled",
-              description: "You can retry payment from your orders page.",
+              description: "Your cart is saved. You can retry payment anytime.",
               variant: "destructive",
             });
             setIsProcessing(false);
-          }
-        }
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-
+          },
+        },
+      });
+      rzp.open();
     } catch (error) {
-      console.error('Razorpay payment error:', error);
+      console.error("Razorpay payment error:", error);
       toast({
         title: "Payment Failed",
-        description: "There was an error processing your payment. Please try again.",
+        description: "There was an error processing your payment. Your cart is saved — please try again.",
         variant: "destructive",
       });
       setIsProcessing(false);
     }
   };
 
-
-  // ----------------- Redirect if Cart is Empty -----------------
   if (cart.length === 0) {
     navigate("/cart");
     return null;
@@ -533,298 +498,237 @@ const Checkout = () => {
 
   return (
     <Layout>
-      <SEO 
-        title="Checkout | Vastra"
+      <SEO
+        title="Secure Checkout | Vastra"
         description="Complete your purchase securely at Vastra."
         noIndex={true}
       />
-      <div className="container mx-auto px-6 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-playfair font-bold text-foreground mb-8">Checkout</h1>
-
-          {/* Progress Indicator */}
-          <div className="flex items-center justify-center mb-12">
-            <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-2 ${step >= 1 ? 'text-primary' : 'text-muted-foreground'}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                  {step > 1 ? <Check className="h-5 w-5" /> : '1'}
-                </div>
-                <span className="font-medium">Shipping</span>
-              </div>
-              <div className="w-16 h-0.5 bg-border" />
-              <div className={`flex items-center gap-2 ${step >= 2 ? 'text-primary' : 'text-muted-foreground'}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                  2
-                </div>
-                <span className="font-medium">Payment</span>
-              </div>
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-6">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-playfair font-bold text-foreground">
+                Secure Checkout
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                No account needed — checkout as a guest in under a minute.
+              </p>
             </div>
+            {!user && (
+              <Link
+                to="/account/login"
+                className="text-sm text-primary underline underline-offset-4 whitespace-nowrap"
+              >
+                Have an account? Sign in (optional)
+              </Link>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              {step === 1 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Shipping Information</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleShippingSubmit} className="space-y-6">
-                      {/* Saved Addresses Section */}
-                      {savedAddresses.length > 0 && (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <Label>Select Saved Address</Label>
-                            <Button
-                              type="button"
-                              variant="link"
-                              size="sm"
-                              onClick={() => setUseNewAddress(!useNewAddress)}
-                            >
-                              {useNewAddress ? "Use Saved Address" : "Enter New Address"}
-                            </Button>
-                          </div>
-                          
-                          {!useNewAddress && (
-                            <RadioGroup value={selectedAddressId || ""} onValueChange={handleAddressSelect}>
-                              {savedAddresses.map((address) => (
-                                <div key={address.id} className="flex items-start space-x-2 border rounded-lg p-4 hover:bg-accent/5 transition-colors">
-                                  <RadioGroupItem value={address.id} id={address.id} className="mt-1" />
-                                  <Label htmlFor={address.id} className="flex-1 cursor-pointer">
-                                    <div className="font-medium">{address.full_name}</div>
-                                    <div className="text-sm text-muted-foreground mt-1">
-                                      {address.address_line1}
-                                      {address.address_line2 && `, ${address.address_line2}`}
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                      {address.city}, {address.state} {address.postal_code}
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">{address.phone}</div>
-                                    {address.is_default && (
-                                      <span className="inline-block mt-1 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded">
-                                        Default
-                                      </span>
-                                    )}
-                                  </Label>
-                                </div>
-                              ))}
-                            </RadioGroup>
-                          )}
-                        </div>
-                      )}
+          <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader className="pb-4">
+                  <CardTitle className="font-playfair">Delivery Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {savedAddresses.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {savedAddresses.map((addr) => (
+                        <Button
+                          key={addr.id}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => applySavedAddress(addr)}
+                        >
+                          Use {addr.city || addr.full_name} address
+                        </Button>
+                      ))}
+                    </div>
+                  )}
 
-                      {/* New Address Form */}
-                      {(useNewAddress || savedAddresses.length === 0) && (
-                        <>
-                          <div className="flex items-start gap-3 p-3 border rounded-lg bg-accent/5">
-                            <input
-                              id="intl"
-                              type="checkbox"
-                              className="mt-1 h-4 w-4"
-                              checked={isInternational}
-                              onChange={(e) => setIsInternational(e.target.checked)}
-                            />
-                            <Label htmlFor="intl" className="cursor-pointer flex-1">
-                              <div className="font-medium">Shipping outside India (International)</div>
-                              <div className="text-xs text-muted-foreground mt-0.5">
-                                A flat ₹4,000 international shipping fee will be added.
-                              </div>
-                            </Label>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="fullName">Full Name</Label>
-                              <Input 
-                                id="fullName" 
-                                required 
-                                value={shippingData.fullName}
-                                onChange={(e) => setShippingData({...shippingData, fullName: e.target.value})}
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="phone">Phone</Label>
-                              <Input 
-                                id="phone" 
-                                type="tel" 
-                                required
-                                value={shippingData.phone}
-                                onChange={(e) => setShippingData({...shippingData, phone: e.target.value})}
-                              />
-                            </div>
-                          </div>
-                          <div>
-                            <Label htmlFor="email">Email</Label>
-                            <Input 
-                              id="email" 
-                              type="email" 
-                              required
-                              value={shippingData.email}
-                              onChange={(e) => setShippingData({...shippingData, email: e.target.value})}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="address">Address</Label>
-                            <Input 
-                              id="address" 
-                              required
-                              value={shippingData.address}
-                              onChange={(e) => setShippingData({...shippingData, address: e.target.value})}
-                            />
-                          </div>
-                          <div className="grid grid-cols-3 gap-4">
-                            <div>
-                              <Label htmlFor="city">City</Label>
-                              <Input 
-                                id="city" 
-                                required
-                                value={shippingData.city}
-                                onChange={(e) => setShippingData({...shippingData, city: e.target.value})}
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="state">State</Label>
-                              <Input 
-                                id="state" 
-                                required
-                                value={shippingData.state}
-                                onChange={(e) => setShippingData({...shippingData, state: e.target.value})}
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="pincode">
-                                {internationalOrder ? "Postal / ZIP Code" : "Pincode"}
-                              </Label>
-                              <Input 
-                                id="pincode" 
-                                required
-                                value={shippingData.pincode}
-                                onChange={(e) => setShippingData({...shippingData, pincode: e.target.value})}
-                              />
-                              {!isInternational && pincodeLooksIntl && (
-                                <p className="text-xs text-amber-700 mt-1">
-                                  Looks like an international code — ₹4,000 shipping will apply.
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </>
-                      )}
-
-                      <Button type="submit" size="lg" className="w-full">Continue to Payment</Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              )}
-
-              {step === 2 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Payment Method</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-
-                    {/* Coupon Section */}
-                    <div className="space-y-2">
-                      <Input 
-                        placeholder="Enter promo code" 
-                        value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value)}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="fullName">Full Name</Label>
+                      <Input
+                        id="fullName"
+                        required
+                        autoComplete="name"
+                        value={shippingData.fullName}
+                        onChange={(e) => setShippingData({ ...shippingData, fullName: e.target.value })}
                       />
-                      <Button 
-                        variant="outline" 
-                        className="w-full" 
-                        onClick={handleApplyCoupon}
-                        disabled={couponLoading}
-                      >
-                        {couponLoading ? "Applying..." : "Apply Code"}
-                      </Button>
-                      {couponMessage && <p className="text-sm mt-1">{couponMessage}</p>}
                     </div>
-
-                    <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                      <div className="flex items-center space-x-2 border rounded-lg p-4 bg-card hover:bg-accent/5 transition-colors">
-                        <RadioGroupItem value="razorpay" id="razorpay" />
-                        <Label htmlFor="razorpay" className="flex-1 cursor-pointer">
-                          <div className="font-medium">Pay with Razorpay</div>
-                          <div className="text-xs text-muted-foreground mt-1">Credit/Debit Card, UPI, Wallets</div>
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2 border rounded-lg p-4 bg-card hover:bg-accent/5 transition-colors">
-                        <RadioGroupItem value="cod" id="cod" />
-                        <Label htmlFor="cod" className="flex-1 cursor-pointer">
-                          <div className="font-medium">Cash on Delivery</div>
-                          <div className="text-xs text-muted-foreground mt-1">Pay when you receive</div>
-                        </Label>
-                      </div>
-                    </RadioGroup>
-
-                    <div className="flex gap-4">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setStep(1)} 
-                        className="flex-1"
-                        disabled={isProcessing}
-                      >
-                        Back to Shipping
-                      </Button>
-                      <Button 
-                        onClick={handlePlaceOrder} 
-                        size="lg" 
-                        className="flex-1"
-                        disabled={isProcessing}
-                      >
-                        {isProcessing ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Processing...
-                          </>
-                        ) : paymentMethod === "razorpay" ? (
-                          "Pay Now"
-                        ) : (
-                          "Place Order"
-                        )}
-                      </Button>
+                    <div>
+                      <Label htmlFor="phone">Phone</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        inputMode="tel"
+                        required
+                        autoComplete="tel"
+                        value={shippingData.phone}
+                        onChange={(e) => setShippingData({ ...shippingData, phone: e.target.value })}
+                      />
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+                  </div>
 
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      inputMode="email"
+                      required
+                      autoComplete="email"
+                      value={shippingData.email}
+                      onChange={(e) => setShippingData({ ...shippingData, email: e.target.value })}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Order confirmation and tracking are sent here.
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="address">Full Address</Label>
+                    <Textarea
+                      id="address"
+                      required
+                      rows={3}
+                      autoComplete="street-address"
+                      placeholder="House / street, area, city, state"
+                      value={shippingData.address}
+                      onChange={(e) => setShippingData({ ...shippingData, address: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="pincode">
+                        {internationalOrder ? "Postal / ZIP Code" : "Pincode"}
+                      </Label>
+                      <Input
+                        id="pincode"
+                        required
+                        inputMode="text"
+                        autoComplete="postal-code"
+                        value={shippingData.pincode}
+                        onChange={(e) => setShippingData({ ...shippingData, pincode: e.target.value })}
+                      />
+                      {!isInternational && pincodeLooksIntl && (
+                        <p className="text-xs text-amber-700 mt-1">
+                          Looks like an international code — ₹4,000 shipping will apply.
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-start gap-3 p-3 border rounded-lg bg-accent/5 self-end">
+                      <input
+                        id="intl"
+                        type="checkbox"
+                        className="mt-1 h-4 w-4"
+                        checked={isInternational}
+                        onChange={(e) => setIsInternational(e.target.checked)}
+                      />
+                      <Label htmlFor="intl" className="cursor-pointer flex-1 text-sm">
+                        Shipping outside India
+                        <span className="block text-xs text-muted-foreground mt-0.5">
+                          Flat ₹4,000 international shipping.
+                        </span>
+                      </Label>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-4">
+                  <CardTitle className="font-playfair">Payment</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                    <div className="flex items-center space-x-2 border rounded-lg p-4 bg-card hover:bg-accent/5 transition-colors">
+                      <RadioGroupItem value="razorpay" id="razorpay" />
+                      <Label htmlFor="razorpay" className="flex-1 cursor-pointer">
+                        <div className="font-medium">Pay Online</div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Credit/Debit Card, Netbanking, Wallets
+                        </div>
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2 border rounded-lg p-4 bg-card hover:bg-accent/5 transition-colors">
+                      <RadioGroupItem value="cod" id="cod" />
+                      <Label htmlFor="cod" className="flex-1 cursor-pointer">
+                        <div className="font-medium">Cash on Delivery</div>
+                        <div className="text-xs text-muted-foreground mt-1">Pay when you receive</div>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    Secure, encrypted payments. Your cart is saved if payment fails.
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Order Summary */}
             <div>
-              <Card className="sticky top-4">
-                <CardHeader>
-                  <CardTitle>Order Summary</CardTitle>
+              <Card className="lg:sticky lg:top-4">
+                <CardHeader className="pb-4">
+                  <CardTitle className="font-playfair">Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
-                    {cart.map(item => (
-                      <div key={item.id} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
+                    {cart.map((item) => (
+                      <div key={item.id} className="flex justify-between text-sm gap-3">
+                        <span className="text-muted-foreground line-clamp-2">
                           {item.name} × {item.quantity}
                         </span>
-                        <span>₹{(item.price * item.quantity).toLocaleString()}</span>
+                        <span className="whitespace-nowrap">
+                          ₹{(item.price * item.quantity).toLocaleString()}
+                        </span>
                       </div>
                     ))}
                   </div>
-                  
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Promo code"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleApplyCoupon}
+                      disabled={couponLoading}
+                    >
+                      {couponLoading ? "Applying..." : "Apply Code"}
+                    </Button>
+                    {couponMessage && <p className="text-sm">{couponMessage}</p>}
+                  </div>
+
                   <Separator />
 
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span>₹{cartTotal.toLocaleString()}</span>
+                      <span>₹{displayTotal.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Discount</span>
-                      <span>- ₹{discountAmount.toLocaleString()}</span>
-                    </div>
+                    {discountPercent > 0 && (
+                      <div className="flex justify-between text-green-700">
+                        <span>Discount ({discountPercent}%)</span>
+                        <span>- ₹{discountAmount.toLocaleString()}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">
                         {internationalOrder ? "International Shipping" : "Shipping"}
                       </span>
-                      <span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
+                      <span>{shipping === 0 ? "FREE" : `₹${shipping.toLocaleString()}`}</span>
                     </div>
                   </div>
 
@@ -834,10 +738,24 @@ const Checkout = () => {
                     <span>Total</span>
                     <span>₹{total.toLocaleString()}</span>
                   </div>
+
+                  <Button type="submit" size="lg" className="w-full" disabled={isProcessing}>
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="mr-2 h-4 w-4" />
+                        {paymentMethod === "razorpay" ? "Pay Securely" : "Place Order"}
+                      </>
+                    )}
+                  </Button>
                 </CardContent>
               </Card>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </Layout>
