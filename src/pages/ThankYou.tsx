@@ -427,6 +427,38 @@ const ThankYou = () => {
                 )}
 
                 {/* What happens next */}
+                {!user && !accountCreated && order.customer_email && (
+                  <Card className="border-[#d4af37]/20 shadow-lg">
+                    <CardContent className="p-6">
+                      <h2 className="font-playfair text-xl font-semibold text-[#2c1810] mb-2">
+                        Save your details (optional)
+                      </h2>
+                      <p className="text-sm text-[#5a4a3a] mb-4">
+                        Create an account with {order.customer_email} to track orders and check out faster next time.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <div className="flex-1">
+                          <Label htmlFor="new-password" className="sr-only">Password</Label>
+                          <Input
+                            id="new-password"
+                            type="password"
+                            placeholder="Choose a password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                          />
+                        </div>
+                        <Button
+                          onClick={handleCreateAccount}
+                          disabled={creatingAccount}
+                          className="bg-[#c2a079] hover:bg-[#b08d5f] text-white"
+                        >
+                          {creatingAccount ? "Creating..." : "Create Account"}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 <Card className="border-[#d4af37]/20 shadow-lg bg-gradient-to-br from-white to-[#f5f5dc]/50">
                   <CardContent className="p-6">
                     <h2 className="font-playfair text-xl font-semibold text-[#2c1810] mb-4">
