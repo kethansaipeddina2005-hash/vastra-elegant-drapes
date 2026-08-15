@@ -64,6 +64,36 @@ const ThankYou = () => {
   
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [password, setPassword] = useState("");
+  const [creatingAccount, setCreatingAccount] = useState(false);
+  const [accountCreated, setAccountCreated] = useState(false);
+
+  const handleCreateAccount = async () => {
+    if (!order?.customer_email || password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Please use at least 6 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setCreatingAccount(true);
+    const { error } = await supabase.auth.signUp({
+      email: order.customer_email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: { full_name: order.customer_name },
+      },
+    });
+    setCreatingAccount(false);
+    if (error) {
+      toast({ title: "Could not create account", description: error.message, variant: "destructive" });
+      return;
+    }
+    setAccountCreated(true);
+    toast({ title: "Account created", description: "You can now track all your orders." });
+  };
 
   // Clear cart and promo once on arrival
   useEffect(() => {
