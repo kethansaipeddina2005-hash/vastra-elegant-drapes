@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { 
   CheckCircle, 
@@ -19,6 +21,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { trackPurchase } from "@/lib/analytics";
 import SEO from "@/components/SEO";
+import { toast } from "@/hooks/use-toast";
 
 interface OrderItem {
   id: string;
