@@ -78,6 +78,21 @@ export const trackBeginCheckout = (items: Item[], value: number) => {
   });
 };
 
+export const trackAddPaymentInfo = (
+  items: Item[],
+  value: number,
+  paymentType: string,
+  coupon?: string | null,
+) => {
+  gtag("event", "add_payment_info", {
+    currency: "INR",
+    value,
+    payment_type: paymentType,
+    coupon: coupon || undefined,
+    items: items.map(toGaItem),
+  });
+};
+
 export const trackPurchase = (params: {
   transactionId: string;
   value: number;
