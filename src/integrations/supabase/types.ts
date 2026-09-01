@@ -433,6 +433,7 @@ export type Database = {
           return_product_ok: boolean | null
           return_product_received: boolean | null
           shipping_address_id: string | null
+          shipping_address_text: string | null
           shipping_company: string | null
           shipping_id: string | null
           status: string
@@ -460,6 +461,7 @@ export type Database = {
           return_product_ok?: boolean | null
           return_product_received?: boolean | null
           shipping_address_id?: string | null
+          shipping_address_text?: string | null
           shipping_company?: string | null
           shipping_id?: string | null
           status?: string
@@ -487,6 +489,7 @@ export type Database = {
           return_product_ok?: boolean | null
           return_product_received?: boolean | null
           shipping_address_id?: string | null
+          shipping_address_text?: string | null
           shipping_company?: string | null
           shipping_id?: string | null
           status?: string
@@ -796,6 +799,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_checkout_order: {
+        Args: {
+          _coupon_code?: string
+          _customer_email: string
+          _customer_name: string
+          _customer_phone: string
+          _discount_percent?: number
+          _final_amount?: number
+          _guest_token: string
+          _items: Json
+          _payment_method: string
+          _pricing_region?: string
+          _shipping_address: string
+          _total_amount?: number
+        }
+        Returns: {
+          guest_token: string
+          order_id: string
+          order_number: string
+        }[]
+      }
       get_guest_order: {
         Args: { _guest_token: string; _order_id: string }
         Returns: {
