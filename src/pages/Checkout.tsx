@@ -239,17 +239,43 @@ const Checkout = () => {
     .filter(Boolean)
     .join(", ");
 
+  // ----------------- Validation -----------------
+  const validateDetails = (): string | null => {
+    const name = shippingData.fullName.trim();
+    const email = shippingData.email.trim();
+    const phone = shippingData.phone.trim();
+    const address = shippingData.address.trim();
+    const pincode = shippingData.pincode.trim();
+
+    if (name.length < 2) return "Please enter your full name.";
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)) return "Please enter a valid email address.";
+
+    const digits = phone.replace(/\D/g, "");
+    if (internationalOrder) {
+      if (digits.length < 8 || digits.length > 15) return "Please enter a valid phone number with country code.";
+    } else if (!/^[6-9]\d{9}$/.test(digits.replace(/^91/, ""))) {
+      return "Please enter a valid 10-digit Indian mobile number.";
+    }
+
+    if (address.length < 10) return "Please enter your complete address (house, street, area, city, state).";
+
+    if (internationalOrder) {
+      if (!/^[A-Za-z0-9][A-Za-z0-9\s-]{2,11}$/.test(pincode))
+        return "Please enter a valid postal / ZIP code.";
+    } else if (!/^[1-9]\d{5}$/.test(pincode)) {
+      return "Please enter a valid 6-digit Indian pincode.";
+    }
+    return null;
+  };
+
   // ----------------- Place Order -----------------
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isProcessing) return;
 
-    if (!shippingData.email || !shippingData.fullName || !shippingData.phone || !shippingData.address || !shippingData.pincode) {
-      toast({
-        title: "Missing details",
-        description: "Please fill in your name, phone, email, address and pincode.",
-        variant: "destructive",
-      });
+    const validationError = validateDetails();
+    if (validationError) {
+      toast({ title: "Check your details", description: validationError, variant: "destructive" });
       return;
     }
 
@@ -295,61 +321,46 @@ const Checkout = () => {
       let orderId = draftOrderRef.current;
 
       if (!orderId) {
-        if (!user) {
-          guestToken =
-            typeof crypto !== "undefined" && "randomUUID" in crypto
-              ? crypto.randomUUID()
-              : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        }
-
-        const { data: order, error: orderError } = await supabase
-          .from("orders")
-          .insert({
-            user_id: user?.id ?? null,
-            guest_token: user ? null : guestToken,
-            total_amount: cartTotal,
-            discount_percent: discountPercent,
-            coupon_code: promoCode || null,
-            final_amount: total,
-            shipping_address_id: null,
-            status: "processing",
-            payment_method: paymentMethod,
-            payment_status: "pending",
-            customer_name: shippingData.fullName,
-            customer_email: shippingData.email,
-            customer_phone: shippingData.phone,
-          })
-          .select()
-          .single();
+        // Orders are created through a security-definer RPC so guests never need
+        // read access to the orders table. Ownership is derived server-side.
+        const { data: created, error: orderError } = await supabase.rpc("create_checkout_order", {
+          _guest_token: user ? null : guestToken,
+          _customer_name: shippingData.fullName.trim(),
+          _customer_email: shippingData.email.trim(),
+          _customer_phone: shippingData.phone.trim(),
+          _shipping_address: shippingAddressString,
+          _payment_method: paymentMethod,
+          _items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity })),
+          _coupon_code: promoCode || null,
+          _discount_percent: discountPercent,
+          _total_amount: cartTotal,
+          _final_amount: total,
+          _pricing_region: pricingRegion,
+        });
 
         if (orderError) throw orderError;
-        orderId = order.id;
-        draftOrderRef.current = order.id;
+        const result: any = Array.isArray(created) ? created[0] : created;
+        if (!result?.order_id) throw new Error("Order could not be created");
+
+        orderId = result.order_id as string;
+        draftOrderRef.current = orderId;
+        if (!user) guestToken = (result.guest_token as string) ?? guestToken;
 
         if (!user && guestToken) {
           try {
             localStorage.setItem(GUEST_TOKEN_KEY, guestToken);
-            localStorage.setItem(GUEST_ORDER_KEY, order.id);
+            localStorage.setItem(GUEST_ORDER_KEY, orderId);
           } catch {}
         }
-
-        const { error: itemsError } = await supabase.from("order_items").insert(
-          cart.map((item) => ({
-            order_id: order.id,
-            product_id: item.id,
-            quantity: item.quantity,
-            price: item.price,
-          }))
-        );
-        if (itemsError) throw itemsError;
 
         try {
           await supabase.functions.invoke("send-order-notification", {
             body: {
-              orderId: order.id,
+              orderId,
               customerName: shippingData.fullName,
               customerEmail: shippingData.email,
               customerPhone: shippingData.phone,
+              shippingAddress: shippingAddressString,
               totalAmount: total,
               orderItems: cart.map((item) => ({
                 name: item.name,
@@ -362,6 +373,7 @@ const Checkout = () => {
           console.error("Error sending order notification:", emailError);
         }
       }
+
 
       if (paymentMethod === "razorpay") {
         await handleRazorpayPayment(orderId!, guestToken);
@@ -382,11 +394,14 @@ const Checkout = () => {
         navigate("/thank-you", { state: { orderId, shippingAddress: shippingAddressString } });
         setIsProcessing(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error placing order:", error);
+      const serverMsg = typeof error?.message === "string" ? error.message : "";
       toast({
         title: "Order Failed",
-        description: "There was an error placing your order. Your cart is safe — please try again.",
+        description: serverMsg && !/fetch|network/i.test(serverMsg)
+          ? `${serverMsg}. Your cart is safe — please try again.`
+          : "There was an error placing your order. Your cart is safe — please try again.",
         variant: "destructive",
       });
       setIsProcessing(false);
