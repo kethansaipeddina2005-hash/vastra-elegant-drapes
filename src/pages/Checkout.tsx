@@ -394,11 +394,14 @@ const Checkout = () => {
         navigate("/thank-you", { state: { orderId, shippingAddress: shippingAddressString } });
         setIsProcessing(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error placing order:", error);
+      const serverMsg = typeof error?.message === "string" ? error.message : "";
       toast({
         title: "Order Failed",
-        description: "There was an error placing your order. Your cart is safe — please try again.",
+        description: serverMsg && !/fetch|network/i.test(serverMsg)
+          ? `${serverMsg}. Your cart is safe — please try again.`
+          : "There was an error placing your order. Your cart is safe — please try again.",
         variant: "destructive",
       });
       setIsProcessing(false);
