@@ -117,13 +117,16 @@ const AdminOrders = () => {
 
   const fetchOrders = async () => {
     try {
-      let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
+      let query = supabase
+        .from('orders')
+        .select('*')
+        .order('created_at', { ascending: sortOrder === 'oldest' });
       if (filterStatus !== 'all') {
         query = query.eq('status', filterStatus);
       }
       const { data, error } = await query;
       if (error) throw error;
-      setOrders(data || []);
+      setOrders((data || []) as unknown as Order[]);
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast.error('Failed to load orders');
@@ -132,7 +135,41 @@ const AdminOrders = () => {
     }
   };
 
-  // Filter orders by search query and date range
+  // Load the real line items (joined with products) for the selected order
+  const openOrderDetails = async (order: Order) => {
+    setSelectedOrder(order);
+    setIsDialogOpen(true);
+    setOrderItems([]);
+    setSavedAddress(null);
+    setItemsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('order_items')
+        .select(
+          'id, quantity, price, product_id, products ( id, name, product_code, images, color, fabric_type, occasion, region, discount_percentage )'
+        )
+        .eq('order_id', order.id);
+      if (error) throw error;
+      setOrderItems((data || []) as unknown as OrderItemRow[]);
+
+      // Registered customers may have picked a saved address book entry
+      if (order.shipping_address_id) {
+        const { data: addr } = await supabase
+          .from('addresses')
+          .select('full_name, phone, address_line1, address_line2, city, state, postal_code, country')
+          .eq('id', order.shipping_address_id)
+          .maybeSingle();
+        if (addr) setSavedAddress(addr as SavedAddress);
+      }
+    } catch (error) {
+      console.error('Error loading order items:', error);
+      toast.error('Failed to load order items');
+    } finally {
+      setItemsLoading(false);
+    }
+  };
+
+  // Filter orders by search query, payment status and date range
   const filteredOrders = useMemo(() => {
     let result = orders;
 
@@ -140,10 +177,15 @@ const AdminOrders = () => {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(o =>
         o.id.toLowerCase().includes(q) ||
+        (o.order_number || '').toLowerCase().includes(q) ||
         (o.customer_name || '').toLowerCase().includes(q) ||
         (o.customer_email || '').toLowerCase().includes(q) ||
         (o.customer_phone || '').toLowerCase().includes(q)
       );
+    }
+
+    if (filterPayment !== 'all') {
+      result = result.filter(o => (o.payment_status || '') === filterPayment);
     }
 
     if (dateFrom) {
@@ -154,7 +196,7 @@ const AdminOrders = () => {
     }
 
     return result;
-  }, [orders, searchQuery, dateFrom, dateTo]);
+  }, [orders, searchQuery, filterPayment, dateFrom, dateTo]);
 
   // Group orders by date
   const groupedOrders = useMemo(() => {
