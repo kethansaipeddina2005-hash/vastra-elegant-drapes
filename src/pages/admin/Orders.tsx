@@ -468,7 +468,7 @@ const AdminOrders = () => {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="search-orders"
-                    placeholder="Order ID, name, email, phone..."
+                    placeholder="Order no., order ID, name, email, phone..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9"
@@ -478,7 +478,7 @@ const AdminOrders = () => {
 
               {/* Status filter */}
               <div>
-                <Label htmlFor="status-filter">Status</Label>
+                <Label htmlFor="status-filter">Order Status</Label>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger id="status-filter">
                     <SelectValue />
@@ -495,6 +495,38 @@ const AdminOrders = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Payment status filter */}
+              <div>
+                <Label htmlFor="payment-filter">Payment Status</Label>
+                <Select value={filterPayment} onValueChange={setFilterPayment}>
+                  <SelectTrigger id="payment-filter">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Payments</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sort */}
+              <div>
+                <Label htmlFor="sort-order">Sort</Label>
+                <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as 'newest' | 'oldest')}>
+                  <SelectTrigger id="sort-order">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest first</SelectItem>
+                    <SelectItem value="oldest">Oldest first</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
 
               {/* Date From */}
               <div>
