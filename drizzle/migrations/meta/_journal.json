@@ -8,6 +8,13 @@
       "when": 1788233117282,
       "tag": "0000_guest_order_rpc_and_address",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788323554259,
+      "tag": "0001_order_payment_and_shipping_details",
+      "breakpoints": true
     }
   ]
 }
