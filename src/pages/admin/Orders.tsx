@@ -218,7 +218,9 @@ const AdminOrders = () => {
     }
 
     const exportData = filteredOrders.map(o => ({
+      'Order Number': o.order_number || '',
       'Order ID': o.id,
+      'Customer Type': o.user_id ? 'Registered' : 'Guest',
       'Customer Name': o.customer_name || '',
       'Email': o.customer_email || '',
       'Phone': o.customer_phone || '',
@@ -227,6 +229,10 @@ const AdminOrders = () => {
       'Status': o.status,
       'Payment Status': o.payment_status,
       'Payment Method': o.payment_method || '',
+      'Transaction ID': o.razorpay_payment_id || '',
+      'Shipping Address': o.shipping_address_text || '',
+      'Pincode': o.shipping_pincode || '',
+      'Country': o.shipping_country || '',
       'Shipping Company': o.shipping_company || '',
       'Tracking ID': o.shipping_id || '',
       'Refund Status': o.refund_status || '',
