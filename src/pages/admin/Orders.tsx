@@ -113,7 +113,7 @@ const AdminOrders = () => {
     if (isAdmin) {
       fetchOrders();
     }
-  }, [isAdmin, filterStatus]);
+  }, [isAdmin, filterStatus, sortOrder]);
 
   const fetchOrders = async () => {
     try {
@@ -206,8 +206,10 @@ const AdminOrders = () => {
       if (!groups[dateKey]) groups[dateKey] = [];
       groups[dateKey].push(order);
     });
-    return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
-  }, [filteredOrders]);
+    return Object.entries(groups).sort((a, b) =>
+      sortOrder === 'oldest' ? a[0].localeCompare(b[0]) : b[0].localeCompare(a[0])
+    );
+  }, [filteredOrders, sortOrder]);
 
   const handleExportExcel = () => {
     if (filteredOrders.length === 0) {
@@ -252,9 +254,11 @@ const AdminOrders = () => {
     setDateFrom(undefined);
     setDateTo(undefined);
     setFilterStatus('all');
+    setFilterPayment('all');
   };
 
-  const hasActiveFilters = searchQuery || dateFrom || dateTo || filterStatus !== 'all';
+  const hasActiveFilters =
+    searchQuery || dateFrom || dateTo || filterStatus !== 'all' || filterPayment !== 'all';
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     setUpdating(true);
