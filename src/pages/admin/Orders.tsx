@@ -26,14 +26,25 @@ import * as XLSX from 'xlsx';
 interface Order {
   id: string;
   order_number: string | null;
+  user_id: string | null;
+  guest_token: string | null;
   customer_name: string;
   customer_email: string;
   customer_phone: string;
   total_amount: number;
   final_amount: number;
+  discount_percent: number | null;
+  coupon_code: string | null;
   status: string;
   payment_status: string;
   payment_method: string;
+  razorpay_payment_id: string | null;
+  razorpay_order_id: string | null;
+  paid_at: string | null;
+  shipping_address_text: string | null;
+  shipping_pincode: string | null;
+  shipping_country: string | null;
+  shipping_address_id: string | null;
   shipping_id: string | null;
   shipping_company: string | null;
   return_product_received: boolean;
@@ -44,14 +55,48 @@ interface Order {
   created_at: string;
 }
 
+interface OrderItemRow {
+  id: string;
+  quantity: number;
+  price: number;
+  product_id: number;
+  products: {
+    id: number;
+    name: string;
+    product_code: string | null;
+    images: string[] | null;
+    color: string | null;
+    fabric_type: string | null;
+    occasion: string | null;
+    region: string | null;
+    discount_percentage: number | null;
+  } | null;
+}
+
+interface SavedAddress {
+  full_name: string;
+  phone: string;
+  address_line1: string;
+  address_line2: string | null;
+  city: string;
+  state: string;
+  postal_code: string;
+  country: string;
+}
+
 const AdminOrders = () => {
   const navigate = useNavigate();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orderItems, setOrderItems] = useState<OrderItemRow[]>([]);
+  const [itemsLoading, setItemsLoading] = useState(false);
+  const [savedAddress, setSavedAddress] = useState<SavedAddress | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterPayment, setFilterPayment] = useState<string>('all');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [updating, setUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
