@@ -336,6 +336,8 @@ const Checkout = () => {
           _total_amount: cartTotal,
           _final_amount: total,
           _pricing_region: pricingRegion,
+          _shipping_pincode: shippingData.pincode.trim(),
+          _shipping_country: internationalOrder ? "International" : "India",
         });
 
         if (orderError) throw orderError;

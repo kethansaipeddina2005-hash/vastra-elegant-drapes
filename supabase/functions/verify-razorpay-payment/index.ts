@@ -96,6 +96,9 @@ serve(async (req) => {
       .update({
         payment_status: "completed",
         status: "processing",
+        razorpay_payment_id,
+        razorpay_order_id,
+        paid_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq("id", order_id);

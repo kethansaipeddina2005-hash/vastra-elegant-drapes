@@ -425,8 +425,11 @@ export type Database = {
           guest_token: string | null
           id: string
           order_number: string | null
+          paid_at: string | null
           payment_method: string | null
           payment_status: string | null
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
           refund_amount: number | null
           refund_notes: string | null
           refund_status: string | null
@@ -435,7 +438,9 @@ export type Database = {
           shipping_address_id: string | null
           shipping_address_text: string | null
           shipping_company: string | null
+          shipping_country: string | null
           shipping_id: string | null
+          shipping_pincode: string | null
           status: string
           stock_restored: boolean
           total_amount: number
@@ -453,8 +458,11 @@ export type Database = {
           guest_token?: string | null
           id?: string
           order_number?: string | null
+          paid_at?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
           refund_amount?: number | null
           refund_notes?: string | null
           refund_status?: string | null
@@ -463,7 +471,9 @@ export type Database = {
           shipping_address_id?: string | null
           shipping_address_text?: string | null
           shipping_company?: string | null
+          shipping_country?: string | null
           shipping_id?: string | null
+          shipping_pincode?: string | null
           status?: string
           stock_restored?: boolean
           total_amount: number
@@ -481,8 +491,11 @@ export type Database = {
           guest_token?: string | null
           id?: string
           order_number?: string | null
+          paid_at?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
           refund_amount?: number | null
           refund_notes?: string | null
           refund_status?: string | null
@@ -491,7 +504,9 @@ export type Database = {
           shipping_address_id?: string | null
           shipping_address_text?: string | null
           shipping_company?: string | null
+          shipping_country?: string | null
           shipping_id?: string | null
+          shipping_pincode?: string | null
           status?: string
           stock_restored?: boolean
           total_amount?: number
@@ -812,6 +827,8 @@ export type Database = {
           _payment_method: string
           _pricing_region?: string
           _shipping_address: string
+          _shipping_country?: string
+          _shipping_pincode?: string
           _total_amount?: number
         }
         Returns: {
