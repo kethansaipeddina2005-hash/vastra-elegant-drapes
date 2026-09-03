@@ -671,6 +671,24 @@ const AdminOrders = () => {
                     <Label>Payment Method</Label>
                     <p>{selectedOrder.payment_method}</p>
                   </div>
+                  <div>
+                    <Label>Customer Type</Label>
+                    <p>{selectedOrder.user_id ? 'Registered' : 'Guest'}</p>
+                  </div>
+                </div>
+                <div>
+                  <Label>Shipping Address</Label>
+                  <p className="whitespace-pre-line text-sm">
+                    {selectedOrder.shipping_address_text ||
+                      (savedAddress
+                        ? `${savedAddress.full_name}, ${savedAddress.address_line1}${savedAddress.address_line2 ? ', ' + savedAddress.address_line2 : ''}, ${savedAddress.city}, ${savedAddress.state} ${savedAddress.postal_code}, ${savedAddress.country}`
+                        : '—')}
+                  </p>
+                  {(selectedOrder.shipping_pincode || selectedOrder.shipping_country) && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {[selectedOrder.shipping_pincode, selectedOrder.shipping_country].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label>Total Amount</Label>
