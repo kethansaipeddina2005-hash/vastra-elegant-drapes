@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      abandoned_carts: {
+        Row: {
+          cart_token: string
+          cart_value: number
+          checkout_started_at: string | null
+          created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          id: string
+          item_count: number
+          items: Json
+          last_activity_at: string
+          order_id: string | null
+          purchased_at: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          cart_token: string
+          cart_value?: number
+          checkout_started_at?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          item_count?: number
+          items?: Json
+          last_activity_at?: string
+          order_id?: string | null
+          purchased_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          cart_token?: string
+          cart_value?: number
+          checkout_started_at?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          id?: string
+          item_count?: number
+          items?: Json
+          last_activity_at?: string
+          order_id?: string | null
+          purchased_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abandoned_carts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       addresses: {
         Row: {
           address_line1: string
@@ -814,6 +879,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      attach_cart_customer: {
+        Args: {
+          _cart_token: string
+          _checkout_started?: boolean
+          _customer_email?: string
+          _customer_name?: string
+          _customer_phone?: string
+        }
+        Returns: undefined
+      }
       create_checkout_order: {
         Args: {
           _coupon_code?: string
@@ -863,8 +938,21 @@ export type Database = {
         Returns: boolean
       }
       is_collaborator: { Args: { _email: string }; Returns: boolean }
+      mark_cart_purchased: {
+        Args: { _cart_token: string; _order_id: string }
+        Returns: undefined
+      }
       restore_product_stock_for_order: {
         Args: { _order_id: string }
+        Returns: undefined
+      }
+      sync_cart: {
+        Args: {
+          _cart_token: string
+          _cart_value: number
+          _item_count: number
+          _items: Json
+        }
         Returns: undefined
       }
       user_can_review_product: {
