@@ -628,10 +628,7 @@ const AdminOrders = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => {
-                              setSelectedOrder(order);
-                              setIsDialogOpen(true);
-                            }}
+                            onClick={() => openOrderDetails(order)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -674,6 +671,24 @@ const AdminOrders = () => {
                     <Label>Payment Method</Label>
                     <p>{selectedOrder.payment_method}</p>
                   </div>
+                  <div>
+                    <Label>Customer Type</Label>
+                    <p>{selectedOrder.user_id ? 'Registered' : 'Guest'}</p>
+                  </div>
+                </div>
+                <div>
+                  <Label>Shipping Address</Label>
+                  <p className="whitespace-pre-line text-sm">
+                    {selectedOrder.shipping_address_text ||
+                      (savedAddress
+                        ? `${savedAddress.full_name}, ${savedAddress.address_line1}${savedAddress.address_line2 ? ', ' + savedAddress.address_line2 : ''}, ${savedAddress.city}, ${savedAddress.state} ${savedAddress.postal_code}, ${savedAddress.country}`
+                        : '—')}
+                  </p>
+                  {(selectedOrder.shipping_pincode || selectedOrder.shipping_country) && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {[selectedOrder.shipping_pincode, selectedOrder.shipping_country].filter(Boolean).join(' · ')}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label>Total Amount</Label>
@@ -682,6 +697,46 @@ const AdminOrders = () => {
                 <div>
                   <Label>Order Date</Label>
                   <p>{format(parseISO(selectedOrder.created_at), 'dd MMMM yyyy, hh:mm a')}</p>
+                </div>
+
+                {/* Ordered Products: Image, Code, Name, Price */}
+                <div>
+                  <Label>Products</Label>
+                  {itemsLoading ? (
+                    <p className="text-sm text-muted-foreground mt-2">Loading products…</p>
+                  ) : orderItems.length === 0 ? (
+                    <p className="text-sm text-muted-foreground mt-2">No products found for this order.</p>
+                  ) : (
+                    <div className="mt-2 rounded-md border divide-y">
+                      {orderItems.map((item) => (
+                        <div key={item.id} className="flex items-center gap-3 p-3">
+                          <div className="h-14 w-14 shrink-0 rounded-md overflow-hidden bg-muted">
+                            {item.products?.images?.[0] ? (
+                              <img
+                                src={item.products.images[0]}
+                                alt={item.products?.name || 'Product'}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-muted-foreground text-xs">
+                                No img
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium truncate">{item.products?.name || `Product #${item.product_id}`}</p>
+                            <p className="text-xs text-muted-foreground font-mono">
+                              Code: {item.products?.product_code || `#${item.product_id}`}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="font-semibold">₹{item.price}</p>
+                            <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="order-status">Update Status</Label>
