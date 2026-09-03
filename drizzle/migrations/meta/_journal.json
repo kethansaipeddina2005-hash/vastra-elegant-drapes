@@ -15,6 +15,13 @@
       "when": 1788323554259,
       "tag": "0001_order_payment_and_shipping_details",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788414115425,
+      "tag": "0002_create_abandoned_carts",
+      "breakpoints": true
     }
   ]
 }
