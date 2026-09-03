@@ -628,10 +628,7 @@ const AdminOrders = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => {
-                              setSelectedOrder(order);
-                              setIsDialogOpen(true);
-                            }}
+                            onClick={() => openOrderDetails(order)}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
