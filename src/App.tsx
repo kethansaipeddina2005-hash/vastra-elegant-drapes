@@ -52,6 +52,7 @@ const AdminChat = lazy(() => import("./pages/admin/Chat"));
 const AdminMessages = lazy(() => import("./pages/admin/Messages"));
 const AdminPopupAds = lazy(() => import("./pages/admin/PopupAds"));
 const AdminCollaborators = lazy(() => import("./pages/admin/Collaborators"));
+const AdminAbandonedCarts = lazy(() => import("./pages/admin/AbandonedCarts"));
 const CollaboratorDashboard = lazy(() => import("./pages/CollaboratorDashboard"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentFailure = lazy(() => import("./pages/PaymentFailure"));
@@ -147,6 +148,7 @@ const App = () => {
                         <Route path="/admin/messages" element={<AdminMessages />} />
                         <Route path="/admin/popup-ads" element={<AdminPopupAds />} />
                         <Route path="/admin/collaborators" element={<AdminCollaborators />} />
+                        <Route path="/admin/abandoned-carts" element={<AdminAbandonedCarts />} />
                         <Route path="/collaborator/dashboard" element={<CollaboratorDashboard />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
