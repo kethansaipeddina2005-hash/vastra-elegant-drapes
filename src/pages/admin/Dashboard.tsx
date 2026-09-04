@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loading } from '@/components/ui/loading';
-import { Package, ShoppingCart, Users, DollarSign, Plus, List, UserCog, Tag, Shield, CreditCard, FolderOpen, Mail, MessageSquare, Image as ImageIcon } from 'lucide-react';
+import { Package, ShoppingCart, Users, DollarSign, Plus, List, UserCog, Tag, Shield, CreditCard, FolderOpen, Mail, MessageSquare, Image as ImageIcon, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
 
 
@@ -100,6 +100,7 @@ const AdminDashboard = () => {
       title: 'Sales',
       actions: [
         { label: 'Orders', icon: List, path: '/admin/orders' },
+        { label: 'Abandoned Carts', icon: ShoppingBag, path: '/admin/abandoned-carts' },
         { label: 'Payments', icon: CreditCard, path: '/admin/payments' },
         { label: 'Coupons', icon: Tag, path: '/admin/coupons' },
       ],
