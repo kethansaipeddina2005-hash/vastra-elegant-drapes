@@ -43,6 +43,7 @@ type CartItem = {
 };
 
 const statusStyles: Record<string, string> = {
+  active: 'bg-secondary text-secondary-foreground',
   abandoned: 'bg-muted text-muted-foreground',
   checkout_started: 'bg-accent text-accent-foreground',
   recovered: 'bg-secondary text-secondary-foreground',
@@ -170,6 +171,7 @@ const AdminAbandonedCarts = () => {
   const stats = useMemo(() => {
     return {
       total: carts.length,
+      active: carts.filter((cart) => cart.status === 'active').length,
       abandoned: carts.filter((cart) => cart.status === 'abandoned').length,
       checkoutStarted: carts.filter((cart) => cart.status === 'checkout_started').length,
       purchased: carts.filter((cart) => cart.status === 'purchased').length,
@@ -212,13 +214,20 @@ const AdminAbandonedCarts = () => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total Carts</CardTitle>
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent><div className="text-2xl font-bold">{stats.total}</div></CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Active</CardTitle>
+              <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent><div className="text-2xl font-bold">{stats.active}</div></CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -268,6 +277,7 @@ const AdminAbandonedCarts = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="abandoned">Abandoned</SelectItem>
                   <SelectItem value="checkout_started">Checkout Started</SelectItem>
                   <SelectItem value="recovered">Recovered</SelectItem>
