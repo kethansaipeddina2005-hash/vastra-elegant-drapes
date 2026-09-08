@@ -45,6 +45,28 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('vastra-cart', JSON.stringify(cart));
   }, [cart]);
 
+  // Anonymous cart tracking (no personal details collected here)
+  const firstSync = useRef(true);
+  useEffect(() => {
+    if (firstSync.current && cart.length === 0) {
+      firstSync.current = false;
+      return;
+    }
+    firstSync.current = false;
+    const timer = setTimeout(() => {
+      syncCartToServer(
+        cart.map(item => ({
+          product_id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image ?? null,
+        }))
+      );
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [cart]);
+
   useEffect(() => {
     localStorage.setItem('vastra-promo-code', promoCode);
     localStorage.setItem('vastra-discount-percent', discountPercent.toString());
