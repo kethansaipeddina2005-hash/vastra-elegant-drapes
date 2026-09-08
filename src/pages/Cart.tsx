@@ -144,7 +144,7 @@ const Cart = () => {
 
     setDiscountPercent(data.discount_percent);
     saveDiscountPercent(data.discount_percent);
-    savePromoCode(promoCode.trim().toUpperCase());
+    savePromoCode(codeInput.toUpperCase());
     setMessage(`Success! ${data.discount_percent}% off applied ✅`);
   };
 
