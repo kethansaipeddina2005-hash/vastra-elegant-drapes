@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { Product } from '@/types/product';
 import { toast } from '@/hooks/use-toast';
 import { trackAddToCart } from '@/lib/analytics';
+import { syncCartToServer } from '@/lib/cartTracking';
 
 interface CartItem extends Product {
   quantity: number;
@@ -42,6 +43,28 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     localStorage.setItem('vastra-cart', JSON.stringify(cart));
+  }, [cart]);
+
+  // Anonymous cart tracking (no personal details collected here)
+  const firstSync = useRef(true);
+  useEffect(() => {
+    if (firstSync.current && cart.length === 0) {
+      firstSync.current = false;
+      return;
+    }
+    firstSync.current = false;
+    const timer = setTimeout(() => {
+      syncCartToServer(
+        cart.map(item => ({
+          product_id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image ?? null,
+        }))
+      );
+    }, 800);
+    return () => clearTimeout(timer);
   }, [cart]);
 
   useEffect(() => {
