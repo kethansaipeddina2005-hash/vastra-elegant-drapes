@@ -262,11 +262,47 @@ const Cart = () => {
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
                   />
-                  <Button variant="outline" className="w-full" onClick={handleApplyCode} disabled={loading}>
+                  <Button variant="outline" className="w-full" onClick={() => handleApplyCode()} disabled={loading}>
                     {loading ? "Checking..." : "Apply Code"}
                   </Button>
                   {message && <p className="text-sm text-center text-green-600">{message}</p>}
                 </div>
+
+                {offers.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-foreground">Available Offers</p>
+                    <div className="space-y-2">
+                      {offers.map((offer) => {
+                        const eligible = displayTotal >= (Number(offer.min_amount) || 0);
+                        return (
+                          <div
+                            key={offer.code}
+                            className="flex items-center justify-between gap-2 rounded-md border border-dashed border-primary/40 bg-primary/5 p-3"
+                          >
+                            <div className="min-w-0">
+                              <p className="font-mono text-sm font-semibold tracking-wide">{offer.code}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {offer.discount_percent}% off
+                                {Number(offer.min_amount) > 0
+                                  ? ` on orders above ${currencySymbol}${Number(offer.min_amount).toLocaleString()}`
+                                  : " on your order"}
+                              </p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant={eligible ? "default" : "outline"}
+                              disabled={!eligible || loading}
+                              onClick={() => handleApplyCode(offer.code)}
+                            >
+                              {eligible ? "Apply" : "Add more"}
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
 
                 <Link to="/checkout" className="w-full">
                   <Button size="lg" className="w-full">Proceed to Checkout</Button>
