@@ -402,6 +402,7 @@ export type Database = {
           expiry_date: string
           id: string
           is_active: boolean | null
+          is_public: boolean
           min_amount: number | null
           updated_at: string | null
           usage_limit_per_user: number | null
@@ -416,6 +417,7 @@ export type Database = {
           expiry_date: string
           id?: string
           is_active?: boolean | null
+          is_public?: boolean
           min_amount?: number | null
           updated_at?: string | null
           usage_limit_per_user?: number | null
@@ -430,6 +432,7 @@ export type Database = {
           expiry_date?: string
           id?: string
           is_active?: boolean | null
+          is_public?: boolean
           min_amount?: number | null
           updated_at?: string | null
           usage_limit_per_user?: number | null
@@ -928,6 +931,16 @@ export type Database = {
           payment_status: string
           status: string
           total_amount: number
+        }[]
+      }
+      get_public_coupons: {
+        Args: { _cart_total?: number }
+        Returns: {
+          code: string
+          discount_percent: number
+          expiry_date: string
+          min_amount: number
+          usage_limit_per_user: number
         }[]
       }
       has_role: {
