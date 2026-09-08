@@ -25,6 +25,7 @@ interface Coupon {
   is_active: boolean;
   created_at: string;
   usage_limit_per_user: number | null;
+  is_public?: boolean;
   collaborator_name?: string | null;
   collaborator_email?: string | null;
   commission_percent?: number | null;
@@ -56,6 +57,7 @@ const AdminCoupons = () => {
     min_amount: '',
     expiry_date: '',
     is_active: true,
+    is_public: false,
     usage_limit_per_user: '' as string, // '' = unlimited
     collaborator_name: '',
     collaborator_email: '',
@@ -102,6 +104,7 @@ const AdminCoupons = () => {
         min_amount: parseFloat(formData.min_amount) || 0,
         expiry_date: new Date(formData.expiry_date).toISOString(),
         is_active: formData.is_active,
+        is_public: formData.is_public,
         usage_limit_per_user:
           formData.usage_limit_per_user === '' || formData.usage_limit_per_user === '0'
             ? null
@@ -179,6 +182,22 @@ const AdminCoupons = () => {
     }
   };
 
+  const handleTogglePublic = async (coupon: Coupon) => {
+    try {
+      const { error } = await supabase
+        .from('coupons')
+        .update({ is_public: !coupon.is_public })
+        .eq('id', coupon.id);
+
+      if (error) throw error;
+      toast.success(!coupon.is_public ? 'Coupon is now shown publicly' : 'Coupon is now private');
+      fetchCoupons();
+    } catch (error) {
+      console.error('Error toggling coupon visibility:', error);
+      toast.error('Failed to update coupon');
+    }
+  };
+
   const handleEdit = (coupon: Coupon) => {
     setEditingCoupon(coupon);
     setFormData({
@@ -187,6 +206,7 @@ const AdminCoupons = () => {
       min_amount: coupon.min_amount?.toString() || '0',
       expiry_date: format(new Date(coupon.expiry_date), 'yyyy-MM-dd'),
       is_active: coupon.is_active,
+      is_public: coupon.is_public ?? false,
       usage_limit_per_user: coupon.usage_limit_per_user ? String(coupon.usage_limit_per_user) : '',
       collaborator_name: coupon.collaborator_name || '',
       collaborator_email: coupon.collaborator_email || '',
@@ -203,6 +223,7 @@ const AdminCoupons = () => {
       min_amount: '',
       expiry_date: '',
       is_active: true,
+      is_public: false,
       usage_limit_per_user: '',
       collaborator_name: '',
       collaborator_email: '',
@@ -404,6 +425,19 @@ const AdminCoupons = () => {
                     onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
                   />
                 </div>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <Label htmlFor="public">Show publicly in cart</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Off = private coupon, works only for people who know the code.
+                    </p>
+                  </div>
+                  <Switch
+                    id="public"
+                    checked={formData.is_public}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_public: checked })}
+                  />
+                </div>
                 <div className="border-t pt-4 space-y-3">
                   <div>
                     <Label className="text-sm font-semibold">Collaborator (optional)</Label>
@@ -479,6 +513,7 @@ const AdminCoupons = () => {
                     <TableHead>Min. Order</TableHead>
                     <TableHead>Per-User Limit</TableHead>
                     <TableHead>Expiry Date</TableHead>
+                    <TableHead>Visibility</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -521,6 +556,17 @@ const AdminCoupons = () => {
                           {isExpired(coupon.expiry_date) && (
                             <Badge variant="destructive" className="text-xs">Expired</Badge>
                           )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={!!coupon.is_public}
+                            onCheckedChange={() => handleTogglePublic(coupon)}
+                          />
+                          <Badge variant={coupon.is_public ? 'secondary' : 'outline'} className="text-xs">
+                            {coupon.is_public ? 'Public' : 'Private'}
+                          </Badge>
                         </div>
                       </TableCell>
                       <TableCell>

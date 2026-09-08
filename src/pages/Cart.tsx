@@ -9,7 +9,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { usePricing } from "@/contexts/PricingContext";
 import { Minus, Plus, Trash2, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SEO from "@/components/SEO";
 import {
   AlertDialog,
@@ -44,6 +44,15 @@ const Cart = () => {
   const [loading, setLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<Product | null>(null);
+  const [offers, setOffers] = useState<
+    Array<{ code: string; discount_percent: number; min_amount: number; expiry_date: string }>
+  >([]);
+
+  useEffect(() => {
+    supabase.rpc("get_public_coupons").then(({ data }) => {
+      if (data) setOffers(data as any);
+    });
+  }, []);
 
   const handleDeleteClick = (item: Product) => {
     setItemToDelete(item);
@@ -69,18 +78,20 @@ const Cart = () => {
     }
   };
 
-  const handleApplyCode = async () => {
-    if (!promoCode.trim()) {
+  const handleApplyCode = async (codeArg?: string) => {
+    const codeInput = (codeArg ?? promoCode).trim();
+    if (!codeInput) {
       setMessage("Please enter a coupon code");
       return;
     }
+    if (codeArg) setPromoCode(codeArg);
 
     setLoading(true);
 
     const { data, error } = await supabase
       .from("coupons")
       .select("*")
-      .eq("code", promoCode.trim().toUpperCase())
+      .eq("code", codeInput.toUpperCase())
       .eq("is_active", true)
       .maybeSingle();
 
@@ -133,7 +144,7 @@ const Cart = () => {
 
     setDiscountPercent(data.discount_percent);
     saveDiscountPercent(data.discount_percent);
-    savePromoCode(promoCode.trim().toUpperCase());
+    savePromoCode(codeInput.toUpperCase());
     setMessage(`Success! ${data.discount_percent}% off applied ✅`);
   };
 
@@ -251,11 +262,47 @@ const Cart = () => {
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
                   />
-                  <Button variant="outline" className="w-full" onClick={handleApplyCode} disabled={loading}>
+                  <Button variant="outline" className="w-full" onClick={() => handleApplyCode()} disabled={loading}>
                     {loading ? "Checking..." : "Apply Code"}
                   </Button>
                   {message && <p className="text-sm text-center text-green-600">{message}</p>}
                 </div>
+
+                {offers.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-foreground">Available Offers</p>
+                    <div className="space-y-2">
+                      {offers.map((offer) => {
+                        const eligible = displayTotal >= (Number(offer.min_amount) || 0);
+                        return (
+                          <div
+                            key={offer.code}
+                            className="flex items-center justify-between gap-2 rounded-md border border-dashed border-primary/40 bg-primary/5 p-3"
+                          >
+                            <div className="min-w-0">
+                              <p className="font-mono text-sm font-semibold tracking-wide">{offer.code}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {offer.discount_percent}% off
+                                {Number(offer.min_amount) > 0
+                                  ? ` on orders above ${currencySymbol}${Number(offer.min_amount).toLocaleString()}`
+                                  : " on your order"}
+                              </p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant={eligible ? "default" : "outline"}
+                              disabled={!eligible || loading}
+                              onClick={() => handleApplyCode(offer.code)}
+                            >
+                              {eligible ? "Apply" : "Add more"}
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
 
                 <Link to="/checkout" className="w-full">
                   <Button size="lg" className="w-full">Proceed to Checkout</Button>
