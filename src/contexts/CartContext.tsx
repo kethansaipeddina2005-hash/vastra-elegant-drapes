@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { Product } from '@/types/product';
 import { toast } from '@/hooks/use-toast';
 import { trackAddToCart } from '@/lib/analytics';
