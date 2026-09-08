@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { Product } from '@/types/product';
 import { toast } from '@/hooks/use-toast';
 import { trackAddToCart } from '@/lib/analytics';
+import { syncCartToServer } from '@/lib/cartTracking';
 
 interface CartItem extends Product {
   quantity: number;
