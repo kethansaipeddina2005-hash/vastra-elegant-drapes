@@ -23,6 +23,8 @@ declare global {
   }
 }
 
+import { attachCartCustomer, markCartPurchased } from "@/lib/cartTracking";
+
 const GUEST_TOKEN_KEY = "vastra_guest_token";
 const GUEST_ORDER_KEY = "vastra_guest_order_id";
 const DETAILS_KEY = "vastra_checkout_details";
@@ -317,6 +319,16 @@ const Checkout = () => {
         }
       }
 
+      // Link the anonymous cart with the details the shopper voluntarily entered
+      attachCartCustomer(
+        {
+          name: shippingData.fullName.trim(),
+          email: shippingData.email.trim(),
+          phone: shippingData.phone.trim(),
+        },
+        true
+      );
+
       let guestToken = !user ? localStorage.getItem(GUEST_TOKEN_KEY) : null;
       let orderId = draftOrderRef.current;
 
@@ -393,6 +405,7 @@ const Checkout = () => {
         if (finalizeErr) throw finalizeErr;
 
         toast({ title: "Order Placed Successfully!", description: "Pay on delivery." });
+        await markCartPurchased(orderId);
         navigate("/thank-you", { state: { orderId, shippingAddress: shippingAddressString } });
         setIsProcessing(false);
       }
@@ -465,8 +478,10 @@ const Checkout = () => {
             if (verifyError) throw verifyError;
 
             draftOrderRef.current = null;
+            await markCartPurchased(orderId);
             toast({ title: "Payment Successful!", description: "Order has been confirmed." });
-            navigate("/thank-you", { state: { orderId, shippingAddress: shippingAddressString } });
+            await markCartPurchased(orderId);
+        navigate("/thank-you", { state: { orderId, shippingAddress: shippingAddressString } });
           } catch (err) {
             console.error("Payment verification failed:", err);
             toast({
