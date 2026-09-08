@@ -480,8 +480,7 @@ const Checkout = () => {
             draftOrderRef.current = null;
             await markCartPurchased(orderId);
             toast({ title: "Payment Successful!", description: "Order has been confirmed." });
-            await markCartPurchased(orderId);
-        navigate("/thank-you", { state: { orderId, shippingAddress: shippingAddressString } });
+            navigate("/thank-you", { state: { orderId, shippingAddress: shippingAddressString } });
           } catch (err) {
             console.error("Payment verification failed:", err);
             toast({
