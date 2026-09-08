@@ -9,7 +9,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { usePricing } from "@/contexts/PricingContext";
 import { Minus, Plus, Trash2, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SEO from "@/components/SEO";
 import {
   AlertDialog,
@@ -44,6 +44,15 @@ const Cart = () => {
   const [loading, setLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<Product | null>(null);
+  const [offers, setOffers] = useState<
+    Array<{ code: string; discount_percent: number; min_amount: number; expiry_date: string }>
+  >([]);
+
+  useEffect(() => {
+    supabase.rpc("get_public_coupons").then(({ data }) => {
+      if (data) setOffers(data as any);
+    });
+  }, []);
 
   const handleDeleteClick = (item: Product) => {
     setItemToDelete(item);
