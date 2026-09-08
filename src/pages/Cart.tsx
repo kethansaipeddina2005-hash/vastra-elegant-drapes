@@ -78,18 +78,20 @@ const Cart = () => {
     }
   };
 
-  const handleApplyCode = async () => {
-    if (!promoCode.trim()) {
+  const handleApplyCode = async (codeArg?: string) => {
+    const codeInput = (codeArg ?? promoCode).trim();
+    if (!codeInput) {
       setMessage("Please enter a coupon code");
       return;
     }
+    if (codeArg) setPromoCode(codeArg);
 
     setLoading(true);
 
     const { data, error } = await supabase
       .from("coupons")
       .select("*")
-      .eq("code", promoCode.trim().toUpperCase())
+      .eq("code", codeInput.toUpperCase())
       .eq("is_active", true)
       .maybeSingle();
 
