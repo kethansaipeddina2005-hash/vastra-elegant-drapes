@@ -187,7 +187,7 @@ const Hero = () => {
                   className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[hsl(45_90%_88%_/_0.55)] to-transparent transition-transform duration-[1100ms] ease-out group-hover:translate-x-full rounded-full"
                   aria-hidden="true"
                 />
-                <span className="relative">Discover the Collection</span>
+                <span className="relative">Shop Collection</span>
                 <ChevronRight className="relative w-4 h-4 sm:w-[1.05rem] sm:h-[1.05rem] text-accent transition-transform duration-500 group-hover:translate-x-1.5" aria-hidden="true" />
               </span>
             </Link>
