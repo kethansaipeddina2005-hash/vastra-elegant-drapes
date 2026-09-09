@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Video } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import heroImage from "@/assets/hero-saree.jpg";
 import { Helmet } from "react-helmet-async";
 import { buildSrcSet, optimizedImage, HERO_WIDTHS } from "@/lib/image";
@@ -159,30 +159,19 @@ const Hero = () => {
             {activeBanner?.subtitle || "The Essence of Indian Elegance"}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2">
-            <Link to={activeBanner?.link_url || "/collections"} className="inline-block">
+          <div className="mt-6 sm:mt-8">
+            <Link to={activeBanner?.link_url || "/collections"} className="group inline-block">
               <Button
                 size="lg"
-                className="w-full sm:w-auto bg-secondary text-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-lg hover:shadow-xl px-7 sm:px-8 py-5 sm:py-6 text-base sm:text-lg"
+                className="relative overflow-hidden w-full sm:w-auto bg-gradient-to-r from-[#c9a227] via-[#d4af37] to-[#b08d2e] text-[#2a1f08] font-semibold tracking-wide uppercase hover:brightness-110 transition-all duration-300 shadow-[0_10px_30px_-8px_rgba(212,175,55,0.55)] hover:shadow-[0_16px_40px_-8px_rgba(212,175,55,0.7)] hover:-translate-y-0.5 px-10 sm:px-12 py-6 sm:py-7 text-base sm:text-lg rounded-full"
               >
-                Shop Collection
+                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" aria-hidden="true" />
+                <span className="relative flex items-center gap-2">
+                  Shop Collection
+                  <ChevronRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
+                </span>
               </Button>
             </Link>
-            <a
-              href={`https://wa.me/917997909061?text=${encodeURIComponent("Hi Vastra Luxe! I'd like to book a video call shopping session.")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block"
-            >
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto border-primary/40 bg-background/60 backdrop-blur-sm text-foreground hover:bg-primary/10 transition-all duration-300 px-7 sm:px-8 py-5 sm:py-6 text-base sm:text-lg"
-              >
-                <Video className="w-4 h-4 mr-2" aria-hidden="true" />
-                Book Video Call Shopping
-              </Button>
-            </a>
           </div>
         </div>
       </div>
