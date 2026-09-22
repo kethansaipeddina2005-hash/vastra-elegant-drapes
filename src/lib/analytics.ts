@@ -45,6 +45,9 @@ export const trackPageView = (path: string) => {
     page_title: document.title,
     send_to: MEASUREMENT_ID,
   });
+  // Meta Pixel: fire a PageView on each SPA route change (the base code
+  // in index.html only fires once on initial load).
+  fbq("track", "PageView");
 };
 
 type Item = {
