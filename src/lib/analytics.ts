@@ -1,10 +1,12 @@
-// GA4 analytics helpers. The gtag script is loaded in index.html.
+// GA4 + Meta Pixel analytics helpers. The gtag and fbq scripts are loaded in index.html.
 // All ecommerce events use INR currency and dedupe against sessionStorage.
 
 declare global {
   interface Window {
     gtag?: (...args: any[]) => void;
     dataLayer?: any[];
+    fbq?: (...args: any[]) => void;
+    _fbq?: any;
   }
 }
 
@@ -14,6 +16,13 @@ const gtag = (...args: any[]) => {
   if (typeof window === "undefined") return;
   if (typeof window.gtag === "function") {
     window.gtag(...args);
+  }
+};
+
+const fbq = (...args: any[]) => {
+  if (typeof window === "undefined") return;
+  if (typeof window.fbq === "function") {
+    window.fbq(...args);
   }
 };
 
@@ -36,6 +45,9 @@ export const trackPageView = (path: string) => {
     page_title: document.title,
     send_to: MEASUREMENT_ID,
   });
+  // Meta Pixel: fire a PageView on each SPA route change (the base code
+  // in index.html only fires once on initial load).
+  fbq("track", "PageView");
 };
 
 type Item = {
