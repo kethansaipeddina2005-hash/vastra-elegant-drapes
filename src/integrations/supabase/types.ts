@@ -591,6 +591,84 @@ export type Database = {
           },
         ]
       }
+      partner_applications: {
+        Row: {
+          additional_notes: string | null
+          brand_name: string
+          business_category: string
+          business_description: string
+          catalogue_url: string | null
+          created_at: string
+          email: string
+          expected_products: number | null
+          gst_info: string | null
+          id: string
+          instagram: string | null
+          internal_notes: string | null
+          location: string
+          logo_url: string | null
+          owner_name: string
+          phone: string
+          products_sold: string | null
+          return_policy: string | null
+          shipping_info: string | null
+          status: string
+          updated_at: string
+          website: string | null
+          why_partner: string | null
+        }
+        Insert: {
+          additional_notes?: string | null
+          brand_name: string
+          business_category: string
+          business_description: string
+          catalogue_url?: string | null
+          created_at?: string
+          email: string
+          expected_products?: number | null
+          gst_info?: string | null
+          id?: string
+          instagram?: string | null
+          internal_notes?: string | null
+          location: string
+          logo_url?: string | null
+          owner_name: string
+          phone: string
+          products_sold?: string | null
+          return_policy?: string | null
+          shipping_info?: string | null
+          status?: string
+          updated_at?: string
+          website?: string | null
+          why_partner?: string | null
+        }
+        Update: {
+          additional_notes?: string | null
+          brand_name?: string
+          business_category?: string
+          business_description?: string
+          catalogue_url?: string | null
+          created_at?: string
+          email?: string
+          expected_products?: number | null
+          gst_info?: string | null
+          id?: string
+          instagram?: string | null
+          internal_notes?: string | null
+          location?: string
+          logo_url?: string | null
+          owner_name?: string
+          phone?: string
+          products_sold?: string | null
+          return_policy?: string | null
+          shipping_info?: string | null
+          status?: string
+          updated_at?: string
+          website?: string | null
+          why_partner?: string | null
+        }
+        Relationships: []
+      }
       popup_ads: {
         Row: {
           auto_close_seconds: number | null

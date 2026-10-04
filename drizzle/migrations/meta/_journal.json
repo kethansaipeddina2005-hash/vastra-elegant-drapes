@@ -29,6 +29,13 @@
       "when": 1788840655913,
       "tag": "0003_coupon_public_visibility",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791095478966,
+      "tag": "0004_partner_applications",
+      "breakpoints": true
     }
   ]
 }
