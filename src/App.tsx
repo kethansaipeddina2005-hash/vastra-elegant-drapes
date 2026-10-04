@@ -57,6 +57,8 @@ const CollaboratorDashboard = lazy(() => import("./pages/CollaboratorDashboard")
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const PaymentFailure = lazy(() => import("./pages/PaymentFailure"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
+const BecomePartner = lazy(() => import("./pages/BecomePartner"));
+const AdminPartnerApplications = lazy(() => import("./pages/admin/PartnerApplications"));
 
 
 const queryClient = new QueryClient({
@@ -149,6 +151,8 @@ const App = () => {
                         <Route path="/admin/popup-ads" element={<AdminPopupAds />} />
                         <Route path="/admin/collaborators" element={<AdminCollaborators />} />
                         <Route path="/admin/abandoned-carts" element={<AdminAbandonedCarts />} />
+                        <Route path="/admin/partner-applications" element={<AdminPartnerApplications />} />
+                        <Route path="/become-a-partner" element={<BecomePartner />} />
                         <Route path="/collaborator/dashboard" element={<CollaboratorDashboard />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>

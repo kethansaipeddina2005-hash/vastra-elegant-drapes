@@ -119,6 +119,7 @@ const AdminDashboard = () => {
       actions: [
         { label: 'Subscriptions', icon: Mail, path: '/admin/subscriptions' },
         { label: 'Collaborators', icon: Users, path: '/admin/collaborators' },
+        { label: 'Partner Applications', icon: UserCog, path: '/admin/partner-applications' },
       ],
     },
   ];
