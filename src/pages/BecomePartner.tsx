@@ -45,8 +45,7 @@ const fields: { key: keyof Form; label: string; area?: boolean; required?: boole
   { key: "business_category", label: "Business Category", required: true, placeholder: "Sarees, Jewellery, Lehengas…" },
   { key: "products_sold", label: "Products / Categories You Sell" },
   { key: "expected_products", label: "Expected Number of Products" },
-  { key: "catalogue_url", label: "Catalogue / Portfolio Link", placeholder: "Google Drive, PDF or Instagram link" },
-  { key: "logo_url", label: "Logo Link" },
+  { key: "catalogue_url", label: "Catalogue / Portfolio Link (optional)", placeholder: "Or upload a file below" },
   { key: "gst_info", label: "GST / Business Registration (if applicable)" },
   { key: "business_description", label: "Business Description", area: true, required: true },
   { key: "why_partner", label: "Why partner with Vastra Luxe?", area: true },
@@ -60,6 +59,24 @@ const BecomePartner = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [catFile, setCatFile] = useState<File | null>(null);
+
+  const upload = async (folder: string, file: File | null) => {
+    if (!file) return null;
+    const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
+    const path = `${folder}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from("partner-applications").upload(path, file, { contentType: file.type });
+    if (error) throw error;
+    return path;
+  };
+
+  const pick = (setter: (f: File | null) => void, accept: string[]) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0] || null;
+    if (f && f.size > 10 * 1024 * 1024) { toast.error("File must be under 10MB"); return; }
+    if (f && !accept.some((a) => f.type.startsWith(a))) { toast.error("Unsupported file type"); return; }
+    setter(f);
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +92,15 @@ const BecomePartner = () => {
     setSubmitting(true);
     const d = parsed.data;
     const clean = (v?: string) => (v && v.length ? v : null);
+    let logo_path: string | null = null, catalogue_path: string | null = null;
+    try {
+      logo_path = await upload("logo", logoFile);
+      catalogue_path = await upload("catalogue", catFile);
+    } catch {
+      setSubmitting(false);
+      toast.error("File upload failed. Please try again.");
+      return;
+    }
     const { error } = await supabase.from("partner_applications").insert({
       brand_name: d.brand_name, owner_name: d.owner_name, email: d.email, phone: d.phone,
       location: d.location, business_category: d.business_category, business_description: d.business_description,
@@ -82,7 +108,7 @@ const BecomePartner = () => {
       why_partner: clean(d.why_partner), catalogue_url: clean(d.catalogue_url),
       expected_products: d.expected_products ? parseInt(d.expected_products) || null : null,
       shipping_info: clean(d.shipping_info), return_policy: clean(d.return_policy),
-      gst_info: clean(d.gst_info), logo_url: clean(d.logo_url), additional_notes: clean(d.additional_notes),
+      gst_info: clean(d.gst_info), logo_path, catalogue_path, additional_notes: clean(d.additional_notes),
     });
     setSubmitting(false);
     if (error) {
@@ -127,6 +153,14 @@ const BecomePartner = () => {
                 {errors[f.key] && <p className="text-destructive text-xs mt-1">{errors[f.key]}</p>}
               </div>
             ))}
+            <div>
+              <Label htmlFor="logo_file">Logo (image)</Label>
+              <Input id="logo_file" type="file" accept="image/*" className="mt-1.5" onChange={pick(setLogoFile, ["image/"])} />
+            </div>
+            <div>
+              <Label htmlFor="cat_file">Catalogue / Portfolio (PDF or image)</Label>
+              <Input id="cat_file" type="file" accept="application/pdf,image/*" className="mt-1.5" onChange={pick(setCatFile, ["image/", "application/pdf"])} />
+            </div>
             <div className="md:col-span-2">
               <Button type="submit" disabled={submitting} className="w-full md:w-auto px-10">
                 {submitting ? "Submitting…" : "Submit Application"}

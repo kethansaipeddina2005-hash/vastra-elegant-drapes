@@ -34,6 +34,12 @@ const PartnerApplications = () => {
     setApps(data || []);
   };
 
+  const openFile = async (path: string) => {
+    const { data, error } = await supabase.storage.from("partner-applications").createSignedUrl(path, 300);
+    if (error || !data) return toast.error("Could not open file");
+    window.open(data.signedUrl, "_blank");
+  };
+
   const update = async (id: string, patch: Partial<App>) => {
     const { error } = await supabase.from("partner_applications").update(patch).eq("id", id);
     if (error) return toast.error("Update failed");
@@ -94,6 +100,10 @@ const PartnerApplications = () => {
                     {row("Category", a.business_category)}{row("Products sold", a.products_sold)}
                     {row("Expected products", a.expected_products)}{row("Catalogue", a.catalogue_url)}
                     {row("Logo", a.logo_url)}{row("GST", a.gst_info)}
+                  </div>
+                  <div className="flex gap-2">
+                    {a.logo_path && <Button size="sm" variant="outline" onClick={() => openFile(a.logo_path!)}>View Logo</Button>}
+                    {a.catalogue_path && <Button size="sm" variant="outline" onClick={() => openFile(a.catalogue_path!)}>View Catalogue</Button>}
                   </div>
                   {row("Description", a.business_description)}{row("Why partner", a.why_partner)}
                   {row("Shipping", a.shipping_info)}{row("Return policy", a.return_policy)}{row("Notes from applicant", a.additional_notes)}

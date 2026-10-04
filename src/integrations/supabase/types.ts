@@ -597,6 +597,7 @@ export type Database = {
           brand_name: string
           business_category: string
           business_description: string
+          catalogue_path: string | null
           catalogue_url: string | null
           created_at: string
           email: string
@@ -606,6 +607,7 @@ export type Database = {
           instagram: string | null
           internal_notes: string | null
           location: string
+          logo_path: string | null
           logo_url: string | null
           owner_name: string
           phone: string
@@ -622,6 +624,7 @@ export type Database = {
           brand_name: string
           business_category: string
           business_description: string
+          catalogue_path?: string | null
           catalogue_url?: string | null
           created_at?: string
           email: string
@@ -631,6 +634,7 @@ export type Database = {
           instagram?: string | null
           internal_notes?: string | null
           location: string
+          logo_path?: string | null
           logo_url?: string | null
           owner_name: string
           phone: string
@@ -647,6 +651,7 @@ export type Database = {
           brand_name?: string
           business_category?: string
           business_description?: string
+          catalogue_path?: string | null
           catalogue_url?: string | null
           created_at?: string
           email?: string
@@ -656,6 +661,7 @@ export type Database = {
           instagram?: string | null
           internal_notes?: string | null
           location?: string
+          logo_path?: string | null
           logo_url?: string | null
           owner_name?: string
           phone?: string
