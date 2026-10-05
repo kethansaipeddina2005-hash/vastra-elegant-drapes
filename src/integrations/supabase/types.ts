@@ -599,6 +599,7 @@ export type Database = {
           business_description: string
           catalogue_path: string | null
           catalogue_url: string | null
+          commission_percentage: number
           created_at: string
           email: string
           expected_products: number | null
@@ -626,6 +627,7 @@ export type Database = {
           business_description: string
           catalogue_path?: string | null
           catalogue_url?: string | null
+          commission_percentage?: number
           created_at?: string
           email: string
           expected_products?: number | null
@@ -653,6 +655,7 @@ export type Database = {
           business_description?: string
           catalogue_path?: string | null
           catalogue_url?: string | null
+          commission_percentage?: number
           created_at?: string
           email?: string
           expected_products?: number | null
@@ -674,6 +677,127 @@ export type Database = {
           why_partner?: string | null
         }
         Relationships: []
+      }
+      partner_product_pricing: {
+        Row: {
+          commission_amount: number
+          commission_percentage: number
+          customer_final_price: number
+          partner_base_price: number
+          partner_earnings: number
+          partner_id: string
+          product_id: number
+          updated_at: string
+          vastra_earnings: number
+        }
+        Insert: {
+          commission_amount: number
+          commission_percentage: number
+          customer_final_price: number
+          partner_base_price: number
+          partner_earnings: number
+          partner_id: string
+          product_id: number
+          updated_at?: string
+          vastra_earnings: number
+        }
+        Update: {
+          commission_amount?: number
+          commission_percentage?: number
+          customer_final_price?: number
+          partner_base_price?: number
+          partner_earnings?: number
+          partner_id?: string
+          product_id?: number
+          updated_at?: string
+          vastra_earnings?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_product_pricing_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_product_pricing_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_sales: {
+        Row: {
+          commission_amount: number
+          commission_percentage: number
+          created_at: string
+          customer_final_price: number
+          id: string
+          order_id: string
+          order_item_id: string
+          partner_base_price: number
+          partner_earnings: number
+          partner_id: string
+          product_id: number
+          quantity: number
+          vastra_earnings: number
+        }
+        Insert: {
+          commission_amount: number
+          commission_percentage: number
+          created_at?: string
+          customer_final_price: number
+          id?: string
+          order_id: string
+          order_item_id: string
+          partner_base_price: number
+          partner_earnings: number
+          partner_id: string
+          product_id: number
+          quantity: number
+          vastra_earnings: number
+        }
+        Update: {
+          commission_amount?: number
+          commission_percentage?: number
+          created_at?: string
+          customer_final_price?: number
+          id?: string
+          order_id?: string
+          order_item_id?: string
+          partner_base_price?: number
+          partner_earnings?: number
+          partner_id?: string
+          product_id?: number
+          quantity?: number
+          vastra_earnings?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_sales_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_sales_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: true
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_sales_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_applications"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       popup_ads: {
         Row: {
@@ -1053,6 +1177,10 @@ export type Database = {
       restore_product_stock_for_order: {
         Args: { _order_id: string }
         Returns: undefined
+      }
+      set_partner_base_price: {
+        Args: { _base: number; _product_id: number }
+        Returns: number
       }
       sync_cart: {
         Args: {
