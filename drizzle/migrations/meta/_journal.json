@@ -43,6 +43,13 @@
       "when": 1791095833752,
       "tag": "0005_partner_app_files",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791174517466,
+      "tag": "0006_partner_portal_schema",
+      "breakpoints": true
     }
   ]
 }
