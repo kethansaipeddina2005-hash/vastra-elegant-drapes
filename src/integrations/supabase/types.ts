@@ -771,6 +771,7 @@ export type Database = {
           is_new: boolean | null
           name: string
           occasion: string | null
+          partner_id: string | null
           price: number
           product_code: string | null
           rating: number | null
@@ -796,6 +797,7 @@ export type Database = {
           is_new?: boolean | null
           name: string
           occasion?: string | null
+          partner_id?: string | null
           price: number
           product_code?: string | null
           rating?: number | null
@@ -821,6 +823,7 @@ export type Database = {
           is_new?: boolean | null
           name?: string
           occasion?: string | null
+          partner_id?: string | null
           price?: number
           product_code?: string | null
           rating?: number | null
@@ -838,6 +841,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_applications"
             referencedColumns: ["id"]
           },
         ]
@@ -1039,6 +1049,7 @@ export type Database = {
         Args: { _cart_token: string; _order_id: string }
         Returns: undefined
       }
+      partner_application_id: { Args: { _email: string }; Returns: string }
       restore_product_stock_for_order: {
         Args: { _order_id: string }
         Returns: undefined
