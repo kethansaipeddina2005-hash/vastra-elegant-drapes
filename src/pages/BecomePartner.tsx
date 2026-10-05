@@ -128,6 +128,10 @@ const BecomePartner = () => {
           authenticity and luxury. Every application is personally reviewed by our team — approved partners
           receive their own Partner Portal to manage products and orders.
         </p>
+        <p className="text-sm mb-10">
+          Already an approved partner?{" "}
+          <a href="/partner/dashboard" className="text-accent underline">Sign in to your Partner Portal</a>
+        </p>
 
         {done ? (
           <div className="border border-accent/40 rounded-lg p-8 bg-card">

@@ -59,6 +59,7 @@ const PaymentFailure = lazy(() => import("./pages/PaymentFailure"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const BecomePartner = lazy(() => import("./pages/BecomePartner"));
 const AdminPartnerApplications = lazy(() => import("./pages/admin/PartnerApplications"));
+const PartnerDashboard = lazy(() => import("./pages/partner/Dashboard"));
 
 
 const queryClient = new QueryClient({
@@ -153,6 +154,7 @@ const App = () => {
                         <Route path="/admin/abandoned-carts" element={<AdminAbandonedCarts />} />
                         <Route path="/admin/partner-applications" element={<AdminPartnerApplications />} />
                         <Route path="/become-a-partner" element={<BecomePartner />} />
+                        <Route path="/partner/dashboard" element={<PartnerDashboard />} />
                         <Route path="/collaborator/dashboard" element={<CollaboratorDashboard />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
