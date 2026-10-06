@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Search, ShoppingCart, User, Menu, X, Heart, LogOut, Shield, Play } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 import { Button } from "./ui/button";
@@ -18,6 +19,11 @@ import {
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [masters, setMasters] = useState<{ name: string; slug: string }[]>([]);
+  useEffect(() => {
+    supabase.from("categories").select("name, slug").eq("is_master", true).eq("is_active", true)
+      .order("display_order").then(({ data }) => setMasters((data as any) || []));
+  }, []);
   const [searchValue, setSearchValue] = useState('');
   const navigate = useNavigate();
   const { cartCount } = useCart();
@@ -66,7 +72,10 @@ const Header = () => {
 
           <nav className="hidden lg:flex gap-8">
             <Link to="/" className="text-foreground hover:text-primary transition-colors font-medium">Home</Link>
-            <Link to="/collections" className="text-foreground hover:text-primary transition-colors font-medium">Collections</Link>
+            {masters.map((m) => (
+              <Link key={m.slug} to={`/${m.slug}`} className="text-foreground hover:text-primary transition-colors font-medium">{m.name}</Link>
+            ))}
+            <Link to="/collections" className="text-foreground hover:text-primary transition-colors font-medium">Shop All</Link>
             <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium">About</Link>
             <Link to="/contact" className="text-foreground hover:text-primary transition-colors font-medium">Contact</Link>
             <Link to="/blog" className="text-foreground hover:text-primary transition-colors font-medium">Blog</Link>
@@ -164,7 +173,10 @@ const Header = () => {
         {isMobileMenuOpen && (
           <nav className="lg:hidden mt-4 pb-4 flex flex-col gap-4 animate-fade-in">
             <Link to="/" className="text-foreground hover:text-primary transition-colors font-medium" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
-            <Link to="/collections" className="text-foreground hover:text-primary transition-colors font-medium" onClick={() => setIsMobileMenuOpen(false)}>Collections</Link>
+            {masters.map((m) => (
+              <Link key={m.slug} to={`/${m.slug}`} className="text-foreground hover:text-primary transition-colors font-medium" onClick={() => setIsMobileMenuOpen(false)}>{m.name}</Link>
+            ))}
+            <Link to="/collections" className="text-foreground hover:text-primary transition-colors font-medium" onClick={() => setIsMobileMenuOpen(false)}>Shop All</Link>
             <Link to="/about" className="text-foreground hover:text-primary transition-colors font-medium" onClick={() => setIsMobileMenuOpen(false)}>About</Link>
             <Link to="/contact" className="text-foreground hover:text-primary transition-colors font-medium" onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
             <Link to="/blog" className="text-foreground hover:text-primary transition-colors font-medium" onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>

@@ -79,12 +79,19 @@ export const useProducts = () => {
         .select('product_id, category_id, categories(name)');
 
       // Create a map of product_id to category info
+      const catById = new Map(((categoriesData as any[]) || []).map((c) => [c.id, c]));
       const productCategoryMap = new Map<number, { ids: string[], names: string[] }>();
       (mappings || []).forEach((mapping: any) => {
         const existing = productCategoryMap.get(mapping.product_id) || { ids: [], names: [] };
         existing.ids.push(mapping.category_id);
         if (mapping.categories?.name) {
           existing.names.push(mapping.categories.name);
+        }
+        // Include parent (master) category so e.g. "Sarees" matches all silk sub-categories
+        let parent = catById.get(catById.get(mapping.category_id)?.parent_id);
+        while (parent) {
+          if (!existing.names.includes(parent.name)) existing.names.push(parent.name);
+          parent = catById.get(parent.parent_id);
         }
         productCategoryMap.set(mapping.product_id, existing);
       });

@@ -174,8 +174,10 @@ export type Database = {
           image_url: string | null
           is_active: boolean | null
           is_featured: boolean | null
+          is_master: boolean
           name: string
           parent_id: string | null
+          slug: string | null
           updated_at: string | null
         }
         Insert: {
@@ -188,8 +190,10 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_master?: boolean
           name: string
           parent_id?: string | null
+          slug?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -202,8 +206,10 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          is_master?: boolean
           name?: string
           parent_id?: string | null
+          slug?: string | null
           updated_at?: string | null
         }
         Relationships: [
