@@ -22,6 +22,9 @@ const PartnerApplications = () => {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [pctEdit, setPctEdit] = useState<Record<string, string>>({});
+  const [sales, setSales] = useState<any[]>([]);
+  const [pricing, setPricing] = useState<any[]>([]);
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) navigate("/");
@@ -32,7 +35,28 @@ const PartnerApplications = () => {
     const { data, error } = await supabase.from("partner_applications").select("*").order("created_at", { ascending: false });
     if (error) return toast.error("Failed to load applications");
     setApps(data || []);
+    const [{ data: sl }, { data: pr }] = await Promise.all([
+      supabase.from("partner_sales").select("*"),
+      supabase.from("partner_product_pricing").select("*"),
+    ]);
+    setSales(sl || []);
+    setPricing(pr || []);
   };
+
+  const saveCommission = async (id: string) => {
+    const v = parseFloat(pctEdit[id]);
+    if (isNaN(v) || v < 0 || v > 100) return toast.error("Enter a percentage between 0 and 100");
+    const { error } = await supabase.from("partner_applications").update({ commission_percentage: v }).eq("id", id);
+    if (error) return toast.error("Update failed");
+    // Reprice this partner's existing products with the new rate
+    for (const r of pricing.filter((r) => r.partner_id === id)) {
+      await supabase.rpc("set_partner_base_price", { _product_id: r.product_id, _base: Number(r.partner_base_price) });
+    }
+    toast.success("Commission updated and products repriced");
+    load();
+  };
+
+  const inr = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
 
   const openFile = async (path: string) => {
     const { data, error } = await supabase.storage.from("partner-applications").createSignedUrl(path, 300);
@@ -107,6 +131,32 @@ const PartnerApplications = () => {
                   </div>
                   {row("Description", a.business_description)}{row("Why partner", a.why_partner)}
                   {row("Shipping", a.shipping_info)}{row("Return policy", a.return_policy)}{row("Notes from applicant", a.additional_notes)}
+                  {(() => {
+                    const ps = sales.filter((x) => x.partner_id === a.id);
+                    const gross = ps.reduce((t, x) => t + Number(x.customer_final_price) * x.quantity, 0);
+                    const pe = ps.reduce((t, x) => t + Number(x.partner_earnings), 0);
+                    const ve = ps.reduce((t, x) => t + Number(x.vastra_earnings), 0);
+                    return (
+                      <div className="border border-border rounded-md p-3 bg-muted/30">
+                        <p className="text-sm font-medium mb-2">Commission & earnings</p>
+                        <div className="flex flex-wrap items-end gap-2 mb-3">
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Vastra commission %</p>
+                            <Input type="number" min="0" max="100" step="0.5" className="w-28"
+                              value={pctEdit[a.id] ?? String((a as any).commission_percentage ?? 10)}
+                              onChange={(e) => setPctEdit({ ...pctEdit, [a.id]: e.target.value })} />
+                          </div>
+                          <Button size="sm" variant="outline" onClick={() => saveCommission(a.id)}>Save rate</Button>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                          <div><p className="text-xs text-muted-foreground">Items sold</p><p className="font-semibold">{ps.reduce((t, x) => t + x.quantity, 0)}</p></div>
+                          <div><p className="text-xs text-muted-foreground">Customer sales</p><p className="font-semibold">{inr(gross)}</p></div>
+                          <div><p className="text-xs text-muted-foreground">Partner earnings</p><p className="font-semibold">{inr(pe)}</p></div>
+                          <div><p className="text-xs text-muted-foreground">Vastra earnings</p><p className="font-semibold text-primary">{inr(ve)}</p></div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                   <div>
                     <p className="text-sm font-medium mb-1">Internal notes (admin only)</p>
                     <Textarea rows={3} value={notes[a.id] ?? a.internal_notes ?? ""} onChange={(e) => setNotes({ ...notes, [a.id]: e.target.value })} />
