@@ -57,6 +57,13 @@
       "when": 1791175447607,
       "tag": "0007_partner_commission_pricing",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791259226889,
+      "tag": "0008_master_categories",
+      "breakpoints": true
     }
   ]
 }
