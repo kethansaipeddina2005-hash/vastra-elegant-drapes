@@ -39,6 +39,9 @@ const PartnerDashboard = () => {
   const [editing, setEditing] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [pricing, setPricing] = useState<Record<number, any>>({});
+  const [sales, setSales] = useState<any[]>([]);
+  const pct = Number((partner as any)?.commission_percentage ?? 10);
 
   useEffect(() => {
     if (!loading && !isPartner) navigate("/become-a-partner");
@@ -52,6 +55,12 @@ const PartnerDashboard = () => {
       supabase.from("order_items").select("*, orders(order_number, status, created_at)").order("created_at", { ascending: false }),
     ]);
     setProducts(prods || []);
+    const [{ data: pr }, { data: sl }] = await Promise.all([
+      supabase.from("partner_product_pricing").select("*").eq("partner_id", partner.id),
+      supabase.from("partner_sales").select("*").eq("partner_id", partner.id),
+    ]);
+    setPricing(Object.fromEntries((pr || []).map((r: any) => [r.product_id, r])));
+    setSales(sl || []);
     const myIds = new Set((prods || []).map((p) => p.id));
     setOrderItems(((items as OrderItem[]) || []).filter((i) => myIds.has(i.product_id)));
   };
@@ -64,7 +73,7 @@ const PartnerDashboard = () => {
     const payload = {
       name: form.name.trim(),
       description: form.description.trim() || null,
-      price: parseFloat(form.price),
+      price: Math.round(parseFloat(form.price) * (1 + pct / 100) * 100) / 100,
       stock_quantity: parseInt(form.stock_quantity) || 0,
       fabric_type: form.fabric_type.trim() || null,
       color: form.color.trim() || null,
@@ -73,9 +82,12 @@ const PartnerDashboard = () => {
       images: form.images.trim() ? form.images.split(",").map((s) => s.trim()).filter(Boolean) : null,
       partner_id: partner.id,
     };
-    const { error } = editing
-      ? await supabase.from("products").update(payload).eq("id", editing)
-      : await supabase.from("products").insert(payload);
+    const { data: saved, error } = editing
+      ? await supabase.from("products").update(payload).eq("id", editing).select("id").single()
+      : await supabase.from("products").insert(payload).select("id").single();
+    if (!error && saved) {
+      await supabase.rpc("set_partner_base_price", { _product_id: saved.id, _base: parseFloat(form.price) });
+    }
     setSaving(false);
     if (error) return toast.error("Could not save product");
     toast.success(editing ? "Product updated" : "Product added");
@@ -89,7 +101,7 @@ const PartnerDashboard = () => {
     setForm({
       name: p.name,
       description: p.description || "",
-      price: String(p.price),
+      price: String(pricing[p.id]?.partner_base_price ?? p.price),
       stock_quantity: String(p.stock_quantity ?? 0),
       fabric_type: p.fabric_type || "",
       color: p.color || "",
@@ -111,7 +123,11 @@ const PartnerDashboard = () => {
 
   if (loading || !isPartner || !partner) return null;
 
-  const totalSales = orderItems.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
+  const totalSales = sales.length
+    ? sales.reduce((s, i) => s + Number(i.partner_earnings), 0)
+    : orderItems.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
+  const basePreview = parseFloat(form.price) || 0;
+  const commPreview = Math.round(basePreview * pct) / 100;
 
   return (
     <Layout>
@@ -133,7 +149,7 @@ const PartnerDashboard = () => {
           </div>
           <div className="border border-border rounded-lg p-4 bg-card col-span-2 md:col-span-1">
             <p className="text-2xl font-semibold">₹{totalSales.toLocaleString("en-IN")}</p>
-            <p className="text-sm text-muted-foreground">Total sales value</p>
+            <p className="text-sm text-muted-foreground">Your earnings</p>
           </div>
         </div>
 
@@ -156,8 +172,15 @@ const PartnerDashboard = () => {
                   <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1.5" />
                 </div>
                 <div>
-                  <Label>Price (₹) *</Label>
+                  <Label>Your Base Price (₹) *</Label>
                   <Input type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="mt-1.5" />
+                  {basePreview > 0 && (
+                    <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
+                      <p>Vastra commission ({pct}%): ₹{commPreview.toLocaleString("en-IN")}</p>
+                      <p>Customer final price: <span className="text-foreground font-medium">₹{(basePreview + commPreview).toLocaleString("en-IN")}</span></p>
+                      <p>Your earnings per sale: <span className="text-foreground font-medium">₹{basePreview.toLocaleString("en-IN")}</span></p>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <Label>Stock Quantity</Label>
@@ -204,7 +227,9 @@ const PartnerDashboard = () => {
                     <div className="flex-1 min-w-[180px]">
                       <p className="font-semibold">{p.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        ₹{Number(p.price).toLocaleString("en-IN")} · Stock: {p.stock_quantity ?? 0}
+                        {pricing[p.id]
+                          ? `Base ₹${Number(pricing[p.id].partner_base_price).toLocaleString("en-IN")} + ${pricing[p.id].commission_percentage}% (₹${Number(pricing[p.id].commission_amount).toLocaleString("en-IN")}) = Customer ₹${Number(pricing[p.id].customer_final_price).toLocaleString("en-IN")} · You earn ₹${Number(pricing[p.id].partner_earnings).toLocaleString("en-IN")}`
+                          : `₹${Number(p.price).toLocaleString("en-IN")}`} · Stock: {p.stock_quantity ?? 0}
                         {p.product_code && ` · ${p.product_code}`}
                       </p>
                     </div>
