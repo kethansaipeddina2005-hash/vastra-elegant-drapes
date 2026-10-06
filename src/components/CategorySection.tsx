@@ -32,6 +32,7 @@ export const CategorySection = () => {
         .from('categories')
         .select('*')
         .eq('is_active', true)
+        .eq('is_master', false)
         .order('display_order', { ascending: true });
 
       if (error) throw error;
