@@ -888,6 +888,8 @@ export type Database = {
       }
       products: {
         Row: {
+          approval_notes: string | null
+          approval_status: string
           batch_number: number | null
           category_id: string | null
           color: string | null
@@ -914,6 +916,8 @@ export type Database = {
           videos: string[] | null
         }
         Insert: {
+          approval_notes?: string | null
+          approval_status?: string
           batch_number?: number | null
           category_id?: string | null
           color?: string | null
@@ -940,6 +944,8 @@ export type Database = {
           videos?: string[] | null
         }
         Update: {
+          approval_notes?: string | null
+          approval_status?: string
           batch_number?: number | null
           category_id?: string | null
           color?: string | null

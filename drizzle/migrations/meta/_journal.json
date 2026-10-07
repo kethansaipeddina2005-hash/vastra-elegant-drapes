@@ -64,6 +64,13 @@
       "when": 1791259226889,
       "tag": "0008_master_categories",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791343148879,
+      "tag": "0009_partner_product_approval",
+      "breakpoints": true
     }
   ]
 }
