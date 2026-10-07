@@ -90,7 +90,7 @@ const PartnerDashboard = () => {
     }
     setSaving(false);
     if (error) return toast.error("Could not save product");
-    toast.success(editing ? "Product updated" : "Product added");
+    toast.success("Saved — sent to Vastra for approval");
     setForm(emptyForm);
     setEditing(null);
     setShowForm(false);
@@ -231,6 +231,11 @@ const PartnerDashboard = () => {
                           ? `Base ₹${Number(pricing[p.id].partner_base_price).toLocaleString("en-IN")} + ${pricing[p.id].commission_percentage}% (₹${Number(pricing[p.id].commission_amount).toLocaleString("en-IN")}) = Customer ₹${Number(pricing[p.id].customer_final_price).toLocaleString("en-IN")} · You earn ₹${Number(pricing[p.id].partner_earnings).toLocaleString("en-IN")}`
                           : `₹${Number(p.price).toLocaleString("en-IN")}`} · Stock: {p.stock_quantity ?? 0}
                         {p.product_code && ` · ${p.product_code}`}
+                        {" · "}
+                        <span className={(p as any).approval_status === "approved" ? "text-primary" : (p as any).approval_status === "rejected" ? "text-destructive" : "text-accent"}>
+                          {(p as any).approval_status === "approved" ? "Live" : (p as any).approval_status === "rejected" ? "Rejected" : "Awaiting approval"}
+                        </span>
+                        {(p as any).approval_notes && ` — ${(p as any).approval_notes}`}
                       </p>
                     </div>
                     {(p.stock_quantity ?? 0) === 0 && <Badge variant="destructive">Out of stock</Badge>}
