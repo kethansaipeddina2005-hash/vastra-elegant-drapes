@@ -21,6 +21,7 @@ export interface Product {
   showLowStockBadge?: boolean;
   categoryIds?: string[];
   categoryNames?: string[];
+  partnerId?: string | null;
 }
 
 export interface Filter {

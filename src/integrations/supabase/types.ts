@@ -1163,6 +1163,17 @@ export type Database = {
           total_amount: number
         }[]
       }
+      get_partner_brands: {
+        Args: { _ids?: string[] }
+        Returns: {
+          brand_name: string
+          business_description: string
+          id: string
+          location: string
+          logo_path: string
+          logo_url: string
+        }[]
+      }
       get_public_coupons: {
         Args: { _cart_total?: number }
         Returns: {
