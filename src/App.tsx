@@ -59,6 +59,7 @@ const PaymentFailure = lazy(() => import("./pages/PaymentFailure"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const BecomePartner = lazy(() => import("./pages/BecomePartner"));
 const AdminPartnerApplications = lazy(() => import("./pages/admin/PartnerApplications"));
+const BrandPage = lazy(() => import("./pages/Brand"));
 const AdminPartnerProducts = lazy(() => import("./pages/admin/PartnerProducts"));
 const PartnerDashboard = lazy(() => import("./pages/partner/Dashboard"));
 
@@ -154,6 +155,7 @@ const App = () => {
                         <Route path="/admin/collaborators" element={<AdminCollaborators />} />
                         <Route path="/admin/abandoned-carts" element={<AdminAbandonedCarts />} />
                         <Route path="/admin/partner-applications" element={<AdminPartnerApplications />} />
+                        <Route path="/brand/:id" element={<BrandPage />} />
                         <Route path="/admin/partner-products" element={<AdminPartnerProducts />} />
                         <Route path="/become-a-partner" element={<BecomePartner />} />
                         <Route path="/partner/dashboard" element={<PartnerDashboard />} />

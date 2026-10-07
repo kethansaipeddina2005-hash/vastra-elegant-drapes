@@ -1,4 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
+import PartnerBadge from "@/components/PartnerBadge";
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import ProductCard from "@/components/ProductCard";
@@ -87,6 +88,7 @@ const ProductDetail = () => {
         reviews: data.reviews || 0,
         returnDays: (data as any).return_days || null,
         discountPercentage: Number((data as any).discount_percentage) || 0,
+        partnerId: (data as any).partner_id || null,
         categoryIds,
         categoryNames,
       };
@@ -292,6 +294,7 @@ const ProductDetail = () => {
               <h1 className="text-xl md:text-2xl font-playfair font-bold text-foreground leading-tight">
                 {product.name}
               </h1>
+              {product.partnerId && <PartnerBadge partnerId={product.partnerId} />}
               <div className="flex items-baseline gap-2">
                 {(() => {
                   const d = product.discountPercentage || 0;
