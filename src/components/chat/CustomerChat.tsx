@@ -301,7 +301,13 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
         images: imageUrls.length > 0 ? imageUrls : null,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message?.includes('phone numbers')) {
+          toast({ title: 'Message not sent', description: 'Please keep chats to product questions — no phone numbers or Instagram IDs.', variant: 'destructive' });
+          return;
+        }
+        throw error;
+      }
 
       // Update conversation timestamp
       await supabase
