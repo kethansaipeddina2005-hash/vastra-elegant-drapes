@@ -3,8 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, Heart, User, MapPin, LogOut, Filter } from "lucide-react";
+import { Package, Heart, User, MapPin, LogOut, Filter, Store } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePartner } from "@/hooks/usePartner";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,6 +18,7 @@ import {
 
 const Dashboard = () => {
   const { user, signOut, loading } = useAuth();
+  const { isPartner, partner } = usePartner();
   const navigate = useNavigate();
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
@@ -98,6 +100,22 @@ const Dashboard = () => {
               Sign Out
             </Button>
           </div>
+
+          {/* Partner Dashboard */}
+          {isPartner && partner && (
+            <Link to="/partner/dashboard">
+              <Card className="p-6 mb-12 border-primary/40 bg-primary/5 hover:shadow-lg transition-shadow cursor-pointer flex items-center gap-4">
+                <Store className="w-10 h-10 text-primary flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="font-playfair text-xl font-semibold">Partner Dashboard</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Manage {partner.brand_name} products, orders and earnings
+                  </p>
+                </div>
+                <Button variant="outline">Open</Button>
+              </Card>
+            </Link>
+          )}
 
           {/* Quick Actions */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
