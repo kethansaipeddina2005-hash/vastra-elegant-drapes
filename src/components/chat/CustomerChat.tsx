@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { usePartner } from "@/hooks/usePartner";
 import { MessageCircle, X, Send, Loader2, ImagePlus, XCircle, Check, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +43,7 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
+  const { partner, isPartner } = usePartner();
   const { toast } = useToast();
 
   // Listen for new admin messages even when chat is closed
@@ -188,7 +190,9 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
             customer_name: user.user_metadata?.full_name || user.email,
             customer_email: user.email,
             product_id: productId || null,
-            subject: productName ? `Customization for ${productName}` : 'Saree Customization',
+            subject: isPartner && partner
+              ? `Partner: ${partner.brand_name} — product query`
+              : productName ? `Customization for ${productName}` : 'Saree Customization',
           })
           .select()
           .single();
