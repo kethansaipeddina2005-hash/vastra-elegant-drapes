@@ -10,6 +10,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdmin } from "@/hooks/useAdmin";
 import { useCollaborator } from "@/hooks/useCollaborator";
+import { usePartner } from "@/hooks/usePartner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,7 @@ const Header = () => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useAdmin();
   const { isCollaborator } = useCollaborator();
+  const { isPartner } = usePartner();
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/95">
@@ -127,6 +129,13 @@ const Header = () => {
                       </Link>
                     </DropdownMenuItem>
                   )}
+                  {isPartner && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/partner/dashboard" className="w-full cursor-pointer">
+                        Partner Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link to="/account/orders" className="w-full cursor-pointer">
                       Orders
@@ -184,6 +193,11 @@ const Header = () => {
               <Link to="/admin/dashboard" className="text-foreground hover:text-primary transition-colors font-medium flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
                 <Shield className="h-4 w-4" />
                 Admin Panel
+              </Link>
+            )}
+            {isPartner && (
+              <Link to="/partner/dashboard" className="text-foreground hover:text-primary transition-colors font-medium" onClick={() => setIsMobileMenuOpen(false)}>
+                Partner Dashboard
               </Link>
             )}
           </nav>
