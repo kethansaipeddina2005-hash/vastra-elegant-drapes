@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Package, ShoppingBag } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, ShoppingBag, Upload, X } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Product = Tables<"products">;
@@ -41,7 +41,35 @@ const PartnerDashboard = () => {
   const [saving, setSaving] = useState(false);
   const [pricing, setPricing] = useState<Record<number, any>>({});
   const [sales, setSales] = useState<any[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const pct = Number((partner as any)?.commission_percentage ?? 10);
+
+  const uploadImages = async (files: FileList | null) => {
+    if (!files || files.length === 0 || !partner) return;
+    setUploading(true);
+    const urls: string[] = [];
+    for (const file of Array.from(files)) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`${file.name} is larger than 10 MB`);
+        continue;
+      }
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `partner-${partner.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("product-images").upload(path, file);
+      if (error) {
+        toast.error(`Could not upload ${file.name}`);
+        continue;
+      }
+      const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+      if (data?.publicUrl) urls.push(data.publicUrl);
+    }
+    if (urls.length) {
+      setUploadedImages((prev) => [...prev, ...urls]);
+      toast.success(`${urls.length} image${urls.length > 1 ? "s" : ""} uploaded`);
+    }
+    setUploading(false);
+  };
 
   useEffect(() => {
     if (!loading && !isPartner) navigate("/become-a-partner");
