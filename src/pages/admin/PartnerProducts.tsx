@@ -17,6 +17,36 @@ const PartnerProducts = () => {
   const [pricing, setPricing] = useState<Record<number, any>>({});
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("pending");
   const [notes, setNotes] = useState<Record<number, string>>({});
+  const [editing, setEditing] = useState<number | null>(null);
+  const [form, setForm] = useState({ name: "", description: "", stock: "", base: "" });
+
+  const startEdit = (p: any) => {
+    setEditing(p.id);
+    setForm({ name: p.name, description: p.description || "", stock: String(p.stock_quantity ?? 0), base: String(pricing[p.id]?.partner_base_price ?? "") });
+  };
+
+  const saveEdit = async (id: number) => {
+    const { error } = await supabase.from("products").update({
+      name: form.name.trim(), description: form.description.trim() || null, stock_quantity: parseInt(form.stock) || 0,
+    }).eq("id", id);
+    if (error) return toast.error("Update failed");
+    const base = parseFloat(form.base);
+    if (base > 0) {
+      const { error: pe } = await supabase.rpc("set_partner_base_price", { _product_id: id, _base: base });
+      if (pe) return toast.error("Price update failed");
+    }
+    toast.success("Product updated");
+    setEditing(null);
+    load();
+  };
+
+  const removeProduct = async (id: number) => {
+    if (!confirm("Delete this partner product permanently?")) return;
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (error) return toast.error("Delete failed — it may be part of existing orders");
+    toast.success("Product deleted");
+    load();
+  };
 
   useEffect(() => {
     if (!loading && !isAdmin) navigate("/");
@@ -77,12 +107,26 @@ const PartnerProducts = () => {
                         : `Customer price ${inr(p.price)}`}
                     </p>
                     {p.description && <p className="text-sm text-muted-foreground line-clamp-2">{p.description}</p>}
+                    {editing === p.id && (
+                      <div className="grid md:grid-cols-2 gap-2 mt-2 max-w-2xl">
+                        <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Name" />
+                        <Input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="Stock" />
+                        <Input type="number" value={form.base} onChange={(e) => setForm({ ...form, base: e.target.value })} placeholder="Partner base price (₹)" />
+                        <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" />
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => saveEdit(p.id)}>Save</Button>
+                          <Button size="sm" variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+                        </div>
+                      </div>
+                    )}
                     <Input placeholder="Note to partner (optional)" className="mt-2 max-w-md"
                       value={notes[p.id] ?? p.approval_notes ?? ""} onChange={(e) => setNotes({ ...notes, [p.id]: e.target.value })} />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {p.approval_status !== "approved" && <Button size="sm" onClick={() => decide(p.id, "approved")}>Approve</Button>}
                     {p.approval_status !== "rejected" && <Button size="sm" variant="outline" onClick={() => decide(p.id, "rejected")}>Reject</Button>}
+                    <Button size="sm" variant="outline" onClick={() => startEdit(p)}>Edit</Button>
+                    <Button size="sm" variant="destructive" onClick={() => removeProduct(p.id)}>Delete</Button>
                   </div>
                 </div>
               );

@@ -1122,6 +1122,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      contains_contact_info: { Args: { _t: string }; Returns: boolean }
       create_checkout_order: {
         Args: {
           _coupon_code?: string

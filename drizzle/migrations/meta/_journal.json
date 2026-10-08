@@ -78,6 +78,13 @@
       "when": 1791343349638,
       "tag": "0010_public_partner_brands",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791440126279,
+      "tag": "0011_partner_contact_guard",
+      "breakpoints": true
     }
   ]
 }

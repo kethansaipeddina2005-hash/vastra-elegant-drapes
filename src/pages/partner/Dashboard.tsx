@@ -89,7 +89,7 @@ const PartnerDashboard = () => {
       await supabase.rpc("set_partner_base_price", { _product_id: saved.id, _base: parseFloat(form.price) });
     }
     setSaving(false);
-    if (error) return toast.error("Could not save product");
+    if (error) return toast.error(error.message?.includes("contact details") ? "Please remove phone numbers or Instagram IDs from the product details" : "Could not save product");
     toast.success("Saved — sent to Vastra for approval");
     setForm(emptyForm);
     setEditing(null);
