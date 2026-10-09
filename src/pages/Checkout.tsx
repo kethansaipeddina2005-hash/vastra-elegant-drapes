@@ -14,6 +14,7 @@ import { usePricing } from "@/contexts/PricingContext";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Lock, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { effectiveCouponPercent } from "@/lib/couponScope";
 import SEO from "@/components/SEO";
 import { trackBeginCheckout, trackAddPaymentInfo } from "@/lib/analytics";
 
@@ -219,8 +220,14 @@ const Checkout = () => {
         return;
       }
     }
-    setDiscountPercent(data.discount_percent);
-    setCouponMessage(`Success! ${data.discount_percent}% off applied ✅`);
+    const pct = await effectiveCouponPercent(data as any, cart);
+    if (pct === null) {
+      setCouponMessage("This coupon doesn't apply to items in your cart ❌");
+      setDiscountPercent(0);
+      return;
+    }
+    setDiscountPercent(pct);
+    setCouponMessage(`Success! ${data.discount_percent}% off${(data as any).partner_id ? " eligible items" : ""} applied ✅`);
   };
 
   const loadRazorpayScript = () =>
