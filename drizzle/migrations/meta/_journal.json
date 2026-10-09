@@ -99,6 +99,13 @@
       "when": 1791518319129,
       "tag": "0013_partner_coupons_payouts_payment_options",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791525453140,
+      "tag": "0014_product_size_charts_and_inventory",
+      "breakpoints": true
     }
   ]
 }
