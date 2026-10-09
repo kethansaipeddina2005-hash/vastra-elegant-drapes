@@ -16,6 +16,8 @@ import { Loading } from '@/components/ui/loading';
 import { Plus, Edit, Trash2, Upload, X, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import SizeChartEditor from '@/components/products/SizeChartEditor';
+import { emptySizeChart, parseSizeChart, validateSizeChart } from '@/lib/sizing';
 interface Category {
   id: string;
   name: string;
@@ -39,6 +41,9 @@ interface Product {
   product_code?: string | null;
   discount_percentage?: number | null;
   show_low_stock_badge?: boolean | null;
+  sizing_enabled?: boolean;
+  size_chart?: unknown;
+  payment_options?: string;
 }
 
 const AdminProducts = () => {
@@ -69,6 +74,9 @@ const AdminProducts = () => {
     discount_percentage: '',
     show_low_stock_badge: true,
   });
+  const [sizeChart, setSizeChart] = useState(emptySizeChart);
+  const [sizingEnabled, setSizingEnabled] = useState(false);
+  const [paymentOptions, setPaymentOptions] = useState('both');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [existingVideos, setExistingVideos] = useState<string[]>([]);
@@ -243,7 +251,11 @@ const AdminProducts = () => {
         videoUrls = [...videoUrls, ...newVideoUrls];
       }
 
+      if (sizingEnabled) { const issue = validateSizeChart(sizeChart); if (issue) throw new Error(issue); }
       const productData = {
+        sizing_enabled: sizingEnabled,
+        size_chart: JSON.parse(JSON.stringify(sizeChart)),
+        payment_options: paymentOptions,
         name: formData.name,
         description: formData.description,
         fabric_type: formData.fabric_type,
@@ -338,6 +350,9 @@ const AdminProducts = () => {
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
+    setSizeChart(parseSizeChart(product.size_chart));
+    setSizingEnabled(product.sizing_enabled || false);
+    setPaymentOptions(product.payment_options || "both");
     setFormData({
       name: product.name,
       description: product.description || '',
@@ -361,6 +376,9 @@ const AdminProducts = () => {
 
   const resetForm = () => {
     setEditingProduct(null);
+    setSizeChart(emptySizeChart());
+    setSizingEnabled(false);
+    setPaymentOptions("both");
     setFormData({
       name: '',
       description: '',
@@ -516,6 +534,8 @@ const AdminProducts = () => {
                     <p className="text-xs text-muted-foreground mt-1">Leave empty or 0 for no return</p>
                   </div>
                 </div>
+                <div><Label>Payment methods</Label><select aria-label="Product payment methods" className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm" value={paymentOptions} onChange={e => setPaymentOptions(e.target.value)}><option value="both">Online & Cash on Delivery</option><option value="online">Online only</option><option value="cod">Cash on Delivery only</option></select></div>
+                <SizeChartEditor enabled={sizingEnabled} chart={sizeChart} admin categoryId={selectedCategories[0]} onChange={(enabled, chart) => { setSizingEnabled(enabled); setSizeChart(chart); }} />
                 <div className="flex items-start justify-between gap-4 rounded-md border border-border p-3">
                   <div>
                     <Label htmlFor="show_low_stock_badge">Show "Only N left" badge</Label>
