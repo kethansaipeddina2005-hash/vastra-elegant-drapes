@@ -92,6 +92,13 @@
       "when": 1791518008890,
       "tag": "0012_partner_product_image_uploads",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791518319129,
+      "tag": "0013_partner_coupons_payouts_payment_options",
+      "breakpoints": true
     }
   ]
 }

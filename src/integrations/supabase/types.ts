@@ -399,6 +399,7 @@ export type Database = {
       }
       coupons: {
         Row: {
+          approval_status: string
           code: string
           collaborator_email: string | null
           collaborator_name: string | null
@@ -410,10 +411,12 @@ export type Database = {
           is_active: boolean | null
           is_public: boolean
           min_amount: number | null
+          partner_id: string | null
           updated_at: string | null
           usage_limit_per_user: number | null
         }
         Insert: {
+          approval_status?: string
           code: string
           collaborator_email?: string | null
           collaborator_name?: string | null
@@ -425,10 +428,12 @@ export type Database = {
           is_active?: boolean | null
           is_public?: boolean
           min_amount?: number | null
+          partner_id?: string | null
           updated_at?: string | null
           usage_limit_per_user?: number | null
         }
         Update: {
+          approval_status?: string
           code?: string
           collaborator_email?: string | null
           collaborator_name?: string | null
@@ -440,10 +445,19 @@ export type Database = {
           is_active?: boolean | null
           is_public?: boolean
           min_amount?: number | null
+          partner_id?: string | null
           updated_at?: string | null
           usage_limit_per_user?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "coupons_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_applications"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -684,6 +698,44 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          notes: string | null
+          paid_at: string
+          partner_id: string
+          reference: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string
+          partner_id: string
+          reference?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string
+          partner_id?: string
+          reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_payouts_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_product_pricing: {
         Row: {
           commission_amount: number
@@ -904,6 +956,7 @@ export type Database = {
           name: string
           occasion: string | null
           partner_id: string | null
+          payment_options: string
           price: number
           product_code: string | null
           rating: number | null
@@ -932,6 +985,7 @@ export type Database = {
           name: string
           occasion?: string | null
           partner_id?: string | null
+          payment_options?: string
           price: number
           product_code?: string | null
           rating?: number | null
@@ -960,6 +1014,7 @@ export type Database = {
           name?: string
           occasion?: string | null
           partner_id?: string | null
+          payment_options?: string
           price?: number
           product_code?: string | null
           rating?: number | null
