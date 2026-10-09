@@ -157,6 +157,7 @@ const PartnerApplications = () => {
                       </div>
                     );
                   })()}
+                   <label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={a.size_editing_allowed} onChange={e => update(a.id, { size_editing_allowed: e.target.checked })} />Allow partner size-chart edits</label>
                   <div>
                     <p className="text-sm font-medium mb-1">Internal notes (admin only)</p>
                     <Textarea rows={3} value={notes[a.id] ?? a.internal_notes ?? ""} onChange={(e) => setNotes({ ...notes, [a.id]: e.target.value })} />
