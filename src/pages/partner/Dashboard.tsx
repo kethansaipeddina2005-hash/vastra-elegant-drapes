@@ -195,7 +195,7 @@ const PartnerDashboard = () => {
         {tab === "products" && (
           <>
             {!showForm ? (
-              <Button onClick={() => { setForm(emptyForm); setEditing(null); setShowForm(true); }} className="mb-6">
+              <Button onClick={() => { setForm(emptyForm); setEditing(null); setUploadedImages([]); setShowForm(true); }} className="mb-6">
                 <Plus className="h-4 w-4 mr-2" /> Add Product
               </Button>
             ) : (
