@@ -14,6 +14,7 @@ import { usePricing } from "@/contexts/PricingContext";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Lock, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { effectiveCouponPercent } from "@/lib/couponScope";
 import SEO from "@/components/SEO";
 import { trackBeginCheckout, trackAddPaymentInfo } from "@/lib/analytics";
 
@@ -77,6 +78,23 @@ const Checkout = () => {
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [isInternational, setIsInternational] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  // Admin can limit each product to online, COD, or both; checkout offers only what every item allows.
+  const [allowOnline, setAllowOnline] = useState(true);
+  const [allowCod, setAllowCod] = useState(true);
+  const cartIdsKey = cart.map((i) => i.id).join(",");
+  useEffect(() => {
+    const ids = cart.map((i) => Number(i.id));
+    if (!ids.length) return;
+    supabase.from("products").select("payment_options").in("id", ids).then(({ data }) => {
+      const opts = (data || []).map((p: any) => p.payment_options || "both");
+      const on = !opts.includes("cod");
+      const cod = !opts.includes("online");
+      setAllowOnline(on);
+      setAllowCod(cod);
+      setPaymentMethod((m) => (m === "cod" && !cod ? "razorpay" : m !== "cod" && !on ? "cod" : m));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartIdsKey]);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const [promoCode, setPromoCode] = useState(savedPromoCode);
@@ -219,8 +237,14 @@ const Checkout = () => {
         return;
       }
     }
-    setDiscountPercent(data.discount_percent);
-    setCouponMessage(`Success! ${data.discount_percent}% off applied ✅`);
+    const pct = await effectiveCouponPercent(data as any, cart);
+    if (pct === null) {
+      setCouponMessage("This coupon doesn't apply to items in your cart ❌");
+      setDiscountPercent(0);
+      return;
+    }
+    setDiscountPercent(pct);
+    setCouponMessage(`Success! ${data.discount_percent}% off${(data as any).partner_id ? " eligible items" : ""} applied ✅`);
   };
 
   const loadRazorpayScript = () =>

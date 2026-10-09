@@ -9,6 +9,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { usePricing } from "@/contexts/PricingContext";
 import { Minus, Plus, Trash2, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { effectiveCouponPercent } from "@/lib/couponScope";
 import { useState, useEffect } from "react";
 import SEO from "@/components/SEO";
 import {
@@ -142,10 +143,20 @@ const Cart = () => {
       }
     }
 
-    setDiscountPercent(data.discount_percent);
-    saveDiscountPercent(data.discount_percent);
+    const pct = await effectiveCouponPercent(data as any, cart);
+    if (pct === null) {
+      setMessage("This coupon doesn't apply to items in your cart ❌");
+      setDiscountPercent(0);
+      return;
+    }
+    setDiscountPercent(pct);
+    saveDiscountPercent(pct);
     savePromoCode(codeInput.toUpperCase());
-    setMessage(`Success! ${data.discount_percent}% off applied ✅`);
+    setMessage(
+      (data as any).partner_id
+        ? `Success! ${data.discount_percent}% off eligible items applied ✅`
+        : `Success! ${data.discount_percent}% off applied ✅`
+    );
   };
 
   if (cartCount === 0) {
