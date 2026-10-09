@@ -52,6 +52,8 @@ const FeaturedSarees = () => {
         occasion: product.occasion || '',
         region: product.region || '',
         stockQuantity: product.stock_quantity || 0,
+          sizingEnabled: product.sizing_enabled,
+          sizeChart: product.size_chart,
         showLowStockBadge: (product as any).show_low_stock_badge !== false,
         isNew: product.is_new || false,
         rating: Number(product.rating) || 0,

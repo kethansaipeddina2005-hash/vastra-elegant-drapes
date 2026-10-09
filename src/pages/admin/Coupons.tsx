@@ -26,6 +26,8 @@ interface Coupon {
   created_at: string;
   usage_limit_per_user: number | null;
   is_public?: boolean;
+  partner_id?: string | null;
+  approval_status?: string;
   collaborator_name?: string | null;
   collaborator_email?: string | null;
   commission_percent?: number | null;
@@ -94,6 +96,11 @@ const AdminCoupons = () => {
     }
   };
 
+  const reviewPartnerCoupon = async (coupon: Coupon, status: 'approved' | 'rejected') => {
+    const { error } = await supabase.from('coupons').update({ approval_status: status, is_active: status === 'approved' }).eq('id', coupon.id);
+    if (error) return toast.error(error.message);
+    toast.success(status === 'approved' ? 'Coupon approved' : 'Coupon rejected'); fetchCoupons();
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -571,12 +578,14 @@ const AdminCoupons = () => {
                       </TableCell>
                       <TableCell>
                         <Switch
+                          disabled={!!coupon.partner_id && coupon.approval_status !== "approved"}
                           checked={coupon.is_active}
                           onCheckedChange={() => handleToggleActive(coupon)}
                         />
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
+                          {coupon.partner_id && <><Badge variant="outline">Partner · {coupon.approval_status}</Badge>{coupon.approval_status !== 'approved' && <Button size="sm" onClick={() => reviewPartnerCoupon(coupon, 'approved')}>Approve</Button>}{coupon.approval_status !== 'rejected' && <Button size="sm" variant="outline" onClick={() => reviewPartnerCoupon(coupon, 'rejected')}>Reject</Button>}</>}
                           <Button size="sm" variant="outline" onClick={() => handleViewRedemptions(coupon)}>
                             <Users className="h-4 w-4" />
                           </Button>

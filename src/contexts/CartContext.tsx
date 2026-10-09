@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useRef, ReactNode } fro
 import { Product } from '@/types/product';
 import { toast } from '@/hooks/use-toast';
 import { trackAddToCart } from '@/lib/analytics';
+import { parseSizeChart, sizeStock } from '@/lib/sizing';
 import { syncCartToServer } from '@/lib/cartTracking';
 
 interface CartItem extends Product {
@@ -10,9 +11,9 @@ interface CartItem extends Product {
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product, quantity?: number) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  addToCart: (product: Product, quantity?: number, selectedSize?: string | null) => void;
+  removeFromCart: (productId: number, selectedSize?: string | null) => void;
+  updateQuantity: (productId: number, quantity: number, selectedSize?: string | null) => void;
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
@@ -61,6 +62,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           price: item.price,
           quantity: item.quantity,
           image: item.image ?? null,
+          selected_size: item.selectedSize ?? null,
         }))
       );
     }, 800);
@@ -72,7 +74,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('vastra-discount-percent', discountPercent.toString());
   }, [promoCode, discountPercent]);
 
-  const addToCart = (product: Product, quantity = 1) => {
+  const addToCart = (product: Product, quantity = 1, selectedSize: string | null = null) => {
+    quantity = Math.max(1, quantity);
+    if (product.sizingEnabled && !selectedSize) {
+      toast({ title: 'Select a size', description: 'Choose an available size on the product page.', variant: 'destructive' });
+      window.location.assign(`/product/${product.id}`);
+      return;
+    }
     trackAddToCart(
       {
         id: product.id,
@@ -83,9 +91,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       quantity,
     );
     setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
+      const existingItem = prevCart.find(item => item.id === product.id && (item.selectedSize ?? null) === selectedSize);
       const currentQty = existingItem ? existingItem.quantity : 0;
-      const maxQty = product.stockQuantity || 0;
+      const maxQty = product.sizingEnabled ? sizeStock(parseSizeChart(product.sizeChart), selectedSize) : product.stockQuantity || 0;
 
       if (maxQty <= 0) {
         toast({ title: 'Out of stock', description: `${product.name} is currently out of stock`, variant: 'destructive' });
@@ -98,37 +106,37 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         const addableQty = maxQty - currentQty;
         if (existingItem) {
           return prevCart.map(item =>
-            item.id === product.id ? { ...item, quantity: maxQty } : item
+            item.id === product.id && (item.selectedSize ?? null) === selectedSize ? { ...item, quantity: maxQty } : item
           );
         }
-        return [...prevCart, { ...product, quantity: addableQty }];
+        return [...prevCart, { ...product, selectedSize, quantity: addableQty }];
       }
 
       if (existingItem) {
         toast({ title: 'Updated cart', description: `${product.name} quantity updated` });
         return prevCart.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+          item.id === product.id && (item.selectedSize ?? null) === selectedSize ? { ...item, quantity: item.quantity + quantity } : item
         );
       }
       toast({ title: 'Added to cart', description: `${product.name} added to cart` });
-      return [...prevCart, { ...product, quantity }];
+      return [...prevCart, { ...product, selectedSize, quantity }];
     });
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== productId));
+  const removeFromCart = (productId: number, selectedSize: string | null = null) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== productId || (item.selectedSize ?? null) !== selectedSize));
     toast({ title: 'Removed from cart', description: 'Item removed successfully' });
   };
 
-  const updateQuantity = (productId: number, quantity: number) => {
+  const updateQuantity = (productId: number, quantity: number, selectedSize: string | null = null) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(productId, selectedSize);
       return;
     }
     setCart(prevCart =>
       prevCart.map(item => {
-        if (item.id === productId) {
-          const maxQty = item.stockQuantity || 0;
+        if (item.id === productId && (item.selectedSize ?? null) === selectedSize) {
+          const maxQty = item.sizingEnabled ? sizeStock(parseSizeChart(item.sizeChart), selectedSize) : item.stockQuantity || 0;
           const clampedQty = maxQty > 0 ? Math.min(quantity, maxQty) : quantity;
           if (quantity > maxQty && maxQty > 0) {
             toast({ title: 'Stock limit', description: `Only ${maxQty} available`, variant: 'destructive' });

@@ -467,6 +467,8 @@ export type Database = {
           price: number
           product_id: number
           quantity: number
+          selected_size: string | null
+          size_measurements: Json | null
         }
         Insert: {
           created_at?: string | null
@@ -475,6 +477,8 @@ export type Database = {
           price: number
           product_id: number
           quantity: number
+          selected_size?: string | null
+          size_measurements?: Json | null
         }
         Update: {
           created_at?: string | null
@@ -483,6 +487,8 @@ export type Database = {
           price?: number
           product_id?: number
           quantity?: number
+          selected_size?: string | null
+          size_measurements?: Json | null
         }
         Relationships: [
           {
@@ -635,6 +641,7 @@ export type Database = {
           products_sold: string | null
           return_policy: string | null
           shipping_info: string | null
+          size_editing_allowed: boolean
           status: string
           updated_at: string
           website: string | null
@@ -663,6 +670,7 @@ export type Database = {
           products_sold?: string | null
           return_policy?: string | null
           shipping_info?: string | null
+          size_editing_allowed?: boolean
           status?: string
           updated_at?: string
           website?: string | null
@@ -691,6 +699,7 @@ export type Database = {
           products_sold?: string | null
           return_policy?: string | null
           shipping_info?: string | null
+          size_editing_allowed?: boolean
           status?: string
           updated_at?: string
           website?: string | null
@@ -964,6 +973,8 @@ export type Database = {
           return_days: number | null
           reviews: number | null
           show_low_stock_badge: boolean
+          size_chart: Json
+          sizing_enabled: boolean
           stock_quantity: number | null
           updated_at: string | null
           videos: string[] | null
@@ -993,6 +1004,8 @@ export type Database = {
           return_days?: number | null
           reviews?: number | null
           show_low_stock_badge?: boolean
+          size_chart?: Json
+          sizing_enabled?: boolean
           stock_quantity?: number | null
           updated_at?: string | null
           videos?: string[] | null
@@ -1022,6 +1035,8 @@ export type Database = {
           return_days?: number | null
           reviews?: number | null
           show_low_stock_badge?: boolean
+          size_chart?: Json
+          sizing_enabled?: boolean
           stock_quantity?: number | null
           updated_at?: string | null
           videos?: string[] | null
@@ -1113,6 +1128,38 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      size_chart_templates: {
+        Row: {
+          category_id: string | null
+          chart: Json
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          category_id?: string | null
+          chart: Json
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          category_id?: string | null
+          chart?: Json
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "size_chart_templates_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
             referencedColumns: ["id"]
           },
         ]
@@ -1218,6 +1265,10 @@ export type Database = {
           status: string
           total_amount: number
         }[]
+      }
+      get_order_receipt: {
+        Args: { _guest_token?: string; _order_id: string }
+        Returns: Json
       }
       get_partner_brands: {
         Args: { _ids?: string[] }

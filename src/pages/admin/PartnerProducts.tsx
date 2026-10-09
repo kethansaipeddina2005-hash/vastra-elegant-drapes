@@ -8,6 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
+import ProductMediaEditor from '@/components/products/ProductMediaEditor';
+import SizeChartEditor from '@/components/products/SizeChartEditor';
+import { emptySizeChart, parseSizeChart, validateSizeChart } from '@/lib/sizing';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 const FILTERS = ["pending", "approved", "rejected", "all"] as const;
 
 const PartnerProducts = () => {
@@ -20,13 +24,21 @@ const PartnerProducts = () => {
   const [editing, setEditing] = useState<number | null>(null);
   const [form, setForm] = useState({ name: "", description: "", stock: "", base: "" });
 
+  const [images, setImages] = useState<string[]>([]);
+  const [paymentOptions, setPaymentOptions] = useState('both');
+  const [sizeChart, setSizeChart] = useState(emptySizeChart);
+  const [sizingEnabled, setSizingEnabled] = useState(false);
   const startEdit = (p: any) => {
     setEditing(p.id);
+    setImages(p.images || []); setPaymentOptions(p.payment_options || "both");
+    setSizingEnabled(p.sizing_enabled); setSizeChart(parseSizeChart(p.size_chart));
     setForm({ name: p.name, description: p.description || "", stock: String(p.stock_quantity ?? 0), base: String(pricing[p.id]?.partner_base_price ?? "") });
   };
 
   const saveEdit = async (id: number) => {
+    if (sizingEnabled) { const issue = validateSizeChart(sizeChart); if (issue) return toast.error(issue); }
     const { error } = await supabase.from("products").update({
+      images, payment_options: paymentOptions, sizing_enabled: sizingEnabled, size_chart: JSON.parse(JSON.stringify(sizeChart)), 
       name: form.name.trim(), description: form.description.trim() || null, stock_quantity: parseInt(form.stock) || 0,
     }).eq("id", id);
     if (error) return toast.error("Update failed");
@@ -64,7 +76,9 @@ const PartnerProducts = () => {
   };
 
   const decide = async (id: number, status: "approved" | "rejected") => {
-    const { error } = await supabase.from("products").update({ approval_status: status, approval_notes: notes[id] || null }).eq("id", id);
+    if (sizingEnabled) { const issue = validateSizeChart(sizeChart); if (issue) return toast.error(issue); }
+    const { error } = await supabase.from("products").update({
+      images, payment_options: paymentOptions, sizing_enabled: sizingEnabled, size_chart: JSON.parse(JSON.stringify(sizeChart)),  approval_status: status, approval_notes: notes[id] || null }).eq("id", id);
     if (error) return toast.error("Update failed");
     toast.success(status === "approved" ? "Product is now live" : "Product rejected");
     load();
@@ -113,6 +127,9 @@ const PartnerProducts = () => {
                         <Input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="Stock" />
                         <Input type="number" value={form.base} onChange={(e) => setForm({ ...form, base: e.target.value })} placeholder="Partner base price (₹)" />
                         <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" />
+                         <div className="md:col-span-2"><ProductMediaEditor images={images} onChange={setImages} /></div>
+                         <Select value={paymentOptions} onValueChange={setPaymentOptions}><SelectTrigger aria-label="Payment methods"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="both">Online & COD</SelectItem><SelectItem value="online">Online only</SelectItem><SelectItem value="cod">COD only</SelectItem></SelectContent></Select>
+                         <div className="md:col-span-2"><SizeChartEditor admin enabled={sizingEnabled} chart={sizeChart} categoryId={p.category_id} onChange={(enabled, chart) => { setSizingEnabled(enabled); setSizeChart(chart); }} /></div>
                         <div className="flex gap-2">
                           <Button size="sm" onClick={() => saveEdit(p.id)}>Save</Button>
                           <Button size="sm" variant="outline" onClick={() => setEditing(null)}>Cancel</Button>

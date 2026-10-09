@@ -11,6 +11,7 @@ const Wishlist = () => {
   const { addToCart } = useCart();
 
   const handleMoveToCart = (product: any) => {
+    if (product.sizingEnabled) { window.location.assign(`/product/${product.id}`); return; }
     addToCart(product);
     removeFromWishlist(product.id);
   };

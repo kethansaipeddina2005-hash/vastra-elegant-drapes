@@ -26,6 +26,7 @@ export interface TrackedCartItem {
   name: string;
   price: number;
   quantity: number;
+  selected_size?: string | null;
   image?: string | null;
 }
 

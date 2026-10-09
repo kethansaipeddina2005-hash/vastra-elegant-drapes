@@ -13,8 +13,12 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Package, ShoppingBag, Upload, X } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
+import SizeChartEditor from '@/components/products/SizeChartEditor';
+import { emptySizeChart, parseSizeChart, validateSizeChart } from '@/lib/sizing';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Link } from 'react-router-dom';
 type Product = Tables<"products">;
-type OrderItem = Tables<"order_items"> & { orders?: { order_number: string | null; status: string; created_at: string } | null };
+type OrderItem = Tables<"order_items"> & { orders?: { order_number: string | null; status: string; created_at: string; payment_status: string | null; payment_method: string | null } | null };
 
 const emptyForm = {
   name: "",
@@ -34,7 +38,7 @@ const PartnerDashboard = () => {
   const { partner, isPartner, loading } = usePartner();
   const [products, setProducts] = useState<Product[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [tab, setTab] = useState<"products" | "orders">("products");
+  const [tab, setTab] = useState<"products" | "orders" | "coupons" | "payments">("products");
   const [form, setForm] = useState(emptyForm);
   const [editing, setEditing] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -43,6 +47,14 @@ const PartnerDashboard = () => {
   const [sales, setSales] = useState<any[]>([]);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [categories, setCategories] = useState<Tables<'categories'>[]>([]);
+  const [mappings, setMappings] = useState<Tables<'product_categories'>[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [coupons, setCoupons] = useState<Tables<'coupons'>[]>([]);
+  const [payouts, setPayouts] = useState<Tables<'partner_payouts'>[]>([]);
+  const [couponForm, setCouponForm] = useState({ code: '', percent: '', expiry: '', min: '', public: false });
+  const [sizeChart, setSizeChart] = useState(emptySizeChart);
+  const [sizingEnabled, setSizingEnabled] = useState(false);
   const pct = Number((partner as any)?.commission_percentage ?? 10);
 
   const uploadImages = async (files: FileList | null) => {
@@ -80,7 +92,7 @@ const PartnerDashboard = () => {
     if (!partner) return;
     const [{ data: prods }, { data: items }] = await Promise.all([
       supabase.from("products").select("*").eq("partner_id", partner.id).order("created_at", { ascending: false }),
-      supabase.from("order_items").select("*, orders(order_number, status, created_at)").order("created_at", { ascending: false }),
+      supabase.from("order_items").select("*, orders(order_number, status, created_at, payment_status, payment_method)").order("created_at", { ascending: false }),
     ]);
     setProducts(prods || []);
     const [{ data: pr }, { data: sl }] = await Promise.all([
@@ -89,6 +101,13 @@ const PartnerDashboard = () => {
     ]);
     setPricing(Object.fromEntries((pr || []).map((r: any) => [r.product_id, r])));
     setSales(sl || []);
+    const [cat, maps, offers, paid] = await Promise.all([
+      supabase.from('categories').select('*').eq('is_active', true).order('display_order'),
+      supabase.from('product_categories').select('*'),
+      supabase.from('coupons').select('*').eq('partner_id', partner.id).order('created_at', { ascending: false }),
+      supabase.from('partner_payouts').select('*').eq('partner_id', partner.id).order('paid_at', { ascending: false }),
+    ]);
+    setCategories(cat.data || []); setMappings(maps.data || []); setCoupons(offers.data || []); setPayouts(paid.data || []);
     const myIds = new Set((prods || []).map((p) => p.id));
     setOrderItems(((items as OrderItem[]) || []).filter((i) => myIds.has(i.product_id)));
   };
@@ -97,6 +116,8 @@ const PartnerDashboard = () => {
     e.preventDefault();
     if (!partner) return;
     if (!form.name.trim() || !form.price) return toast.error("Name and price are required");
+    if (!selectedCategories.length) return toast.error('Select a category');
+    if (sizingEnabled) { const issue = validateSizeChart(sizeChart); if (issue) return toast.error(issue); }
     setSaving(true);
     const payload = {
       name: form.name.trim(),
@@ -113,17 +134,26 @@ const PartnerDashboard = () => {
         return all.length ? all : null;
       })(),
       partner_id: partner.id,
+      sizing_enabled: sizingEnabled,
+      size_chart: JSON.parse(JSON.stringify(sizeChart)),
+      category_id: selectedCategories[0],
     };
     const { data: saved, error } = editing
       ? await supabase.from("products").update(payload).eq("id", editing).select("id").single()
       : await supabase.from("products").insert(payload).select("id").single();
     if (!error && saved) {
-      await supabase.rpc("set_partner_base_price", { _product_id: saved.id, _base: parseFloat(form.price) });
+      const { error: priceError } = await supabase.rpc("set_partner_base_price", { _product_id: saved.id, _base: parseFloat(form.price) });
+      if (priceError) { setSaving(false); return toast.error(priceError.message); }
+      const { error: deleteError } = await supabase.from('product_categories').delete().eq('product_id', saved.id);
+      if (deleteError) { setSaving(false); return toast.error(deleteError.message); }
+      const { error: mappingError } = await supabase.from('product_categories').insert(selectedCategories.map(category_id => ({ product_id: saved.id, category_id })));
+      if (mappingError) { setSaving(false); return toast.error(mappingError.message); }
     }
     setSaving(false);
     if (error) return toast.error(error.message?.includes("contact details") ? "Please remove phone numbers or Instagram IDs from the product details" : "Could not save product");
     toast.success("Saved — sent to Vastra for approval");
     setForm(emptyForm);
+    setSelectedCategories([]); setSizingEnabled(false); setSizeChart(emptySizeChart());
     setUploadedImages([]);
     setEditing(null);
     setShowForm(false);
@@ -143,6 +173,8 @@ const PartnerDashboard = () => {
       images: (p.images || []).join(", "),
     });
     setUploadedImages([]);
+    setSelectedCategories(mappings.filter(m => m.product_id === p.id).map(m => m.category_id));
+    setSizingEnabled(p.sizing_enabled); setSizeChart(parseSizeChart(p.size_chart));
     setEditing(p.id);
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -155,6 +187,12 @@ const PartnerDashboard = () => {
     load();
   };
 
+  const submitCoupon = async (e: React.FormEvent) => {
+    e.preventDefault(); if (!partner) return;
+    const { error } = await supabase.from('coupons').insert({ code: couponForm.code.trim().toUpperCase(), discount_percent: Number(couponForm.percent), min_amount: Number(couponForm.min) || 0, expiry_date: new Date(couponForm.expiry).toISOString(), partner_id: partner.id, is_public: couponForm.public, is_active: false, approval_status: 'pending' });
+    if (error) return toast.error(error.message);
+    toast.success('Coupon submitted for approval'); setCouponForm({ code: '', percent: '', expiry: '', min: '', public: false }); load();
+  };
   if (loading || !isPartner || !partner) return null;
 
   const totalSales = sales.length
@@ -187,15 +225,17 @@ const PartnerDashboard = () => {
           </div>
         </div>
 
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           <Button size="sm" variant={tab === "products" ? "default" : "outline"} onClick={() => setTab("products")}>My Products</Button>
           <Button size="sm" variant={tab === "orders" ? "default" : "outline"} onClick={() => setTab("orders")}>Orders ({orderItems.length})</Button>
+          <Button size="sm" variant={tab === 'coupons' ? 'default' : 'outline'} onClick={() => setTab('coupons')}>Coupons</Button>
+          <Button size="sm" variant={tab === 'payments' ? 'default' : 'outline'} onClick={() => setTab('payments')}>Payments</Button>
         </div>
 
         {tab === "products" && (
           <>
             {!showForm ? (
-              <Button onClick={() => { setForm(emptyForm); setEditing(null); setUploadedImages([]); setShowForm(true); }} className="mb-6">
+              <Button onClick={() => { setForm(emptyForm); setSelectedCategories([]); setSizingEnabled(false); setSizeChart(emptySizeChart()); setEditing(null); setUploadedImages([]); setShowForm(true); }} className="mb-6">
                 <Plus className="h-4 w-4 mr-2" /> Add Product
               </Button>
             ) : (
@@ -280,6 +320,8 @@ const PartnerDashboard = () => {
                     </div>
                   </div>
                 </div>
+                <div className="md:col-span-2 space-y-3"><Label>Categories *</Label><div className="grid grid-cols-2 gap-3">{categories.map(c => <label key={c.id} className="flex items-center gap-2 text-sm"><Checkbox checked={selectedCategories.includes(c.id)} onCheckedChange={checked => { setSelectedCategories(prev => checked ? [...prev, c.id] : prev.filter(id => id !== c.id)); if (checked && !editing && ['dresses', 'lehengas', 'footwear'].includes(c.name.toLowerCase())) { setSizingEnabled(true); if (c.name.toLowerCase() === 'footwear') setSizeChart({ unit: 'cm', columns: ['Foot length'], rows: [] }); } }} />{c.name}</label>)}</div></div>
+                <div className="md:col-span-2"><SizeChartEditor enabled={sizingEnabled} chart={sizeChart} disabled={!partner.size_editing_allowed} categoryId={selectedCategories[0]} onChange={(enabled, chart) => { setSizingEnabled(enabled); setSizeChart(chart); }} /></div>
                 <div className="md:col-span-2">
                   <Label>Description</Label>
                   <Textarea rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="mt-1.5" />
@@ -314,6 +356,7 @@ const PartnerDashboard = () => {
                     </div>
                     {(p.stock_quantity ?? 0) === 0 && <Badge variant="destructive">Out of stock</Badge>}
                     <div className="flex gap-2">
+                      <Button size="sm" variant="ghost" asChild><Link to={`/partner/dashboard?chatProduct=${p.id}`}>Product query</Link></Button>
                       <Button size="sm" variant="outline" onClick={() => edit(p)}><Pencil className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => remove(p.id)}><Trash2 className="h-4 w-4" /></Button>
                     </div>
@@ -337,7 +380,7 @@ const PartnerDashboard = () => {
                     <div className="flex-1 min-w-[180px]">
                       <p className="font-semibold">{prod?.name || `Product #${i.product_id}`}</p>
                       <p className="text-sm text-muted-foreground">
-                        {i.orders?.order_number || "Order"} · Qty {i.quantity} · ₹{(Number(i.price) * i.quantity).toLocaleString("en-IN")}
+                        {i.orders?.order_number || "Order"} · Qty {i.quantity}{i.selected_size && ` · Size ${i.selected_size}`} · ₹{(Number(i.price) * i.quantity).toLocaleString("en-IN")}
                       </p>
                       <p className="text-xs text-muted-foreground">{i.orders?.created_at ? new Date(i.orders.created_at).toLocaleDateString() : ""}</p>
                     </div>
@@ -348,6 +391,8 @@ const PartnerDashboard = () => {
             </div>
           )
         )}
+        {tab === 'coupons' && <section className="space-y-6"><form onSubmit={submitCoupon} className="grid sm:grid-cols-2 gap-3 max-w-2xl"><div><Label>Coupon code</Label><Input required value={couponForm.code} onChange={e => setCouponForm({ ...couponForm, code: e.target.value })} /></div><div><Label>Discount %</Label><Input required type="number" min="1" max="90" value={couponForm.percent} onChange={e => setCouponForm({ ...couponForm, percent: e.target.value })} /></div><div><Label>Expiry</Label><Input required type="datetime-local" value={couponForm.expiry} onChange={e => setCouponForm({ ...couponForm, expiry: e.target.value })} /></div><div><Label>Minimum amount (₹)</Label><Input type="number" min="0" value={couponForm.min} onChange={e => setCouponForm({ ...couponForm, min: e.target.value })} /></div><label className="flex items-center gap-2 text-sm"><Checkbox checked={couponForm.public} onCheckedChange={checked => setCouponForm({ ...couponForm, public: !!checked })} />Request public offer</label><Button type="submit">Submit for approval</Button></form>{coupons.map(c => <div key={c.id} className="border-b border-border py-3 flex justify-between gap-3"><div><p className="font-medium">{c.code} · {c.discount_percent}%</p><p className="text-sm text-muted-foreground">Your products only · {c.is_public ? 'Public' : 'Private'}</p></div><Badge variant={c.approval_status === 'approved' ? 'default' : 'secondary'}>{c.approval_status}</Badge></div>)}</section>}
+        {tab === 'payments' && <section className="space-y-6"><div className="grid sm:grid-cols-3 gap-4"><div><p className="text-sm text-muted-foreground">Earnings recorded</p><p className="text-2xl">₹{totalSales.toLocaleString('en-IN')}</p></div><div><p className="text-sm text-muted-foreground">Paid out</p><p className="text-2xl">₹{payouts.reduce((sum, p) => sum + Number(p.amount), 0).toLocaleString('en-IN')}</p></div></div><h2 className="font-playfair text-xl">Order payments</h2>{orderItems.map(i => <div key={i.id} className="border-b border-border py-3 flex flex-wrap justify-between gap-3"><span>{i.orders?.order_number || 'Order'} · {products.find(p => p.id === i.product_id)?.name} {i.selected_size && ` · ${i.selected_size}`}</span><Badge variant="outline">{i.orders?.payment_method || '—'} · {i.orders?.payment_status || 'pending'}</Badge></div>)}<h2 className="font-playfair text-xl">Payout history</h2>{payouts.length ? payouts.map(p => <div key={p.id} className="border-b border-border py-3 flex justify-between gap-3"><span>{new Date(p.paid_at).toLocaleDateString()} · {p.reference || 'Payout'}</span><span>₹{Number(p.amount).toLocaleString('en-IN')}</span></div>) : <p className="text-muted-foreground">No payouts recorded.</p>}</section>}
       </div>
     </Layout>
   );

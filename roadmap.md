@@ -6,3 +6,8 @@
 - [x] Partner logo on product pages + partner storefront
 - [x] Admin approval of partner products before they go live
 - [ ] Remaining sections of the marketplace brief (discount funding, settlements, etc.)
+- [ ] Finish partner categories, coupons/approval, product-linked chat, payments, admin photos/payment methods, homepage categories
+- [ ] Product sizing: charts, variants and size inventory with backend isolation
+- [ ] Admin templates, partner size-edit restrictions, and chart overrides
+- [ ] Customer size selection across cart, checkout and order views
+- [ ] Verify admin/partner isolation and sized checkout end-to-end

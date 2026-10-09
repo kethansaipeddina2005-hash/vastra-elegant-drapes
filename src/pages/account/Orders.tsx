@@ -11,6 +11,7 @@ import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 interface OrderItem {
+  selected_size?: string | null;
   id: string;
   product_id: number;
   quantity: number;
@@ -228,6 +229,7 @@ const Orders = () => {
                       </>
                     )}
 
+                    <div className="space-y-2">{order.order_items.map(item => <div key={item.id} className="flex justify-between gap-3 text-sm"><span>{products[item.product_id]?.name || `Product #${item.product_id}`}{item.selected_size && ` · Size ${item.selected_size}`} × {item.quantity}</span><span>₹{(item.price * item.quantity).toLocaleString('en-IN')}</span></div>)}</div>
                     {/* Return Option */}
                     {returnInfo && order.status === 'delivered' && (
                       <>
