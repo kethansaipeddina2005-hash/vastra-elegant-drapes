@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import * as LucideIcons from 'lucide-react';
-import { Loading } from './ui/loading';
+import { Skeleton } from './ui/skeleton';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import SmartImage from './SmartImage';
@@ -16,6 +16,8 @@ interface Category {
   image_url: string | null;
   is_featured: boolean | null;
   featured_label: string | null;
+  is_master?: boolean;
+  slug?: string | null;
 }
 
 export const CategorySection = () => {
@@ -32,7 +34,6 @@ export const CategorySection = () => {
         .from('categories')
         .select('*')
         .eq('is_active', true)
-        .eq('is_master', false)
         .order('display_order', { ascending: true });
 
       if (error) throw error;
@@ -41,7 +42,10 @@ export const CategorySection = () => {
         if (!a.is_featured && b.is_featured) return 1;
         return 0;
       });
-      setCategories(sorted);
+      const { data: mappings } = await supabase.from('product_categories').select('category_id, products(images, approval_status)').limit(1000);
+      const imageByCategory = new Map<string, string>();
+      (mappings || []).forEach((m: any) => { if (m.products?.approval_status === 'approved' && m.products?.images?.[0]) imageByCategory.set(m.category_id, m.products.images[0]); });
+      setCategories(sorted.map(c => ({ ...c, image_url: c.image_url || imageByCategory.get(c.id) || (data || []).filter(child => child.parent_id === c.id).map(child => child.image_url || imageByCategory.get(child.id)).find(Boolean) || null })));
     } catch (error) {
       console.error('Error fetching categories:', error);
     } finally {
@@ -57,8 +61,8 @@ export const CategorySection = () => {
   if (loading) {
     return (
       <section className="py-16 px-4">
-        <div className="container mx-auto flex justify-center">
-          <Loading />
+        <div className="container mx-auto grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[1,2,3,4].map(i => <Skeleton key={i} className="aspect-[3/4] rounded-lg" />)}
         </div>
       </section>
     );
@@ -67,8 +71,8 @@ export const CategorySection = () => {
   if (categories.length === 0) return null;
 
   return (
-    <section className="py-8 md:py-12 px-3 md:px-4 bg-gradient-to-b from-background to-secondary/20">
-      <div className="container mx-auto px-2">
+    <section className="py-8 md:py-12 bg-background">
+      <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-6 md:mb-8 space-y-1.5">
           <span className="inline-block text-[10px] tracking-[0.2em] uppercase text-primary font-medium">
@@ -85,12 +89,12 @@ export const CategorySection = () => {
           {categories.map((category, index) => (
             <Link
               key={category.id}
-              to={`/collections?category=${encodeURIComponent(category.name)}`}
+              to={category.is_master && category.slug ? `/${category.slug}` : `/collections?category=${encodeURIComponent(category.name)}`}
               className={cn(
-                "group relative overflow-hidden rounded-xl",
+                "group relative overflow-hidden rounded-lg",
                 // First two items span larger on larger screens
-                index === 0 && "md:col-span-2 md:row-span-2",
-                index === 0 ? "aspect-[3/4] md:aspect-auto" : "aspect-[3/4]"
+                index === 0 && categories.length > 3 && "md:col-span-2 md:row-span-2",
+                index === 0 && categories.length > 3 ? "aspect-[3/4] md:aspect-auto" : "aspect-[3/4]"
               )}
             >
               {/* Image or Fallback */}
@@ -125,19 +129,19 @@ export const CategorySection = () => {
                     </span>
                   )}
                   <h3 className={cn(
-                    "font-playfair font-semibold text-white drop-shadow-lg",
+                    "font-playfair font-semibold text-primary-foreground drop-shadow-lg",
                     index === 0 ? "text-base md:text-2xl" : "text-xs md:text-sm"
                   )}>
                     {category.name}
                   </h3>
                   {category.description && index === 0 && (
-                    <p className="text-white/70 text-[10px] md:text-xs line-clamp-2 max-w-xs">
+                    <p className="text-primary-foreground/70 text-[10px] md:text-xs line-clamp-2 max-w-xs">
                       {category.description}
                     </p>
                   )}
                 </div>
-                <div className="flex-shrink-0 h-7 w-7 md:h-8 md:w-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-white/40 transition-all duration-300 group-hover:translate-x-1">
-                  <ArrowRight className="h-3 w-3 md:h-4 md:w-4 text-white" />
+                <div className="flex-shrink-0 h-7 w-7 md:h-8 md:w-8 rounded-full bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-primary-foreground/40 transition-all duration-300 group-hover:translate-x-1">
+                  <ArrowRight className="h-3 w-3 md:h-4 md:w-4 text-primary-foreground" />
                 </div>
               </div>
 

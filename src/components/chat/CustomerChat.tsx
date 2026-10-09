@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import ChatImage from './ChatImage';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useLocation } from 'react-router-dom';
 
 interface Message {
   id: string;
@@ -45,6 +47,17 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
   const { user } = useAuth();
   const { partner, isPartner } = usePartner();
   const { toast } = useToast();
+  const location = useLocation();
+  const [partnerProducts, setPartnerProducts] = useState<Array<{id: number; name: string}>>([]);
+  const [queryProduct, setQueryProduct] = useState<number | null>(productId || null);
+  useEffect(() => {
+    if (!partner) return;
+    supabase.from('products').select('id,name').eq('partner_id', partner.id).then(({ data }) => {
+      setPartnerProducts(data || []);
+      const requested = Number(new URLSearchParams(location.search).get('chatProduct'));
+      if (data?.some(p => p.id === requested)) { setQueryProduct(requested); setIsOpen(true); }
+    });
+  }, [partner?.id, location.search]);
 
   // Listen for new admin messages even when chat is closed
   useEffect(() => {
@@ -57,6 +70,8 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
         .select('id')
         .eq('customer_id', user.id)
         .eq('status', 'open')
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (!existingConv) return;
@@ -104,11 +119,11 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
   }, [user]);
 
   useEffect(() => {
-    if (isOpen && user) {
+    if (isOpen && user && (!isPartner || queryProduct)) {
       loadOrCreateConversation();
       setUnreadCount(0);
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, isPartner, queryProduct]);
 
   useEffect(() => {
     if (!conversation) return;
@@ -167,16 +182,18 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
   };
 
   const loadOrCreateConversation = async () => {
-    if (!user) return;
+    if (!user || (isPartner && !queryProduct)) return;
     setLoading(true);
 
     try {
-      const { data: existingConv } = await supabase
+      let existingQuery = supabase
         .from('conversations')
         .select('*')
         .eq('customer_id', user.id)
         .eq('status', 'open')
-        .maybeSingle();
+        .order('created_at', { ascending: false }).limit(1);
+      if (isPartner && queryProduct) existingQuery = existingQuery.eq('product_id', queryProduct);
+      const { data: existingConv } = await existingQuery.maybeSingle();
 
       if (existingConv) {
         setConversation(existingConv);
@@ -189,7 +206,7 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
             customer_id: user.id,
             customer_name: user.user_metadata?.full_name || user.email,
             customer_email: user.email,
-            product_id: productId || null,
+            product_id: isPartner ? queryProduct : productId || null,
             subject: isPartner && partner
               ? `Partner: ${partner.brand_name} — product query`
               : productName ? `Customization for ${productName}` : 'Saree Customization',
@@ -379,7 +396,7 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border bg-primary px-4 py-3 rounded-t-lg">
             <div>
-              <h3 className="font-semibold text-primary-foreground">Customize Your Saree</h3>
+              <h3 className="font-semibold text-primary-foreground">{isPartner ? "Partner product query" : "Customize Your Saree"}</h3>
               <p className="text-xs text-primary-foreground/80">Chat with our team</p>
             </div>
             <Button
@@ -392,11 +409,12 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
             </Button>
           </div>
 
+          {isPartner && <div className="p-3 border-b border-border"><Select value={queryProduct ? String(queryProduct) : ''} onValueChange={value => { setQueryProduct(Number(value)); setConversation(null); setMessages([]); }}><SelectTrigger aria-label="Product for query"><SelectValue placeholder="Select your product" /></SelectTrigger><SelectContent>{partnerProducts.map(p => <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>)}</SelectContent></Select></div>}
           {/* Messages */}
           <ScrollArea className="h-[350px] p-4" ref={scrollRef}>
             {loading ? (
               <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <div className="h-20 w-full bg-muted animate-pulse rounded" />
               </div>
             ) : messages.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
