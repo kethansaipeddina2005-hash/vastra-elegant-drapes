@@ -107,7 +107,11 @@ const PartnerDashboard = () => {
       color: form.color.trim() || null,
       occasion: form.occasion.trim() || null,
       region: form.region.trim() || null,
-      images: form.images.trim() ? form.images.split(",").map((s) => s.trim()).filter(Boolean) : null,
+      images: (() => {
+        const urlImages = form.images.trim() ? form.images.split(",").map((s) => s.trim()).filter(Boolean) : [];
+        const all = [...uploadedImages, ...urlImages];
+        return all.length ? all : null;
+      })(),
       partner_id: partner.id,
     };
     const { data: saved, error } = editing
@@ -120,6 +124,7 @@ const PartnerDashboard = () => {
     if (error) return toast.error(error.message?.includes("contact details") ? "Please remove phone numbers or Instagram IDs from the product details" : "Could not save product");
     toast.success("Saved — sent to Vastra for approval");
     setForm(emptyForm);
+    setUploadedImages([]);
     setEditing(null);
     setShowForm(false);
     load();
@@ -137,6 +142,7 @@ const PartnerDashboard = () => {
       region: p.region || "",
       images: (p.images || []).join(", "),
     });
+    setUploadedImages([]);
     setEditing(p.id);
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -189,7 +195,7 @@ const PartnerDashboard = () => {
         {tab === "products" && (
           <>
             {!showForm ? (
-              <Button onClick={() => { setForm(emptyForm); setEditing(null); setShowForm(true); }} className="mb-6">
+              <Button onClick={() => { setForm(emptyForm); setEditing(null); setUploadedImages([]); setShowForm(true); }} className="mb-6">
                 <Plus className="h-4 w-4 mr-2" /> Add Product
               </Button>
             ) : (
@@ -230,9 +236,49 @@ const PartnerDashboard = () => {
                   <Label>Region</Label>
                   <Input value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} className="mt-1.5" placeholder="Banarasi, Kanjivaram…" />
                 </div>
-                <div>
-                  <Label>Image URLs (comma separated)</Label>
-                  <Input value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} className="mt-1.5" placeholder="https://…, https://…" />
+                <div className="md:col-span-2">
+                  <Label>Product Images</Label>
+                  <div className="mt-1.5 space-y-3">
+                    <label
+                      className="flex items-center justify-center gap-2 border border-dashed border-border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition text-sm text-muted-foreground"
+                      onTouchStart={(e) => e.stopPropagation()}
+                    >
+                      <Upload className="h-4 w-4" />
+                      {uploading ? "Uploading…" : "Upload from your device (multiple allowed, max 10 MB each)"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        disabled={uploading}
+                        onChange={(e) => {
+                          uploadImages(e.target.files);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                    {uploadedImages.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {uploadedImages.map((url) => (
+                          <div key={url} className="relative group">
+                            <img src={url} alt="Uploaded" className="w-16 h-16 object-cover rounded border border-border" />
+                            <button
+                              type="button"
+                              aria-label="Remove image"
+                              onClick={() => setUploadedImages((prev) => prev.filter((u) => u !== url))}
+                              className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Or paste image URLs (comma separated)</Label>
+                      <Input value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} className="mt-1" placeholder="https://…, https://…" />
+                    </div>
+                  </div>
                 </div>
                 <div className="md:col-span-2">
                   <Label>Description</Label>
@@ -240,7 +286,7 @@ const PartnerDashboard = () => {
                 </div>
                 <div className="md:col-span-2 flex gap-2">
                   <Button type="submit" disabled={saving}>{saving ? "Saving…" : editing ? "Save Changes" : "Add Product"}</Button>
-                  <Button type="button" variant="outline" onClick={() => { setShowForm(false); setEditing(null); }}>Cancel</Button>
+                  <Button type="button" variant="outline" onClick={() => { setShowForm(false); setEditing(null); setUploadedImages([]); }}>Cancel</Button>
                 </div>
               </form>
             )}
