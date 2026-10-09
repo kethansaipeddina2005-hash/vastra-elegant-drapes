@@ -85,6 +85,13 @@
       "when": 1791440126279,
       "tag": "0011_partner_contact_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791518008890,
+      "tag": "0012_partner_product_image_uploads",
+      "breakpoints": true
     }
   ]
 }
