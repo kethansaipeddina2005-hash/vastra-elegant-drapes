@@ -24,6 +24,7 @@ import SEO from "@/components/SEO";
 import { toast } from "@/hooks/use-toast";
 
 interface OrderItem {
+  selected_size?: string | null;
   id: string;
   product_id: number;
   name: string;
@@ -111,42 +112,8 @@ const ThankYou = () => {
       try {
         const guestToken = localStorage.getItem(GUEST_TOKEN_KEY);
 
-        // Use edge function or direct query based on auth
-        let query = supabase
-          .from("orders")
-          .select(`
-            id,
-            order_number,
-            status,
-            payment_status,
-            payment_method,
-            total_amount,
-            final_amount,
-            discount_percent,
-            coupon_code,
-            created_at,
-            customer_name,
-            customer_email,
-            customer_phone,
-            shipping_address_id,
-            order_items(
-              id,
-              product_id,
-              quantity,
-              price,
-              products(name, image)
-            )
-          `)
-          .eq("id", orderId);
-
-
-        if (!user) {
-          query = query.eq("guest_token", guestToken);
-        } else {
-          query = query.eq("user_id", user.id);
-        }
-
-        const { data, error } = await query.maybeSingle();
+        const { data: receipt, error } = await supabase.rpc("get_order_receipt", { _order_id: orderId, _guest_token: user ? null : guestToken });
+        const data = receipt as any;
 
         if (error) throw error;
         if (!data) {
@@ -158,14 +125,15 @@ const ThankYou = () => {
         const items: OrderItem[] = rawItems.map((oi: any) => ({
           id: oi.id,
           product_id: oi.product_id,
+          selected_size: oi.selected_size,
           name: oi.products?.name || `Product ${oi.product_id}`,
           quantity: oi.quantity,
           price: Number(oi.price) || 0,
-          image: oi.products?.image || "/placeholder.svg",
+          image: oi.products?.images?.[0] || "/placeholder.svg",
         }));
 
         // Fetch shipping address from saved addresses if available
-        let shippingAddress = location.state?.shippingAddress || "";
+        let shippingAddress = data.shipping_address_text || location.state?.shippingAddress || "";
         const shippingAddressId = (data as any).shipping_address_id;
         if (!shippingAddress && shippingAddressId) {
           try {
@@ -365,7 +333,7 @@ const ThankYou = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-[#2c1810] line-clamp-2">{item.name}</p>
-                            <p className="text-sm text-[#5a4a3a]">Qty: {item.quantity}</p>
+                            <p className="text-sm text-[#5a4a3a]">Qty: {item.quantity}{item.selected_size && ` · Size ${item.selected_size}`}</p>
                             <p className="font-semibold text-[#2c1810]">{formatPrice(item.price * item.quantity)}</p>
                           </div>
                         </div>

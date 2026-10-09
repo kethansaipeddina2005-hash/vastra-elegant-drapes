@@ -29,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { parseSizeChart, sizeStock } from '@/lib/sizing';
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(0);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const { addToCart } = useCart();
   const { formatPrice } = usePricing();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -49,6 +51,8 @@ const ProductDetail = () => {
   const fetchProduct = async () => {
     try {
       setLoading(true);
+      setSelectedSize(null);
+      setQuantity(0);
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -82,6 +86,8 @@ const ProductDetail = () => {
         occasion: data.occasion || '',
         region: data.region || '',
         stockQuantity: data.stock_quantity || 0,
+        sizingEnabled: data.sizing_enabled,
+        sizeChart: parseSizeChart(data.size_chart),
         showLowStockBadge: (data as any).show_low_stock_badge !== false,
         isNew: data.is_new || false,
         rating: Number(data.rating) || 0,
@@ -177,10 +183,15 @@ const ProductDetail = () => {
   }
 
   const inWishlist = isInWishlist(product.id);
+  const chart = parseSizeChart(product.sizeChart);
+  const availableStock = product.sizingEnabled ? sizeStock(chart, selectedSize) : product.stockQuantity;
 
   const handleAddToCart = (qty?: number) => {
     const addQty = qty || quantity || 1;
-    addToCart(product, addQty);
+    if (product.sizingEnabled && !selectedSize) { toast({ title: 'Select a size', description: 'Choose an available size first.', variant: 'destructive' }); return false; }
+    if (availableStock < addQty) { toast({ title: 'Stock limit', description: 'Choose a quantity within available stock.', variant: 'destructive' }); return false; }
+    addToCart(product, addQty, selectedSize);
+    return true;
   };
 
   const handleWishlist = () => {
@@ -377,6 +388,11 @@ const ProductDetail = () => {
               </div>
             </div>
 
+            {product.sizingEnabled && <section className="space-y-3">
+              <p className="text-sm font-medium">Size{selectedSize ? `: ${selectedSize}` : ''}</p>
+              <div className="flex flex-wrap gap-2">{chart.rows.map(row => <Button key={row.size} size="sm" variant={selectedSize === row.size ? 'default' : 'outline'} disabled={row.stock <= 0} aria-label={`Size ${row.size}${row.stock <= 0 ? ' out of stock' : ''}`} onClick={() => { setSelectedSize(row.size); setQuantity(0); }}>{row.size}</Button>)}</div>
+              <details className="text-sm"><summary className="cursor-pointer text-muted-foreground">Size chart ({chart.unit})</summary><div className="overflow-x-auto mt-3"><table className="w-full text-left"><thead><tr><th className="p-2">Size</th>{chart.columns.map(c => <th key={c} className="p-2 whitespace-nowrap">{c}</th>)}</tr></thead><tbody>{chart.rows.map(row => <tr key={row.size} className="border-t border-border"><td className="p-2">{row.size}</td>{chart.columns.map(c => <td key={c} className="p-2">{row.measurements[c] || '—'}</td>)}</tr>)}</tbody></table></div></details>
+            </section>}
             {/* Quantity Selector - Compact */}
             <div className="flex items-center gap-3">
               <span className="text-xs font-medium text-muted-foreground">Qty:</span>
@@ -396,13 +412,13 @@ const ProductDetail = () => {
                   size="sm"
                   onClick={() => {
                     const newQty = quantity + 1;
-                    if (newQty <= product.stockQuantity) {
+                    if (newQty <= availableStock) {
                       setQuantity(newQty);
-                      addToCart(product, 1);
+                      addToCart(product, 1, selectedSize);
                     }
                   }}
                   className="h-8 w-8 p-0 rounded-none hover:bg-muted"
-                  disabled={quantity >= product.stockQuantity}
+                  disabled={quantity >= availableStock}
                 >
                   <Plus className="h-3 w-3" />
                 </Button>
@@ -424,8 +440,7 @@ const ProductDetail = () => {
                 size="sm"
                 className="w-full h-9 text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
                 onClick={() => {
-                  handleAddToCart();
-                  navigate('/checkout');
+                  if (handleAddToCart()) navigate('/checkout');
                 }}
               >
                 <ShoppingCart className="mr-1.5 h-4 w-4" />

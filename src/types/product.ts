@@ -1,4 +1,8 @@
+import type { SizeChart } from '@/lib/sizing';
 export interface Product {
+  sizingEnabled?: boolean;
+  sizeChart?: SizeChart;
+  selectedSize?: string | null;
   id: number;
   name: string;
   price: number;

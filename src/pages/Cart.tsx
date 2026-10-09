@@ -44,7 +44,7 @@ const Cart = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<Product | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<(Product & { selectedSize?: string | null }) | null>(null);
   const [offers, setOffers] = useState<
     Array<{ code: string; discount_percent: number; min_amount: number; expiry_date: string }>
   >([]);
@@ -65,7 +65,7 @@ const Cart = () => {
       if (!isInWishlist(itemToDelete.id)) {
         addToWishlist(itemToDelete);
       }
-      removeFromCart(itemToDelete.id);
+      removeFromCart(itemToDelete.id, itemToDelete.selectedSize);
       setDeleteDialogOpen(false);
       setItemToDelete(null);
     }
@@ -73,7 +73,7 @@ const Cart = () => {
 
   const handleDelete = () => {
     if (itemToDelete) {
-      removeFromCart(itemToDelete.id);
+      removeFromCart(itemToDelete.id, itemToDelete.selectedSize);
       setDeleteDialogOpen(false);
       setItemToDelete(null);
     }
@@ -199,7 +199,7 @@ const Cart = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
             {cart.map(item => (
-              <Card key={item.id}>
+              <Card key={`${item.id}-${item.selectedSize || ""}`}>
                 <CardContent className="p-3 sm:p-6">
                   <div className="flex gap-3 sm:gap-6">
                     <img
@@ -217,15 +217,15 @@ const Cart = () => {
                         <p className="font-semibold text-sm sm:text-lg whitespace-nowrap flex-shrink-0">{formatPrice(item.price * item.quantity, item.foreignPrice ? item.foreignPrice * item.quantity : null)}</p>
                       </div>
                       <p className="text-xs sm:text-sm text-muted-foreground mb-3">
-                        {item.fabricType} • {item.color}
+                        {item.fabricType} • {item.color}{item.selectedSize && ` • Size ${item.selectedSize}`}
                       </p>
                       <div className="flex items-center gap-3">
                         <div className="flex items-center border rounded">
-                          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-9 sm:w-9" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-9 sm:w-9" onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSize)}>
                             <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                           <span className="px-2 sm:px-4 text-xs sm:text-sm font-medium">{item.quantity}</span>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-9 sm:w-9" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-9 sm:w-9" onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSize)}>
                             <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                         </div>

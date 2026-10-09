@@ -305,6 +305,9 @@ const Checkout = () => {
       return;
     }
 
+    if ((!allowOnline && paymentMethod === 'razorpay') || (!allowCod && paymentMethod === 'cod')) {
+      toast({ title: 'Payment unavailable', description: 'These products do not share a payment method. Place separate orders.', variant: 'destructive' }); return;
+    }
     setIsProcessing(true);
 
     if (!paymentInfoTracked.current) {
@@ -315,21 +318,23 @@ const Checkout = () => {
     try {
       // Live stock re-validation to prevent oversells
       const ids = cart.map((i) => i.id);
-      if (ids.length > 0) {
+      if (ids.length > 0 && !draftOrderRef.current) {
         const { data: liveStock, error: stockErr } = await supabase
           .from("products")
-          .select("id, name, stock_quantity")
+          .select("id, name, stock_quantity, sizing_enabled, size_chart")
           .in("id", ids);
         if (stockErr) throw stockErr;
         const stockMap = new Map((liveStock ?? []).map((p: any) => [p.id, p]));
         const issues: string[] = [];
         for (const item of cart) {
           const p: any = stockMap.get(item.id);
-          const available = Math.max(0, p?.stock_quantity ?? 0);
+          const rows = p?.size_chart?.rows || [];
+          if (p?.sizing_enabled && !item.selectedSize) throw new Error(`Please select a size for ${item.name}`);
+          const available = Math.max(0, p?.sizing_enabled ? rows.find((row: any) => row.size === item.selectedSize)?.stock ?? 0 : p?.stock_quantity ?? 0);
           if (available < item.quantity) {
             issues.push(`${p?.name ?? item.name}: only ${available} left`);
-            if (available <= 0) removeFromCart(item.id);
-            else updateQuantity(item.id, available);
+            if (available <= 0) removeFromCart(item.id, item.selectedSize);
+            else updateQuantity(item.id, available, item.selectedSize);
           }
         }
         if (issues.length > 0) {
@@ -366,7 +371,7 @@ const Checkout = () => {
           _customer_phone: shippingData.phone.trim(),
           _shipping_address: shippingAddressString,
           _payment_method: paymentMethod,
-          _items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity })),
+          _items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity, selected_size: item.selectedSize ?? null })),
           _coupon_code: promoCode || null,
           _discount_percent: discountPercent,
           _total_amount: cartTotal,
@@ -414,12 +419,13 @@ const Checkout = () => {
 
 
       if (paymentMethod === "razorpay") {
-        await handleRazorpayPayment(orderId!, guestToken);
+        if (!orderId) throw new Error("Order could not be created");
+        await handleRazorpayPayment(orderId, guestToken);
       } else {
         const { error: finalizeErr } = await supabase.functions.invoke("finalize-cod-order", {
           body: {
             order_id: orderId,
-            items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity })),
+            items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity, selected_size: item.selectedSize ?? null })),
             shipping,
             coupon_code: promoCode || null,
             pricing_region: pricingRegion,
@@ -467,7 +473,7 @@ const Checkout = () => {
           currency: "INR",
           receipt: orderId,
           notes: { order_id: orderId, user_id: user?.id ?? "guest" },
-          items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity })),
+          items: cart.map((item) => ({ product_id: item.id, quantity: item.quantity, selected_size: item.selectedSize ?? null })),
           shipping,
           coupon_code: promoCode || null,
           pricing_region: pricingRegion,
@@ -700,7 +706,7 @@ const Checkout = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <div className="flex items-center space-x-2 border rounded-lg p-4 bg-card hover:bg-accent/5 transition-colors">
+                    {allowOnline && <div className="flex items-center space-x-2 border rounded-lg p-4 bg-card hover:bg-accent/5 transition-colors">
                       <RadioGroupItem value="razorpay" id="razorpay" />
                       <Label htmlFor="razorpay" className="flex-1 cursor-pointer">
                         <div className="font-medium">Pay Online</div>
@@ -708,15 +714,16 @@ const Checkout = () => {
                           Credit/Debit Card, Netbanking, Wallets
                         </div>
                       </Label>
-                    </div>
-                    <div className="flex items-center space-x-2 border rounded-lg p-4 bg-card hover:bg-accent/5 transition-colors">
+                    </div>}
+                    {allowCod && <div className="flex items-center space-x-2 border rounded-lg p-4 bg-card hover:bg-accent/5 transition-colors">
                       <RadioGroupItem value="cod" id="cod" />
                       <Label htmlFor="cod" className="flex-1 cursor-pointer">
                         <div className="font-medium">Cash on Delivery</div>
                         <div className="text-xs text-muted-foreground mt-1">Pay when you receive</div>
                       </Label>
-                    </div>
+                    </div>}
                   </RadioGroup>
+                  {!allowOnline && !allowCod && <p className="text-destructive text-sm">These products require separate orders because their payment methods differ.</p>}
 
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <ShieldCheck className="h-4 w-4 text-primary" />
@@ -735,9 +742,9 @@ const Checkout = () => {
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
                     {cart.map((item) => (
-                      <div key={item.id} className="flex justify-between text-sm gap-3">
+                      <div key={`${item.id}-${item.selectedSize || ""}`} className="flex justify-between text-sm gap-3">
                         <span className="text-muted-foreground line-clamp-2">
-                          {item.name} × {item.quantity}
+                          {item.name}{item.selectedSize && ` (${item.selectedSize})`} × {item.quantity}
                         </span>
                         <span className="whitespace-nowrap">
                           ₹{(item.price * item.quantity).toLocaleString()}

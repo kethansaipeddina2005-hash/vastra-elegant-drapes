@@ -56,6 +56,7 @@ interface Order {
 }
 
 interface OrderItemRow {
+  selected_size: string | null;
   id: string;
   quantity: number;
   price: number;
@@ -146,7 +147,7 @@ const AdminOrders = () => {
       const { data, error } = await supabase
         .from('order_items')
         .select(
-          'id, quantity, price, product_id, products ( id, name, product_code, images, color, fabric_type, occasion, region, discount_percentage )'
+          'id, quantity, price, product_id, selected_size, products ( id, name, product_code, images, color, fabric_type, occasion, region, discount_percentage )'
         )
         .eq('order_id', order.id);
       if (error) throw error;
@@ -727,6 +728,7 @@ const AdminOrders = () => {
                             <p className="font-medium truncate">{item.products?.name || `Product #${item.product_id}`}</p>
                             <p className="text-xs text-muted-foreground font-mono">
                               Code: {item.products?.product_code || `#${item.product_id}`}
+                              {item.selected_size && ` · Size ${item.selected_size}`}
                             </p>
                           </div>
                           <div className="text-right shrink-0">
