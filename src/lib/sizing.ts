@@ -8,6 +8,8 @@ export function parseSizeChart(value: unknown): SizeChart {
 }
 export const sizeStock = (chart: SizeChart, size?: string | null) => chart.rows.find(row => row.size === size)?.stock ?? 0;
 export function validateSizeChart(chart: SizeChart): string | null {
+  const columns = chart.columns.map(column => column.trim().toLowerCase());
+  if (columns.some(column => !column) || new Set(columns).size !== columns.length) return 'Each measurement needs a unique, non-empty name';
   if (!chart.rows.length) return 'Add at least one size';
   const labels = chart.rows.map(row => row.size.trim().toLowerCase());
   if (labels.some(label => !label) || new Set(labels).size !== labels.length) return 'Each size needs a unique name';
