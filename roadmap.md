@@ -1,5 +1,6 @@
 # Marketplace (unified Vastra Luxe fashion platform)
-- [ ] Complete and verify admin-controlled payment options for every product
+- [x] Complete admin-controlled payment options for every product
+- [ ] Verify saved payment options through admin and checkout — requesting account has no admin role
 - [x] Partner applications + admin review
 - [x] Partner portal (after approval)
 - [x] Per-sale % commission (hidden from customers; partner + admin views)

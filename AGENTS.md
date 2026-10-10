@@ -4,3 +4,4 @@
 - Cart lines are keyed by product ID plus selected size, and orders store size and measurement snapshots so subsequent chart changes do not alter purchased selections.
 - Reserve and restore size inventory inside locked database triggers with transaction-scoped internal updates, preserving partner approval status during inventory changes.
 - Retrieve customer receipts and partner payment summaries through ownership-checked functions rather than widening access to private order records.
+- Product payment methods are admin-controlled database fields; checkout intersects live product permissions and database triggers reject incompatible order methods to prevent client-side bypasses.
