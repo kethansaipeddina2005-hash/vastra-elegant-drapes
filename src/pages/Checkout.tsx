@@ -79,20 +79,31 @@ const Checkout = () => {
   const [isInternational, setIsInternational] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   // Admin can limit each product to online, COD, or both; checkout offers only what every item allows.
-  const [allowOnline, setAllowOnline] = useState(true);
-  const [allowCod, setAllowCod] = useState(true);
+  const [allowOnline, setAllowOnline] = useState(false);
+  const [allowCod, setAllowCod] = useState(false);
+  const [paymentOptionsLoading, setPaymentOptionsLoading] = useState(true);
+  const [paymentOptionsError, setPaymentOptionsError] = useState(false);
   const cartIdsKey = cart.map((i) => i.id).join(",");
   useEffect(() => {
-    const ids = cart.map((i) => Number(i.id));
-    if (!ids.length) return;
-    supabase.from("products").select("payment_options").in("id", ids).then(({ data }) => {
-      const opts = (data || []).map((p: any) => p.payment_options || "both");
+    let cancelled = false;
+    const ids = [...new Set(cart.map((i) => Number(i.id)))];
+    setPaymentOptionsLoading(true);
+    setPaymentOptionsError(false);
+    setAllowOnline(false);
+    setAllowCod(false);
+    if (!ids.length) { setPaymentOptionsLoading(false); return; }
+    supabase.from("products").select("id, payment_options").in("id", ids).then(({ data, error }) => {
+      if (cancelled) return;
+      setPaymentOptionsLoading(false);
+      if (error || !data || data.length !== ids.length) { setPaymentOptionsError(true); return; }
+      const opts = data.map(p => p.payment_options);
       const on = !opts.includes("cod");
       const cod = !opts.includes("online");
       setAllowOnline(on);
       setAllowCod(cod);
       setPaymentMethod((m) => (m === "cod" && !cod ? "razorpay" : m !== "cod" && !on ? "cod" : m));
     });
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartIdsKey]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -298,6 +309,10 @@ const Checkout = () => {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isProcessing) return;
+    if (paymentOptionsLoading || paymentOptionsError) {
+      toast({ title: 'Payment options unavailable', description: 'Please refresh checkout and try again.', variant: 'destructive' });
+      return;
+    }
 
     const validationError = validateDetails();
     if (validationError) {
@@ -723,7 +738,7 @@ const Checkout = () => {
                       </Label>
                     </div>}
                   </RadioGroup>
-                  {!allowOnline && !allowCod && <p className="text-destructive text-sm">These products require separate orders because their payment methods differ.</p>}
+                  {paymentOptionsLoading ? <div className="h-20 animate-pulse rounded-md bg-muted" aria-label="Loading payment options" /> : paymentOptionsError ? <p className="text-destructive text-sm">Payment options could not be loaded. Please refresh checkout.</p> : !allowOnline && !allowCod && <p className="text-destructive text-sm">These products require separate orders because their payment methods differ.</p>}
 
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <ShieldCheck className="h-4 w-4 text-primary" />
@@ -801,7 +816,7 @@ const Checkout = () => {
                     <span>₹{total.toLocaleString()}</span>
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full" disabled={isProcessing}>
+                  <Button type="submit" size="lg" className="w-full" disabled={isProcessing || paymentOptionsLoading || paymentOptionsError || (!allowOnline && !allowCod)}>
                     {isProcessing ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
