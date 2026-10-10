@@ -76,9 +76,8 @@ const PartnerProducts = () => {
   };
 
   const decide = async (id: number, status: "approved" | "rejected") => {
-    if (sizingEnabled) { const issue = validateSizeChart(sizeChart); if (issue) return toast.error(issue); }
     const { error } = await supabase.from("products").update({
-      images, payment_options: paymentOptions, sizing_enabled: sizingEnabled, size_chart: JSON.parse(JSON.stringify(sizeChart)),  approval_status: status, approval_notes: notes[id] || null }).eq("id", id);
+      approval_status: status, approval_notes: notes[id] ?? items.find(p => p.id === id)?.approval_notes ?? null }).eq("id", id);
     if (error) return toast.error("Update failed");
     toast.success(status === "approved" ? "Product is now live" : "Product rejected");
     load();
@@ -115,6 +114,7 @@ const PartnerProducts = () => {
                       <Badge variant={p.approval_status === "approved" ? "default" : p.approval_status === "rejected" ? "destructive" : "secondary"}>{p.approval_status}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">{p.partner_applications?.brand_name} · Stock {p.stock_quantity ?? 0}{p.fabric_type ? ` · ${p.fabric_type}` : ""}</p>
+                    <p className="text-sm text-muted-foreground">{p.payment_options === 'online' ? 'Online only (Razorpay)' : p.payment_options === 'cod' ? 'Cash on Delivery only' : 'Online & Cash on Delivery'}</p>
                     <p className="text-sm">
                       {pr
                         ? `Base ${inr(pr.partner_base_price)} + ${pr.commission_percentage}% (${inr(pr.commission_amount)}) = Customer ${inr(pr.customer_final_price)}`

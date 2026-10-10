@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -77,6 +78,17 @@ const AdminProducts = () => {
   const [sizeChart, setSizeChart] = useState(emptySizeChart);
   const [sizingEnabled, setSizingEnabled] = useState(false);
   const [paymentOptions, setPaymentOptions] = useState('both');
+  const [savingPaymentId, setSavingPaymentId] = useState<number | null>(null);
+  const savePaymentOptions = async (productId: number, value: string) => {
+    setSavingPaymentId(productId);
+    try {
+      const { data, error } = await supabase.from('products').update({ payment_options: value }).eq('id', productId).select('id, payment_options').single();
+      if (error) throw error;
+      setProducts(current => current.map(product => product.id === data.id ? { ...product, payment_options: data.payment_options } : product));
+      toast.success('Payment methods updated');
+    } catch { toast.error('Could not save payment methods. Please try again.'); }
+    finally { setSavingPaymentId(null); }
+  };
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [existingVideos, setExistingVideos] = useState<string[]>([]);
@@ -534,7 +546,7 @@ const AdminProducts = () => {
                     <p className="text-xs text-muted-foreground mt-1">Leave empty or 0 for no return</p>
                   </div>
                 </div>
-                <div><Label>Payment methods</Label><select aria-label="Product payment methods" className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm" value={paymentOptions} onChange={e => setPaymentOptions(e.target.value)}><option value="both">Online & Cash on Delivery</option><option value="online">Online only</option><option value="cod">Cash on Delivery only</option></select></div>
+                <div className="space-y-2"><Label>Payment methods</Label><Select value={paymentOptions} onValueChange={setPaymentOptions}><SelectTrigger aria-label="Product payment methods"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="both">Online & Cash on Delivery</SelectItem><SelectItem value="online">Online only (Razorpay)</SelectItem><SelectItem value="cod">Cash on Delivery only</SelectItem></SelectContent></Select></div>
                 <SizeChartEditor enabled={sizingEnabled} chart={sizeChart} admin categoryId={selectedCategories[0]} onChange={(enabled, chart) => { setSizingEnabled(enabled); setSizeChart(chart); }} />
                 <div className="flex items-start justify-between gap-4 rounded-md border border-border p-3">
                   <div>
@@ -796,6 +808,7 @@ const AdminProducts = () => {
                   <TableHead>Price</TableHead>
                   <TableHead>Stock</TableHead>
                   <TableHead>Fabric</TableHead>
+                  <TableHead>Payment methods</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -818,6 +831,7 @@ const AdminProducts = () => {
                     <TableCell>₹{product.price}{product.foreign_price ? ` / $${product.foreign_price}` : ''}</TableCell>
                     <TableCell>{product.stock_quantity}</TableCell>
                     <TableCell>{product.fabric_type}</TableCell>
+                    <TableCell><Select value={product.payment_options || 'both'} disabled={savingPaymentId !== null} onValueChange={value => savePaymentOptions(product.id, value)}><SelectTrigger className="w-56" aria-label={`Payment methods for ${product.name}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="both">Online & Cash on Delivery</SelectItem><SelectItem value="online">Online only (Razorpay)</SelectItem><SelectItem value="cod">Cash on Delivery only</SelectItem></SelectContent></Select></TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         <Button size="sm" variant="outline" onClick={() => handleEdit(product)}>
