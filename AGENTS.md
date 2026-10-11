@@ -1,4 +1,5 @@
 # Architecture rules
+- Public partner routes resolve brand-name slugs through the approved-only brand directory and redirect legacy ID URLs; this keeps private application data inaccessible and old links usable.
 - Use the generated Lovable Cloud client for application queries and additive tool-applied SQL migrations for schema changes; generated integration files are not hand-edited.
 - Product size charts are per-product JSON with named measurement columns and per-size stock; shared editor and sizing helpers keep admin, partner, and shopping behavior consistent.
 - Cart lines are keyed by product ID plus selected size, and orders store size and measurement snapshots so subsequent chart changes do not alter purchased selections.
