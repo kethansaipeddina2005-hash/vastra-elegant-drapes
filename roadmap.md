@@ -1,5 +1,5 @@
 # Marketplace (unified Vastra Luxe fashion platform)
-- [ ] Use partner brand names in storefront links, preserving old ID links
+- [x] Use partner brand names in storefront links, preserving old ID links
 - [x] Complete admin-controlled payment options for every product
 - [ ] Verify saved payment options through admin and checkout — requesting account has no admin role
 - [x] Partner applications + admin review

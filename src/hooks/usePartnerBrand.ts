@@ -11,7 +11,8 @@ export interface PartnerBrand {
 }
 
 const cache = new Map<string, PartnerBrand | null>();
-let brandDirectory: Promise<PartnerBrand[]> | null = null;
+type BrandDirectoryEntry = PartnerBrand & { logo_path: string | null; logo_url: string | null };
+let brandDirectory: Promise<BrandDirectoryEntry[]> | null = null;
 
 export const brandSlug = (name: string) => name.normalize("NFKC").toLowerCase()
   .replace(/['’]/g, "").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "") || "designer";
