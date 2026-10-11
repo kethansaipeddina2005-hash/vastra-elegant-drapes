@@ -6,7 +6,7 @@ const PartnerBadge = ({ partnerId }: { partnerId?: string | null }) => {
   if (!brand) return null;
   return (
     <Link
-      to={`/brand/${brand.id}`}
+      to={`/brand/${encodeURIComponent(brand.slug)}`}
       className="inline-flex items-center gap-3 rounded-full border border-gold/40 bg-card/70 pl-1 pr-4 py-1 animate-fade-in hover:border-gold transition-colors"
     >
       {brand.logoSrc ? (

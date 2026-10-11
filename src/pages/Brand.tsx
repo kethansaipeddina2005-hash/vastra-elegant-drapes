@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import ProductCard from "@/components/ProductCard";
@@ -10,25 +10,36 @@ import type { Product } from "@/types/product";
 
 const Brand = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const brand = usePartnerBrand(id);
+  const partnerId = brand?.id;
   const [products, setProducts] = useState<Product[] | null>(null);
 
   useEffect(() => {
-    if (!id) return;
-    supabase.from("products").select("*").eq("partner_id", id).eq("approval_status", "approved")
+    let active = true;
+    setProducts(null);
+    if (!partnerId) return;
+    supabase.from("products").select("*").eq("partner_id", partnerId).eq("approval_status", "approved")
       .order("created_at", { ascending: false })
-      .then(({ data }) => setProducts((data || []).map((p: any) => ({
+      .then(({ data }) => { if (active) setProducts((data || []).map((p: any) => ({
         id: p.id, name: p.name, price: Number(p.price), description: p.description || "",
         image: p.images?.[0] || "", images: p.images || [], fabricType: p.fabric_type || "",
         color: p.color || "", occasion: p.occasion || "", region: p.region || "",
         stockQuantity: p.stock_quantity || 0, showLowStockBadge: p.show_low_stock_badge !== false,
         isNew: p.is_new || false, rating: Number(p.rating) || 0, reviews: p.reviews || 0, partnerId: p.partner_id,
-      }))));
-  }, [id]);
+      }))); });
+    return () => { active = false; };
+  }, [partnerId]);
+
+  useEffect(() => {
+    if (brand && id !== brand.slug) {
+      navigate(`/brand/${encodeURIComponent(brand.slug)}`, { replace: true });
+    }
+  }, [brand, id, navigate]);
 
   return (
     <Layout>
-      <SEO title={`${brand?.brand_name ?? "Designer"} — Vastra Luxe`} description={brand?.business_description?.slice(0, 150) || "Designer collection on Vastra Luxe"} />
+      <SEO title={`${brand?.brand_name ?? "Designer"} — Vastra Luxe`} canonical={brand ? `/brand/${encodeURIComponent(brand.slug)}` : undefined} description={brand?.business_description?.slice(0, 150) || "Designer collection on Vastra Luxe"} />
       <div className="container mx-auto px-4 py-10">
         <div className="flex items-center gap-5 mb-10 animate-fade-in">
           {brand?.logoSrc ? (
