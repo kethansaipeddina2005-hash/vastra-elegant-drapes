@@ -159,39 +159,9 @@ const Hero = () => {
             {activeBanner?.subtitle || "The Essence of Indian Elegance"}
           </p>
 
-          {/* Editorial luxury CTA — refined serif, champagne gradient, ornamental divider */}
-          <div className="mt-12 sm:mt-16 md:mt-20">
-            {/* Ornamental divider */}
-            <div className="flex items-center gap-3 mb-6 sm:mb-7" aria-hidden="true">
-              <span className="block h-px w-10 sm:w-12 bg-gradient-to-r from-transparent to-accent/70" />
-              <span className="text-accent/80 text-xs tracking-[0.35em] uppercase font-poppins">Atelier</span>
-              <span className="block h-px w-10 sm:w-12 bg-gradient-to-l from-transparent to-accent/70" />
-            </div>
-
-            <Link to={activeBanner?.link_url || "/collections"} className="group inline-block">
-              <span
-                className="relative inline-flex items-center justify-center gap-3 px-9 sm:px-11 py-4 sm:py-5
-                font-playfair text-[0.95rem] sm:text-base tracking-[0.22em] uppercase
-                text-foreground/90
-                rounded-full border border-accent/55
-                bg-gradient-to-r from-accent/15 via-[hsl(45_85%_80%_/_0.28)] to-accent/15
-                backdrop-blur-[2px]
-                shadow-[0_8px_30px_-12px_hsl(45_80%_60%_/_0.45)]
-                transition-all duration-500 ease-out
-                hover:border-accent hover:tracking-[0.26em] hover:text-foreground
-                hover:shadow-[0_14px_44px_-12px_hsl(45_80%_60%_/_0.6)] hover:-translate-y-0.5
-                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              >
-                {/* Soft champagne sheen sweep */}
-                <span
-                  className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[hsl(45_90%_88%_/_0.55)] to-transparent transition-transform duration-[1100ms] ease-out group-hover:translate-x-full rounded-full"
-                  aria-hidden="true"
-                />
-                <span className="relative">Shop Collection</span>
-                <ChevronRight className="relative w-4 h-4 sm:w-[1.05rem] sm:h-[1.05rem] text-accent transition-transform duration-500 group-hover:translate-x-1.5" aria-hidden="true" />
-              </span>
-            </Link>
-          </div>
+          <Button asChild size="lg" className="font-poppins">
+            <Link to={activeBanner?.link_url || "/collections"}>Shop Collection</Link>
+          </Button>
         </div>
       </div>
 
