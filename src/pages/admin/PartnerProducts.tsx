@@ -23,6 +23,9 @@ const PartnerProducts = () => {
   const [notes, setNotes] = useState<Record<number, string>>({});
   const [editing, setEditing] = useState<number | null>(null);
   const [form, setForm] = useState({ name: "", description: "", stock: "", base: "" });
+  const [commissionType, setCommissionType] = useState('partner_default');
+  const [commissionValue, setCommissionValue] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const [images, setImages] = useState<string[]>([]);
   const [paymentOptions, setPaymentOptions] = useState('both');
@@ -30,26 +33,32 @@ const PartnerProducts = () => {
   const [sizingEnabled, setSizingEnabled] = useState(false);
   const startEdit = (p: any) => {
     setEditing(p.id);
+    setCommissionType(pricing[p.id]?.commission_type || 'partner_default');
+    setCommissionValue(String(pricing[p.id]?.commission_value ?? ''));
     setImages(p.images || []); setPaymentOptions(p.payment_options || "both");
     setSizingEnabled(p.sizing_enabled); setSizeChart(parseSizeChart(p.size_chart));
     setForm({ name: p.name, description: p.description || "", stock: String(p.stock_quantity ?? 0), base: String(pricing[p.id]?.partner_base_price ?? "") });
   };
 
   const saveEdit = async (id: number) => {
+    const base = Number(form.base);
+    const value = Number(commissionValue);
+    if (!Number.isFinite(base) || base <= 0) return toast.error('Enter a valid partner base price');
+    if (commissionType !== 'partner_default' && (!commissionValue.trim() || !Number.isFinite(value) || value < 0 || (commissionType === 'percentage' && value > 100))) return toast.error('Enter a valid commission');
     if (sizingEnabled) { const issue = validateSizeChart(sizeChart); if (issue) return toast.error(issue); }
+    setSaving(true);
+    try {
     const { error } = await supabase.from("products").update({
       images, payment_options: paymentOptions, sizing_enabled: sizingEnabled, size_chart: JSON.parse(JSON.stringify(sizeChart)), 
       name: form.name.trim(), description: form.description.trim() || null, stock_quantity: parseInt(form.stock) || 0,
     }).eq("id", id);
     if (error) return toast.error("Update failed");
-    const base = parseFloat(form.base);
-    if (base > 0) {
-      const { error: pe } = await supabase.rpc("set_partner_base_price", { _product_id: id, _base: base });
-      if (pe) return toast.error("Price update failed");
-    }
+    const { error: pe } = await supabase.rpc('set_product_commission', { _product_id: id, _base: base, _type: commissionType, _value: commissionType === 'partner_default' ? null : value });
+    if (pe) return toast.error(pe.message);
     toast.success("Product updated");
     setEditing(null);
     load();
+    } finally { setSaving(false); }
   };
 
   const removeProduct = async (id: number) => {
@@ -117,7 +126,7 @@ const PartnerProducts = () => {
                     <p className="text-sm text-muted-foreground">{p.payment_options === 'online' ? 'Online only (Razorpay)' : p.payment_options === 'cod' ? 'Cash on Delivery only' : 'Online & Cash on Delivery'}</p>
                     <p className="text-sm">
                       {pr
-                        ? `Base ${inr(pr.partner_base_price)} + ${pr.commission_percentage}% (${inr(pr.commission_amount)}) = Customer ${inr(pr.customer_final_price)}`
+                        ? `Base ${inr(pr.partner_base_price)} + ${pr.commission_type === 'fixed' ? `Fixed ${inr(pr.commission_amount)}` : `${pr.commission_percentage}% (${inr(pr.commission_amount)})`} = Customer ${inr(pr.customer_final_price)}`
                         : `Customer price ${inr(p.price)}`}
                     </p>
                     {p.description && <p className="text-sm text-muted-foreground line-clamp-2">{p.description}</p>}
@@ -127,12 +136,18 @@ const PartnerProducts = () => {
                         <Input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="Stock" />
                         <Input type="number" value={form.base} onChange={(e) => setForm({ ...form, base: e.target.value })} placeholder="Partner base price (₹)" />
                         <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" />
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Commission type</p>
+                          <Select value={commissionType} onValueChange={setCommissionType}><SelectTrigger aria-label="Commission type"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="partner_default">Partner default percentage</SelectItem><SelectItem value="percentage">Product percentage</SelectItem><SelectItem value="fixed">Fixed amount (₹)</SelectItem></SelectContent></Select>
+                        </div>
+                        {commissionType !== 'partner_default' && <div className="space-y-1"><p className="text-sm font-medium">{commissionType === 'fixed' ? 'Commission per item (₹)' : 'Commission (%)'}</p><Input aria-label="Commission value" type="number" min="0" max={commissionType === 'percentage' ? 100 : undefined} step="0.01" value={commissionValue} onChange={e => setCommissionValue(e.target.value)} /></div>}
+                        {commissionType !== 'partner_default' && <p className="md:col-span-2 text-sm text-muted-foreground">Partner earns {inr(Number(form.base) || 0)} · Vastra earns {inr(commissionType === 'fixed' ? Number(commissionValue) || 0 : (Number(form.base) || 0) * (Number(commissionValue) || 0) / 100)} per item · Customer price {inr((Number(form.base) || 0) + (commissionType === 'fixed' ? Number(commissionValue) || 0 : (Number(form.base) || 0) * (Number(commissionValue) || 0) / 100))}</p>}
                          <div className="md:col-span-2"><ProductMediaEditor images={images} onChange={setImages} /></div>
                          <Select value={paymentOptions} onValueChange={setPaymentOptions}><SelectTrigger aria-label="Payment methods"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="both">Online & COD</SelectItem><SelectItem value="online">Online only</SelectItem><SelectItem value="cod">COD only</SelectItem></SelectContent></Select>
                          <div className="md:col-span-2"><SizeChartEditor admin enabled={sizingEnabled} chart={sizeChart} categoryId={p.category_id} onChange={(enabled, chart) => { setSizingEnabled(enabled); setSizeChart(chart); }} /></div>
                         <div className="flex gap-2">
-                          <Button size="sm" onClick={() => saveEdit(p.id)}>Save</Button>
-                          <Button size="sm" variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+                          <Button size="sm" disabled={saving} onClick={() => saveEdit(p.id)}>{saving ? 'Saving…' : 'Save'}</Button>
+                          <Button size="sm" disabled={saving} variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
                         </div>
                       </div>
                     )}

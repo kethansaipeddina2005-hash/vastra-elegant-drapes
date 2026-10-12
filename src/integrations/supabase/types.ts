@@ -749,6 +749,8 @@ export type Database = {
         Row: {
           commission_amount: number
           commission_percentage: number
+          commission_type: string
+          commission_value: number | null
           customer_final_price: number
           partner_base_price: number
           partner_earnings: number
@@ -760,6 +762,8 @@ export type Database = {
         Insert: {
           commission_amount: number
           commission_percentage: number
+          commission_type?: string
+          commission_value?: number | null
           customer_final_price: number
           partner_base_price: number
           partner_earnings: number
@@ -771,6 +775,8 @@ export type Database = {
         Update: {
           commission_amount?: number
           commission_percentage?: number
+          commission_type?: string
+          commission_value?: number | null
           customer_final_price?: number
           partner_base_price?: number
           partner_earnings?: number
@@ -1310,6 +1316,15 @@ export type Database = {
       }
       set_partner_base_price: {
         Args: { _base: number; _product_id: number }
+        Returns: number
+      }
+      set_product_commission: {
+        Args: {
+          _base: number
+          _product_id: number
+          _type: string
+          _value?: number
+        }
         Returns: number
       }
       sync_cart: {

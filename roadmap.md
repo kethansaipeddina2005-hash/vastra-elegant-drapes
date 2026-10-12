@@ -1,4 +1,6 @@
 # Marketplace (unified Vastra Luxe fashion platform)
+- [x] Per-product admin commission: fixed INR amount or percentage, with server-side pricing and partner previews
+- [ ] Verify commission save/readback with an admin account — requesting account cannot access admin pages
 - [x] Use partner brand names in storefront links, preserving old ID links
 - [x] Complete admin-controlled payment options for every product
 - [ ] Verify saved payment options through admin and checkout — requesting account has no admin role
