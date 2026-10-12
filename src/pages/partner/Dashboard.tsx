@@ -199,7 +199,10 @@ const PartnerDashboard = () => {
     ? sales.reduce((s, i) => s + Number(i.partner_earnings), 0)
     : orderItems.reduce((s, i) => s + Number(i.price) * i.quantity, 0);
   const basePreview = parseFloat(form.price) || 0;
-  const commPreview = Math.round(basePreview * pct) / 100;
+  const productPricing = editing === null ? null : pricing[editing];
+  const previewPct = productPricing?.commission_type === 'percentage' ? Number(productPricing.commission_value) : pct;
+  const fixedCommission = productPricing?.commission_type === 'fixed';
+  const commPreview = fixedCommission ? Number(productPricing.commission_value) : Math.round(basePreview * previewPct) / 100;
 
   return (
     <Layout>
@@ -250,7 +253,7 @@ const PartnerDashboard = () => {
                   <Input type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="mt-1.5" />
                   {basePreview > 0 && (
                     <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
-                      <p>Vastra commission ({pct}%): ₹{commPreview.toLocaleString("en-IN")}</p>
+                      <p>Vastra commission ({fixedCommission ? 'fixed per item' : `${previewPct}%`}): ₹{commPreview.toLocaleString("en-IN")}</p>
                       <p>Customer final price: <span className="text-foreground font-medium">₹{(basePreview + commPreview).toLocaleString("en-IN")}</span></p>
                       <p>Your earnings per sale: <span className="text-foreground font-medium">₹{basePreview.toLocaleString("en-IN")}</span></p>
                     </div>
@@ -344,7 +347,7 @@ const PartnerDashboard = () => {
                       <p className="font-semibold">{p.name}</p>
                       <p className="text-sm text-muted-foreground">
                         {pricing[p.id]
-                          ? `Base ₹${Number(pricing[p.id].partner_base_price).toLocaleString("en-IN")} + ${pricing[p.id].commission_percentage}% (₹${Number(pricing[p.id].commission_amount).toLocaleString("en-IN")}) = Customer ₹${Number(pricing[p.id].customer_final_price).toLocaleString("en-IN")} · You earn ₹${Number(pricing[p.id].partner_earnings).toLocaleString("en-IN")}`
+                          ? `Base ₹${Number(pricing[p.id].partner_base_price).toLocaleString("en-IN")} + ${pricing[p.id].commission_type === 'fixed' ? 'fixed commission' : `${pricing[p.id].commission_percentage}%`} (₹${Number(pricing[p.id].commission_amount).toLocaleString("en-IN")}) = Customer ₹${Number(pricing[p.id].customer_final_price).toLocaleString("en-IN")} · You earn ₹${Number(pricing[p.id].partner_earnings).toLocaleString("en-IN")}`
                           : `₹${Number(p.price).toLocaleString("en-IN")}`} · Stock: {p.stock_quantity ?? 0}
                         {p.product_code && ` · ${p.product_code}`}
                         {" · "}
