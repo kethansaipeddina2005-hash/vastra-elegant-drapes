@@ -150,7 +150,7 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/70 to-transparent" />
       </div>
       
-      <div className="container mx-auto px-6 relative top-8 md:top-12 z-10 py-12 md:py-16">
+      <div className="container mx-auto px-6 relative top-12 z-10 py-12 md:py-16">
         <div className="max-w-xl md:max-w-2xl animate-fade-in text-left">
           <h1 className="text-[2rem] leading-[1.12] sm:text-5xl md:text-6xl font-playfair font-bold text-foreground text-balance break-words mb-3 sm:mb-4 md:mb-5">
             {activeBanner?.title || "Grace in Every Drape"}
