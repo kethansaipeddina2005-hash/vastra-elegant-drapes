@@ -48,6 +48,8 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
   const { partner, isPartner } = usePartner();
   const { toast } = useToast();
   const location = useLocation();
+  const routeProductId = location.pathname.match(/^\/product\/(\d+)/)?.[1];
+  const customerProductId = productId ?? (routeProductId ? Number(routeProductId) : null);
   const [partnerProducts, setPartnerProducts] = useState<Array<{id: number; name: string}>>([]);
   const [queryProduct, setQueryProduct] = useState<number | null>(productId || null);
   useEffect(() => {
@@ -62,6 +64,8 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
   // Listen for new admin messages even when chat is closed
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
+    let cleanup: (() => void) | undefined;
 
     // Find existing conversation to listen for new messages
     const findAndSubscribe = async () => {
@@ -81,9 +85,10 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
         .from('chat_messages')
         .select('*', { count: 'exact', head: true })
         .eq('conversation_id', existingConv.id)
-        .eq('sender_type', 'admin')
+        .in('sender_type', ['admin', 'partner'])
         .eq('is_read', false);
 
+      if (cancelled) return;
       setUnreadCount(count || 0);
 
       // Subscribe to new messages
@@ -99,7 +104,7 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
           },
           (payload) => {
             const newMsg = payload.new as Message;
-            if (newMsg.sender_type === 'admin' && !isOpen) {
+            if (newMsg.sender_type !== 'customer' && !isOpen) {
               setUnreadCount((prev) => prev + 1);
               toast({
                 title: 'New message from Vastra',
@@ -110,20 +115,23 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
         )
         .subscribe();
 
-      return () => {
+      cleanup = () => {
         supabase.removeChannel(channel);
       };
     };
 
     findAndSubscribe();
-  }, [user]);
+    return () => { cancelled = true; cleanup?.(); };
+  }, [user?.id, isOpen, conversation?.id]);
 
   useEffect(() => {
+    setConversation(null);
+    setMessages([]);
     if (isOpen && user && (!isPartner || queryProduct)) {
       loadOrCreateConversation();
       setUnreadCount(0);
     }
-  }, [isOpen, user, isPartner, queryProduct]);
+  }, [isOpen, user, isPartner, queryProduct, customerProductId]);
 
   useEffect(() => {
     if (!conversation) return;
@@ -141,9 +149,9 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
         (payload) => {
           if (payload.eventType === 'INSERT') {
             const newMsg = payload.new as Message;
-            setMessages((prev) => [...prev, newMsg]);
+            setMessages((prev) => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
             // Mark admin messages as read when chat is open
-            if (newMsg.sender_type === 'admin' && isOpen) {
+            if (newMsg.sender_type !== 'customer' && isOpen) {
               markAdminMessagesAsRead(conversation.id);
             }
           } else if (payload.eventType === 'UPDATE') {
@@ -156,8 +164,12 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
         }
       )
       .subscribe();
+    const timer = window.setInterval(() => {
+      if (isOpen && document.visibilityState === 'visible') { loadMessages(conversation.id); markAdminMessagesAsRead(conversation.id); }
+    }, 15000);
 
     return () => {
+      clearInterval(timer);
       supabase.removeChannel(channel);
     };
   }, [conversation, isOpen]);
@@ -173,12 +185,7 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
   };
 
   const markAdminMessagesAsRead = async (conversationId: string) => {
-    await supabase
-      .from('chat_messages')
-      .update({ is_read: true })
-      .eq('conversation_id', conversationId)
-      .eq('sender_type', 'admin')
-      .eq('is_read', false);
+    await supabase.rpc('mark_product_chat_read', { _conversation_id: conversationId });
   };
 
   const loadOrCreateConversation = async () => {
@@ -193,6 +200,8 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
         .eq('status', 'open')
         .order('created_at', { ascending: false }).limit(1);
       if (isPartner && queryProduct) existingQuery = existingQuery.eq('product_id', queryProduct);
+      else if (customerProductId) existingQuery = existingQuery.eq('product_id', customerProductId);
+      else existingQuery = existingQuery.is('product_id', null);
       const { data: existingConv } = await existingQuery.maybeSingle();
 
       if (existingConv) {
@@ -206,10 +215,10 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
             customer_id: user.id,
             customer_name: user.user_metadata?.full_name || user.email,
             customer_email: user.email,
-            product_id: isPartner ? queryProduct : productId || null,
+            product_id: isPartner ? queryProduct : customerProductId,
             subject: isPartner && partner
               ? `Partner: ${partner.brand_name} — product query`
-              : productName ? `Customization for ${productName}` : 'Saree Customization',
+              : productName ? `Product query: ${productName}` : customerProductId ? 'Product query' : 'Saree Customization',
           })
           .select()
           .single();
@@ -270,6 +279,7 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
   };
 
   const uploadImages = async (): Promise<string[]> => {
+    if (!user) return [];
     if (selectedImages.length === 0) return [];
 
     setUploadingImages(true);
@@ -278,7 +288,7 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
     try {
       for (const file of selectedImages) {
         const fileExt = file.name.split('.').pop();
-        const fileName = `${user!.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const fileName = `${user.id}/${conversation?.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
         const { error: uploadError } = await supabase.storage
           .from('chat-images')
@@ -335,6 +345,7 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
       setNewMessage('');
       setSelectedImages([]);
       setImagePreviewUrls([]);
+      await loadMessages(conversation.id);
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -396,7 +407,7 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border bg-primary px-4 py-3 rounded-t-lg">
             <div>
-              <h3 className="font-semibold text-primary-foreground">{isPartner ? "Partner product query" : "Customize Your Saree"}</h3>
+              <h3 className="font-semibold text-primary-foreground">{isPartner ? "Partner product query" : customerProductId ? "Product query" : "Customize Your Saree"}</h3>
               <p className="text-xs text-primary-foreground/80">Chat with our team</p>
             </div>
             <Button
@@ -437,6 +448,7 @@ const CustomerChat = ({ productId, productName }: CustomerChatProps) => {
                     {msg.sender_type === 'admin' && (
                       <p className="text-[10px] font-medium mb-1 opacity-70">Vastra Team</p>
                     )}
+                    {msg.sender_type === 'partner' && <p className="text-[10px] font-medium mb-1 opacity-70">Product Partner</p>}
                     {msg.images && msg.images.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-2">
                         {msg.images.map((img, idx) => (

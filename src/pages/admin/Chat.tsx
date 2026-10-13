@@ -30,6 +30,7 @@ import {
 type Message = Tables<'chat_messages'>;
 
 interface Conversation extends Tables<'conversations'> {
+  products?: { name: string; product_code: string | null } | null;
   unread_count?: number;
   last_message?: string;
 }
@@ -130,7 +131,7 @@ const AdminChat = () => {
           const newMsg = payload.new as Message;
 
           // Update conversation list with latest message and unread count
-          if (newMsg.sender_type === 'customer') {
+          if (newMsg.sender_type !== 'admin') {
             setConversations((prev) =>
               prev.map((c) => {
                 if (c.id === newMsg.conversation_id) {
@@ -259,7 +260,7 @@ const AdminChat = () => {
     try {
       const { data, error } = await supabase
         .from('conversations')
-        .select('*')
+        .select('*, products(name,product_code)')
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
@@ -353,7 +354,7 @@ const AdminChat = () => {
     try {
       for (const file of selectedImages) {
         const fileExt = file.name.split('.').pop();
-        const fileName = `admin/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const fileName = `admin/${selectedConversation?.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
         const { error: uploadError } = await supabase.storage.from('chat-images').upload(fileName, file);
         if (uploadError) throw uploadError;
         // Bucket is private — store the storage path; ChatImage resolves signed URLs at render time
@@ -393,6 +394,7 @@ const AdminChat = () => {
       setNewMessage('');
       setSelectedImages([]);
       setImagePreviewUrls([]);
+      await loadMessages(selectedConversation.id);
     } catch (error) {
       console.error('Error sending message:', error);
       toast({ title: 'Error', description: 'Failed to send message.', variant: 'destructive' });
@@ -454,10 +456,11 @@ const AdminChat = () => {
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         loadConversations();
+        if (selectedConversation) loadMessages(selectedConversation.id);
       }
     }, 20000);
     return () => clearInterval(interval);
-  }, [isAdmin]);
+  }, [isAdmin, selectedConversation?.id]);
 
   if (adminLoading) {
     return (
@@ -574,6 +577,7 @@ const AdminChat = () => {
                       <p className="mt-2 text-xs text-muted-foreground line-clamp-1">
                         {conv.last_message || conv.subject}
                       </p>
+                      {conv.products && <p className="mt-1 text-xs text-muted-foreground truncate">{conv.products.product_code} · {conv.products.name}</p>}
                       <div className="mt-2 flex items-center gap-2">
                         <Circle
                           className={cn(
@@ -599,6 +603,7 @@ const AdminChat = () => {
                   <div>
                     <h3 className="font-medium">{selectedConversation.customer_name || 'Customer'}</h3>
                     <p className="text-sm text-muted-foreground">{selectedConversation.subject}</p>
+                    {selectedConversation.products && <p className="text-xs text-muted-foreground">{selectedConversation.products.product_code} · {selectedConversation.products.name}</p>}
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -643,6 +648,7 @@ const AdminChat = () => {
                             {selectedConversation.customer_name || 'Customer'}
                           </p>
                         )}
+                        {msg.sender_type === 'partner' && <p className="text-[10px] font-medium mb-1 opacity-70">Product Partner</p>}
                         {msg.images && msg.images.length > 0 && (
                           <div className="flex flex-wrap gap-2 mb-2">
                             {msg.images.map((img, idx) => (
