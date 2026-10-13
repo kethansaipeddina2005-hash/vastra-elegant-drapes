@@ -1305,11 +1305,35 @@ export type Database = {
         Returns: boolean
       }
       is_collaborator: { Args: { _email: string }; Returns: boolean }
+      is_product_chat_partner: {
+        Args: { _conversation_id: string }
+        Returns: boolean
+      }
       mark_cart_purchased: {
         Args: { _cart_token: string; _order_id: string }
         Returns: undefined
       }
+      mark_product_chat_read: {
+        Args: { _conversation_id: string }
+        Returns: undefined
+      }
       partner_application_id: { Args: { _email: string }; Returns: string }
+      partner_chat_inbox: {
+        Args: never
+        Returns: {
+          customer_name: string
+          id: string
+          last_message: string
+          product_code: string
+          product_id: number
+          product_image: string
+          product_name: string
+          status: string
+          subject: string
+          unread_count: number
+          updated_at: string
+        }[]
+      }
       restore_product_stock_for_order: {
         Args: { _order_id: string }
         Returns: undefined
