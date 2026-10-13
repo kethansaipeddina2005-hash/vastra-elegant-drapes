@@ -127,6 +127,13 @@
       "when": 1791859520620,
       "tag": "0017_partner_product_live_chat",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791859633437,
+      "tag": "0018_restrict_product_chat_function_grants",
+      "breakpoints": true
     }
   ]
 }
