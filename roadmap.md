@@ -1,5 +1,6 @@
 # Marketplace (unified Vastra Luxe fashion platform)
-- [ ] Live customer chats for owning product partners, with admin visibility and replies
+- [x] Live customer chats for owning product partners, with admin visibility and replies
+- [ ] Verify three-party chat send/readback — current account is neither admin nor approved partner, and no approved partner product is available
 - [x] Per-product admin commission: fixed INR amount or percentage, with server-side pricing and partner previews
 - [ ] Verify commission save/readback with an admin account — requesting account cannot access admin pages
 - [x] Use partner brand names in storefront links, preserving old ID links
