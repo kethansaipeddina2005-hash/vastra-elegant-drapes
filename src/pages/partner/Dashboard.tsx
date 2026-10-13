@@ -14,6 +14,7 @@ import { Plus, Pencil, Trash2, Package, ShoppingBag, Upload, X } from "lucide-re
 import type { Tables } from "@/integrations/supabase/types";
 
 import SizeChartEditor from '@/components/products/SizeChartEditor';
+import PartnerChatInbox from '@/components/chat/PartnerChatInbox';
 import { emptySizeChart, parseSizeChart, validateSizeChart } from '@/lib/sizing';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from 'react-router-dom';
@@ -38,7 +39,7 @@ const PartnerDashboard = () => {
   const { partner, isPartner, loading } = usePartner();
   const [products, setProducts] = useState<Product[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [tab, setTab] = useState<"products" | "orders" | "coupons" | "payments">("products");
+  const [tab, setTab] = useState<"products" | "orders" | "coupons" | "payments" | "chat">("products");
   const [form, setForm] = useState(emptyForm);
   const [editing, setEditing] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -233,7 +234,10 @@ const PartnerDashboard = () => {
           <Button size="sm" variant={tab === "orders" ? "default" : "outline"} onClick={() => setTab("orders")}>Orders ({orderItems.length})</Button>
           <Button size="sm" variant={tab === 'coupons' ? 'default' : 'outline'} onClick={() => setTab('coupons')}>Coupons</Button>
           <Button size="sm" variant={tab === 'payments' ? 'default' : 'outline'} onClick={() => setTab('payments')}>Payments</Button>
+          <Button size="sm" variant={tab === 'chat' ? 'default' : 'outline'} onClick={() => setTab('chat')}>Customer Chats</Button>
         </div>
+
+        {tab === 'chat' && <PartnerChatInbox />}
 
         {tab === "products" && (
           <>

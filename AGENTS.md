@@ -1,4 +1,5 @@
 # Architecture rules
+- Partner customer-chat inboxes use an ownership-checked function excluding customer email; message access is product-owner scoped, sender identity is enforced server-side, and admin replies share the same thread.
 - Partner commission overrides are stored in private per-product pricing and changed by an admin-only atomic RPC; base-price recalculation preserves overrides and historical sale snapshots.
 - Public partner routes resolve brand-name slugs through the approved-only brand directory and redirect legacy ID URLs; this keeps private application data inaccessible and old links usable.
 - Use the generated Lovable Cloud client for application queries and additive tool-applied SQL migrations for schema changes; generated integration files are not hand-edited.
