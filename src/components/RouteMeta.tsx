@@ -9,6 +9,7 @@ const NOINDEX_PREFIXES = [
   '/account',
   '/admin',
   '/collaborator',
+  '/partner',
   '/cart',
   '/checkout',
   '/payment',

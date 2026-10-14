@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async';
 
 // Canonical production domain — used for absolute URLs so canonicals/OG stay
 // stable across preview/staging origins.
-const SITE_URL = 'https://vastraluxe.com';
+export const SITE_URL = 'https://www.vastraluxe.com';
 
 interface SEOProps {
   title?: string;
@@ -18,7 +18,7 @@ const SEO = ({
   title = 'Vastra Luxe — Luxury Designer Sarees | Grace in Every Drape',
   description = 'Shop luxury designer sarees at Vastra Luxe. Exclusive handcrafted Kanchipuram, Banarasi & bridal silk sarees with worldwide shipping and WhatsApp video shopping.',
   canonical,
-  ogImage = '/og-image.jpg',
+  ogImage,
   ogType = 'website',
   noIndex = false,
   structuredData,
@@ -26,10 +26,10 @@ const SEO = ({
   const path =
     canonical ??
     (typeof window !== 'undefined'
-      ? window.location.pathname + window.location.search
+      ? window.location.pathname
       : '/');
   const fullCanonical = path.startsWith('http') ? path : `${SITE_URL}${path}`;
-  const fullOgImage = ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage}`;
+  const fullOgImage = ogImage ? (ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage}`) : undefined;
 
   return (
     <Helmet>
@@ -42,14 +42,14 @@ const SEO = ({
       <link rel="canonical" href={fullCanonical} />
       
       {/* Robots */}
-      {noIndex && <meta name="robots" content="noindex, nofollow" />}
+      <meta name="robots" content={noIndex ? 'noindex, nofollow' : 'index, follow'} />
       
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={fullCanonical} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={fullOgImage} />
+      {fullOgImage && <meta property="og:image" content={fullOgImage} />}
       <meta property="og:site_name" content="Vastra Luxe" />
       <meta property="og:locale" content="en_IN" />
       
@@ -58,7 +58,7 @@ const SEO = ({
       <meta name="twitter:url" content={fullCanonical} />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={fullOgImage} />
+      {fullOgImage && <meta name="twitter:image" content={fullOgImage} />}
       
       {/* Structured Data */}
       {structuredData && (
@@ -142,6 +142,9 @@ export const getProductSchema = (product: {
   sku?: string | number;
   brand?: string;
   currency?: string;
+  url?: string;
+  material?: string;
+  color?: string;
   reviews?: { author: string; rating: number; text: string; date: string }[];
 }) => ({
   '@context': 'https://schema.org',
@@ -149,21 +152,26 @@ export const getProductSchema = (product: {
   name: product.name,
   description: product.description,
   image: product.images,
+  ...(product.url && { url: `${SITE_URL}${product.url}` }),
+  ...(product.material && { material: product.material }),
+  ...(product.color && { color: product.color }),
   ...(product.sku !== undefined && { sku: String(product.sku) }),
   brand: {
     '@type': 'Brand',
-    name: product.brand || 'Vastra',
+    name: product.brand || 'Vastra Luxe',
   },
   offers: {
     '@type': 'Offer',
     price: product.price,
     priceCurrency: product.currency || 'INR',
+    ...(product.url && { url: `${SITE_URL}${product.url}` }),
+    itemCondition: 'https://schema.org/NewCondition',
     availability: product.inStock !== false 
       ? 'https://schema.org/InStock' 
       : 'https://schema.org/OutOfStock',
     seller: {
       '@type': 'Organization',
-      name: 'Vastra',
+      name: 'Vastra Luxe',
     },
   },
   ...(product.rating && product.reviewCount && {

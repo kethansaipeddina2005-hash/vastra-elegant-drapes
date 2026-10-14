@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import Hero from "@/components/Hero";
 import ScarcityRibbon from "@/components/ScarcityRibbon";
@@ -35,14 +36,23 @@ const Index = () => {
   return (
     <Layout>
       <SEO 
-        title="Luxury Designer Sarees Online | Vastra Luxe — Silk & Bridal"
-        description="Vastra Luxe curates exclusive luxury designer sarees — Kanchipuram, Banarasi & bridal silk. 50 handpicked pieces per collection with worldwide shipping."
+        title="Vastra Luxe | Premium Dresses & Luxury Sarees"
+        description="Explore customized premium dresses, exclusive luxury sarees and premium silk sarees at Vastra Luxe. Discover distinctive styles for special occasions."
         canonical="/"
         structuredData={structuredData}
       />
       <Hero />
       <ScarcityRibbon />
       <TrustStrip />
+      <section className="container mx-auto px-4 pt-8 md:pt-12">
+        <h1 className="max-w-3xl text-2xl md:text-3xl font-playfair font-bold text-foreground leading-tight">
+          Discover Customized Premium Dresses &amp; Exclusive Luxury Sarees
+        </h1>
+        <p className="max-w-3xl mt-4 text-sm md:text-base text-muted-foreground leading-relaxed">
+          Explore Vastra Luxe through two collections: <Link to="/dresses" className="text-primary underline underline-offset-4">premium dresses</Link> and <Link to="/sarees" className="text-primary underline underline-offset-4">luxury sarees</Link>.
+          {' '}Compare fabrics, colors and occasion details on each product. For dresses with a size chart, choose from the listed measurements and available sizes; any customization should be confirmed for the individual design before ordering.
+        </p>
+      </section>
       <CategorySection />
       <FeaturedSarees />
       <Suspense fallback={null}>

@@ -152,9 +152,9 @@ const Hero = () => {
       
       <div className="container mx-auto px-6 relative top-12 z-10 py-12 md:py-16">
         <div className="max-w-xl md:max-w-2xl animate-fade-in text-left">
-          <h1 className="text-[2rem] leading-[1.12] sm:text-5xl md:text-6xl font-playfair font-bold text-foreground text-balance break-words mb-3 sm:mb-4 md:mb-5">
+          <h2 className="text-[2rem] leading-[1.12] sm:text-5xl md:text-6xl font-playfair font-bold text-foreground text-balance break-words mb-3 sm:mb-4 md:mb-5">
             {activeBanner?.title || "Grace in Every Drape"}
-          </h1>
+          </h2>
           <p className="text-base sm:text-xl md:text-2xl text-muted-foreground font-light max-w-md md:max-w-xl text-pretty leading-relaxed mb-5 sm:mb-7">
             {activeBanner?.subtitle || "The Essence of Indian Elegance"}
           </p>
