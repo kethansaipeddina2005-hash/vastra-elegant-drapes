@@ -69,9 +69,17 @@ async function fetchBrandEntries(): Promise<SitemapEntry[]> {
   const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !key) return [];
   const client = createClient(url, key);
-  const { data, error } = await client.rpc('get_public_partner_brands');
+  const { data, error } = await client.rpc('get_partner_brands', {});
   if (error) throw new Error('[sitemap] Brand retrieval failed; existing sitemap was not overwritten.');
-  return []; // Brand routes require the application's collision-safe slug resolver.
+  const used = new Set<string>();
+  return [...(data || [])].sort((a, b) => a.id.localeCompare(b.id)).map(row => {
+    const base = row.brand_name.normalize('NFKC').toLowerCase().replace(/['’]/g, '').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '') || 'designer';
+    let slug = base;
+    let suffix = 2;
+    while (used.has(slug)) slug = `${base}-${suffix++}`;
+    used.add(slug);
+    return { path: `/brand/${slug}`, changefreq: 'weekly', priority: '0.5' };
+  });
 }
 
 function render(entries: SitemapEntry[]) {
@@ -97,12 +105,13 @@ function render(entries: SitemapEntry[]) {
 
 (async () => {
   const productEntries = await fetchProductEntries();
+  const brandEntries = await fetchBrandEntries();
   const blogEntries: SitemapEntry[] = blogSlugs.map((slug) => ({
     path: `/blog/${slug}`,
     changefreq: "monthly",
     priority: "0.6",
   }));
-  const entries = [...staticEntries, ...blogEntries, ...productEntries];
+  const entries = [...staticEntries, ...blogEntries, ...productEntries, ...brandEntries];
   writeFileSync(resolve("public/sitemap.xml"), render(entries));
   console.log(`[sitemap] wrote ${entries.length} entries`);
 })();

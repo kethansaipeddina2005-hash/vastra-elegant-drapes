@@ -29,6 +29,7 @@ const SEO = ({
       ? window.location.pathname
       : '/');
   const fullCanonical = path.startsWith('http') ? path : `${SITE_URL}${path}`;
+  const privatePath = typeof window !== 'undefined' && /^\/(account|admin|partner|collaborator|cart|checkout|payment|thank-you)(\/|$)/.test(window.location.pathname);
   const fullOgImage = ogImage ? (ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage}`) : undefined;
 
   return (
@@ -42,7 +43,7 @@ const SEO = ({
       <link rel="canonical" href={fullCanonical} />
       
       {/* Robots */}
-      <meta name="robots" content={noIndex ? 'noindex, nofollow' : 'index, follow'} />
+      <meta name="robots" content={noIndex || privatePath ? 'noindex, nofollow' : 'index, follow'} />
       
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={ogType} />
@@ -77,9 +78,8 @@ export const getOrganizationSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Vastra Luxe',
-  description: 'Luxury designer sarees — exclusive handcrafted Kanchipuram, Banarasi and bridal silk sarees with worldwide shipping.',
+  description: 'Premium dresses and luxury sarees for special occasions.',
   url: SITE_URL,
-  logo: `${SITE_URL}/logo.jpg`,
   sameAs: [
     'https://www.instagram.com/vastraluxe',
     'https://www.facebook.com/vastraluxe',
@@ -119,7 +119,6 @@ export const getLocalBusinessSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'Store',
   name: 'Vastra Luxe',
-  image: `${SITE_URL}/logo.jpg`,
   '@id': SITE_URL,
   url: SITE_URL,
   telephone: '+91-79979-09061',
