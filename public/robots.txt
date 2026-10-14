@@ -1,9 +1,27 @@
 # Vastra E-commerce - robots.txt
 User-agent: Googlebot
 Allow: /
+Disallow: /account/
+Disallow: /admin
+Disallow: /partner/
+Disallow: /collaborator/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /payment/
+Disallow: /thank-you
+Disallow: /*?search=
 
 User-agent: Bingbot
 Allow: /
+Disallow: /account/
+Disallow: /admin
+Disallow: /partner/
+Disallow: /collaborator/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /payment/
+Disallow: /thank-you
+Disallow: /*?search=
 
 User-agent: Twitterbot
 Allow: /
@@ -17,6 +35,8 @@ Allow: /
 # Disallow private/checkout pages
 Disallow: /account/*
 Disallow: /admin/*
+Disallow: /admin
+Disallow: /partner/*
 Disallow: /cart
 Disallow: /checkout
 Disallow: /payment/*
@@ -25,4 +45,4 @@ Disallow: /collaborator/*
 Disallow: /*?search=
 
 # Sitemap location
-Sitemap: https://vastraluxe.com/sitemap.xml
+Sitemap: https://www.vastraluxe.com/sitemap.xml

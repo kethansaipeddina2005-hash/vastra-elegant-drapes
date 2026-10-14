@@ -1,10 +1,18 @@
 // Generates public/sitemap.xml at build time from Supabase products + blog routes.
 
-import { writeFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
 import { createClient } from "@supabase/supabase-js";
 
-const BASE_URL = "https://vastraluxe.com";
+const BASE_URL = "https://www.vastraluxe.com";
+
+// Match Vite's local environment loading without printing credentials.
+try {
+  for (const line of readFileSync(resolve('.env'), 'utf8').split(/\r?\n/)) {
+    const match = line.match(/^(VITE_SUPABASE_URL|VITE_SUPABASE_PUBLISHABLE_KEY)=(.*)$/);
+    if (match && !process.env[match[1]]) process.env[match[1]] = match[2].trim().replace(/^['"]|['"]$/g, '');
+  }
+} catch { /* Hosted builds may provide these variables directly. */ }
 
 interface SitemapEntry {
   path: string;
@@ -16,10 +24,13 @@ interface SitemapEntry {
 const staticEntries: SitemapEntry[] = [
   { path: "/", changefreq: "daily", priority: "1.0" },
   { path: "/collections", changefreq: "daily", priority: "0.9" },
+  { path: "/dresses", changefreq: "daily", priority: "0.9" },
+  { path: "/sarees", changefreq: "daily", priority: "0.9" },
   { path: "/blog", changefreq: "weekly", priority: "0.8" },
   { path: "/about", changefreq: "monthly", priority: "0.7" },
   { path: "/contact", changefreq: "monthly", priority: "0.7" },
   { path: "/reels", changefreq: "weekly", priority: "0.6" },
+  { path: "/become-a-partner", changefreq: "monthly", priority: "0.5" },
 ];
 
 const blogSlugs = [
@@ -31,8 +42,7 @@ async function fetchProductEntries(): Promise<SitemapEntry[]> {
   const url = process.env.VITE_SUPABASE_URL;
   const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   if (!url || !key) {
-    console.warn("[sitemap] Supabase env vars missing; skipping dynamic product entries.");
-    return [];
+    throw new Error('[sitemap] Missing product connection; existing sitemap was not overwritten.');
   }
   try {
     const supabase = createClient(url, key);
@@ -41,23 +51,34 @@ async function fetchProductEntries(): Promise<SitemapEntry[]> {
       .select("id, updated_at")
       .order("updated_at", { ascending: false });
     if (error) throw error;
-    return (data || []).map((p: any) => ({
+    return (data || []).map((p: { id: number; updated_at: string | null }) => ({
       path: `/product/${p.id}`,
-      lastmod: p.updated_at ? new Date(p.updated_at).toISOString().slice(0, 10) : undefined,
+      // Product-specific timestamp includes changes to visible price/availability.
+      // Never substitute the build date or generation time.
+      lastmod: p.updated_at && Number.isFinite(Date.parse(p.updated_at)) ? new Date(p.updated_at).toISOString().slice(0, 10) : undefined,
       changefreq: "weekly",
       priority: "0.8",
     }));
   } catch (err) {
-    console.warn("[sitemap] Failed to fetch products:", err);
-    return [];
+    throw new Error('[sitemap] Product retrieval failed; existing sitemap was not overwritten.', { cause: err });
   }
+}
+
+async function fetchBrandEntries(): Promise<SitemapEntry[]> {
+  const url = process.env.VITE_SUPABASE_URL;
+  const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !key) return [];
+  const client = createClient(url, key);
+  const { data, error } = await client.rpc('get_public_partner_brands');
+  if (error) throw new Error('[sitemap] Brand retrieval failed; existing sitemap was not overwritten.');
+  return []; // Brand routes require the application's collision-safe slug resolver.
 }
 
 function render(entries: SitemapEntry[]) {
   const urls = entries.map((e) =>
     [
       `  <url>`,
-      `    <loc>${BASE_URL}${e.path}</loc>`,
+      `    <loc>${`${BASE_URL}${e.path}`.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</loc>`,
       e.lastmod ? `    <lastmod>${e.lastmod}</lastmod>` : null,
       e.changefreq ? `    <changefreq>${e.changefreq}</changefreq>` : null,
       e.priority ? `    <priority>${e.priority}</priority>` : null,
