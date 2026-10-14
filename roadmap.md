@@ -1,4 +1,6 @@
 # Marketplace (unified Vastra Luxe fashion platform)
+- [ ] Apply uploaded two-category SEO brief and verify public metadata, links, product schemas and sitemap
+- [ ] Automatic live sitemap refresh and Google indexing verification — requires publishing/server delivery and Google account verification
 - [x] Live customer chats for owning product partners, with admin visibility and replies
 - [ ] Verify three-party chat send/readback — current account is neither admin nor approved partner, and no approved partner product is available
 - [x] Per-product admin commission: fixed INR amount or percentage, with server-side pricing and partner previews
