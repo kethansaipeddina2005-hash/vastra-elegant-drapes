@@ -4,6 +4,7 @@ export interface Product {
   sizeChart?: SizeChart;
   selectedSize?: string | null;
   id: number;
+  productCode?: string | null;
   name: string;
   price: number;
   foreignPrice?: number | null;
