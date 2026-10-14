@@ -1,4 +1,6 @@
 # Architecture rules
+- Dresses and Sarees share the existing collections component at stable category paths; legacy category queries redirect there to avoid duplicate indexable pages.
+- Per-page canonicals are owned by the shared SEO component, with no static canonical in index.html; the sitemap keeps its existing build-time generator and page-specific timestamps.
 - Partner customer-chat inboxes use an ownership-checked function excluding customer email; message access is product-owner scoped, sender identity is enforced server-side, and admin replies share the same thread.
 - Partner commission overrides are stored in private per-product pricing and changed by an admin-only atomic RPC; base-price recalculation preserves overrides and historical sale snapshots.
 - Public partner routes resolve brand-name slugs through the approved-only brand directory and redirect legacy ID URLs; this keeps private application data inaccessible and old links usable.

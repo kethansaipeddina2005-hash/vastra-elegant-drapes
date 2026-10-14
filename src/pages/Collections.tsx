@@ -10,27 +10,32 @@ import { Loading } from "@/components/ui/loading";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { X, SlidersHorizontal } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import SEO, { getBreadcrumbSchema } from "@/components/SEO";
 import { ProductGridSkeleton } from "@/components/skeletons/ProductCardSkeleton";
 
-const Collections = () => {
+const Collections = ({ category = '' }: { category?: 'Dresses' | 'Sarees' | '' }) => {
   const { products, filters, setFilters, filterOptions, sortBy, setSortBy, searchQuery, setSearchQuery, loading, maxPrice } = useProducts();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchParams] = useSearchParams();
+  const isDresses = category === 'Dresses';
+  const heading = isDresses ? 'Premium Dresses for Women' : category === 'Sarees' ? 'Exclusive Luxury Sarees for Special Occasions' : 'Premium Dresses & Luxury Sarees';
+  const seoTitle = isDresses ? 'Premium Dresses for Women | Vastra Luxe' : category === 'Sarees' ? 'Luxury Silk & Premium Sarees | Vastra Luxe' : 'Dresses & Saree Collections | Vastra Luxe';
+  const description = isDresses
+    ? 'Discover premium dresses at Vastra Luxe. Explore individual designs, fabrics, colors and available size charts to find a style for your special occasion.'
+    : category === 'Sarees'
+      ? 'Shop exclusive sarees at Vastra Luxe. Explore premium fabrics, silk sarees and distinctive designs, with product details for your special occasion.'
+      : 'Explore premium dresses and luxury sarees at Vastra Luxe. Browse fabrics, colors, occasions and available sizes across our two collections.';
+  const canonical = category ? `/${category.toLowerCase()}` : '/collections';
+  const legacyCategory = searchParams.get('category');
 
   // Sync URL search params with hook
   useEffect(() => {
     const search = searchParams.get('search') || '';
-    const category = searchParams.get('category') || '';
-    if (search) setSearchQuery(search);
-    if (category) {
-      setFilters(prev => ({
-        ...prev,
-        categories: [category],
-      }));
-    }
-  }, [searchParams]);
+    const selectedCategory = category || searchParams.get('category') || '';
+    setSearchQuery(search);
+    setFilters(prev => ({ ...prev, categories: selectedCategory ? [selectedCategory] : [] }));
+  }, [searchParams, category]);
 
   const clearFilter = (category: keyof typeof filters, value?: string) => {
     if (value) {
@@ -43,7 +48,7 @@ const Collections = () => {
         colors: [],
         occasions: [],
         regions: [],
-        categories: [],
+        categories: category ? [category] : [],
       });
     }
   };
@@ -55,27 +60,25 @@ const Collections = () => {
     filters.regions.length +
     filters.categories.length;
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="container mx-auto px-6 py-8">
-          <ProductGridSkeleton count={8} />
-        </div>
-      </Layout>
-    );
+  if (!category && (legacyCategory === 'Dresses' || legacyCategory === 'Sarees')) {
+    const params = new URLSearchParams(searchParams);
+    params.delete('category');
+    return <Navigate replace to={`/${legacyCategory.toLowerCase()}${params.size ? `?${params}` : ''}`} />;
   }
 
   const breadcrumbSchema = getBreadcrumbSchema([
     { name: 'Home', url: '/' },
     { name: 'Collections', url: '/collections' },
+    ...(category ? [{ name: category, url: canonical }] : []),
   ]);
 
   return (
     <Layout>
       <SEO 
-        title="Saree Collections | Silk & Bridal — Vastra Luxe"
-        description="Shop luxury designer sarees — Kanchipuram, Banarasi, soft silk and bridal. Filter by fabric, occasion and region. Worldwide shipping."
-        canonical="/collections"
+        title={seoTitle}
+        description={description}
+        canonical={canonical}
+        noIndex={searchParams.has('search') || searchParams.has('category')}
         structuredData={breadcrumbSchema}
       />
       <div className="container mx-auto px-6 py-8">
@@ -86,7 +89,7 @@ const Collections = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Collections</BreadcrumbPage>
+              <BreadcrumbPage>{category || 'Collections'}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -95,10 +98,10 @@ const Collections = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-2xl md:text-4xl font-playfair font-bold text-foreground mb-1 md:mb-2">
-                Luxury Designer Saree Collections
+                {heading}
               </h1>
               <p className="text-sm md:text-base text-muted-foreground">
-                {products.length} {products.length === 1 ? 'saree' : 'sarees'} found
+                {products.length} {products.length === 1 ? 'product' : 'products'} found
               </p>
             </div>
             
@@ -201,9 +204,9 @@ const Collections = () => {
         )}
 
         <div>
-            {products.length === 0 ? (
+            {loading ? <ProductGridSkeleton count={8} /> : products.length === 0 ? (
               <div className="text-center py-12 md:py-20 px-4">
-                <p className="text-muted-foreground text-base md:text-lg mb-4">No sarees found matching your criteria</p>
+                <p className="text-muted-foreground text-base md:text-lg mb-4">No products found matching your criteria</p>
                 <Button onClick={() => clearFilter('fabricTypes')} className="h-11">Clear all filters</Button>
               </div>
             ) : (
@@ -214,6 +217,17 @@ const Collections = () => {
               </div>
             )}
         </div>
+        {category && <section className="mt-12 border-t border-border pt-8 space-y-4 max-w-3xl text-sm text-muted-foreground leading-relaxed">
+          <h2 className="text-xl font-playfair font-semibold text-foreground">{isDresses ? 'Choose your dress and size' : 'Choose a saree for your occasion'}</h2>
+          <p>{isDresses
+            ? 'Start with the silhouette, fabric and color shown on each dress. Check the product’s occasion details when choosing an outfit for a wedding, festival or family celebration. Compare the available size chart with your measurements, using the units shown, and select an in-stock size before adding it to your cart.'
+            : 'Compare the fabric, color, region and occasion listed for each saree. For silk designs, inspect the product photos for the border and pallu details. Choose a color and drape that suit your wedding, festival or family occasion rather than relying on the product name alone.'}</p>
+          <h2 className="text-xl font-playfair font-semibold text-foreground">{isDresses ? 'Measurements and customization' : 'Product details and care'}</h2>
+          <p>{isDresses
+            ? 'Measure against the named columns in the individual product’s chart; different designs may use different measurements. A size chart lists the offered sizes and does not by itself mean made-to-measure tailoring is available. Ask about any design, fabric or fit changes through the product enquiry before ordering; availability must be confirmed for that dress.'
+            : 'Read the individual description and care details before ordering. Care needs vary by fabric and embellishment; confirm any missing instructions through the product enquiry. For delicate silk, protect it from prolonged sunlight and damp storage, and confirm suitable cleaning with a textile-care professional.'}</p>
+          <p>Check the product’s stock and return details, then review delivery charges and your address at checkout. Explore our <Link to={isDresses ? '/sarees' : '/dresses'} className="text-primary underline underline-offset-4">{isDresses ? 'Sarees' : 'Dresses'}</Link> collection for more occasion styles.</p>
+        </section>}
       </div>
     </Layout>
   );

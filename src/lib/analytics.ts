@@ -64,6 +64,10 @@ const toGaItem = (item: Item) => ({
   price: Number(item.price) || 0,
   quantity: item.quantity ?? 1,
   item_category: item.categoryNames?.[0],
+  item_category2: item.categoryNames?.[1],
+  item_category3: item.categoryNames?.[2],
+  item_category4: item.categoryNames?.[3],
+  item_category5: item.categoryNames?.[4],
 });
 
 export const trackViewItem = (item: Item) => {

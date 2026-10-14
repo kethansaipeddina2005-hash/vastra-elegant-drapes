@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { parseSizeChart, sizeStock } from '@/lib/sizing';
+import { optimizedImage } from '@/lib/image';
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -51,6 +52,7 @@ const ProductDetail = () => {
   const fetchProduct = async () => {
     try {
       setLoading(true);
+      setProduct(null);
       setSelectedSize(null);
       setQuantity(0);
       const { data, error } = await supabase
@@ -64,16 +66,22 @@ const ProductDetail = () => {
       // Fetch categories for this product
       const { data: categoryMappings } = await supabase
         .from('product_categories')
-        .select('category_id, categories(name)')
+        .select('category_id, categories(name, parent_id)')
         .eq('product_id', data.id);
 
       const categoryIds = (categoryMappings || []).map((m: any) => m.category_id);
       const categoryNames = (categoryMappings || [])
         .map((m: any) => m.categories?.name)
         .filter(Boolean);
+      const parentIds = (categoryMappings || []).map((m: any) => m.categories?.parent_id).filter(Boolean);
+      if (parentIds.length) {
+        const { data: parents } = await supabase.from('categories').select('name').in('id', parentIds);
+        (parents || []).forEach(parent => { if (!categoryNames.includes(parent.name)) categoryNames.push(parent.name); });
+      }
 
       const transformedProduct: Product = {
         id: data.id,
+        productCode: (data as any).product_code || null,
         name: data.name,
         price: Number(data.price),
         foreignPrice: data.foreign_price ? Number(data.foreign_price) : null,
@@ -172,6 +180,7 @@ const ProductDetail = () => {
   if (!product) {
     return (
       <Layout>
+        <SEO title="Product Not Found | Vastra Luxe" description="This product is no longer available. Explore the Dresses and Sarees collections at Vastra Luxe." noIndex />
         <div className="container mx-auto px-6 py-8">
           <p>Product not found</p>
           <Link to="/collections">
@@ -228,21 +237,27 @@ const ProductDetail = () => {
     }
   };
   
+  const mainCategory = product.categoryNames?.includes('Dresses') ? 'Dresses' : product.categoryNames?.includes('Sarees') ? 'Sarees' : null;
+  const categoryUrl = mainCategory ? `/${mainCategory.toLowerCase()}` : '/collections';
   const productSchema = getProductSchema({
     name: product.name,
     description: product.description,
     price: product.price,
-    images: product.images,
+    images: product.images || [],
     rating: product.rating,
     reviewCount: product.reviews,
     inStock: product.stockQuantity > 0,
-    sku: product.id,
+    sku: product.productCode || product.id,
     brand: 'Vastra Luxe',
+    currency: 'INR',
+    url: `/product/${product.id}`,
+    material: product.fabricType,
+    color: product.color,
   });
 
   const breadcrumbSchema = getBreadcrumbSchema([
     { name: 'Home', url: '/' },
-    { name: 'Collections', url: '/collections' },
+    { name: mainCategory || 'Collections', url: categoryUrl },
     { name: product.name, url: `/product/${product.id}` },
   ]);
 
@@ -250,11 +265,11 @@ const ProductDetail = () => {
     <>
     <Layout>
       <SEO 
-        title={`${product.name} | Luxury Designer Saree — Vastra Luxe`}
-        description={`Buy ${product.name} online at Vastra Luxe. ${product.description.slice(0, 110)}${product.description.length > 110 ? '…' : ''} Worldwide shipping.`.slice(0, 158)}
+        title={`${product.name} | Vastra Luxe`}
+        description={`Explore ${product.name} at Vastra Luxe. ${[product.fabricType, product.color, product.occasion].filter(Boolean).join(', ')}. ${product.description.replace(/\s+/g, ' ').trim()}`.slice(0, 160)}
         canonical={`/product/${product.id}`}
         ogType="product"
-        ogImage={product.images[0]}
+        ogImage={product.images?.[0] ? optimizedImage(product.images[0], { width: 1200, height: 630, quality: 82 }) : undefined}
         structuredData={[productSchema, breadcrumbSchema]}
       />
       <div className="container mx-auto px-4 py-4 max-w-6xl">
@@ -265,7 +280,7 @@ const ProductDetail = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/collections" className="text-xs">Collections</BreadcrumbLink>
+              <BreadcrumbLink href={categoryUrl} className="text-xs">{mainCategory || 'Collections'}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -280,7 +295,7 @@ const ProductDetail = () => {
             <MediaCarousel 
               images={product.images}
               videos={product.videos}
-              productName={product.name}
+              productName={[product.name, product.color, product.fabricType].filter(Boolean).join(' — ')}
               productUrl={window.location.href}
             />
           </div>
@@ -290,7 +305,7 @@ const ProductDetail = () => {
               <div className="flex items-center gap-2 flex-wrap">
                 {product.categoryNames && product.categoryNames.length > 0 && (
                   <Link 
-                    to={`/collections?category=${encodeURIComponent(product.categoryNames[0])}`}
+                    to={categoryUrl}
                     className="text-xs text-muted-foreground uppercase tracking-wide hover:text-primary transition-colors"
                   >
                     {product.categoryNames.join(', ')}
@@ -334,7 +349,7 @@ const ProductDetail = () => {
                   <div className="flex items-center gap-1">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
-                        <span key={i} className={`text-sm ${i < Math.floor(product.rating!) ? 'text-gold' : 'text-muted'}`}>
+                        <span key={i} className={`text-sm ${i < Math.floor(product.rating || 0) ? 'text-gold' : 'text-muted'}`}>
                           ★
                         </span>
                       ))}
@@ -555,7 +570,7 @@ const ProductDetail = () => {
               You Might Also Like
             </h2>
             <p className="text-sm text-muted-foreground mb-4">
-              Similar sarees based on fabric, occasion, and style
+              Similar designs based on fabric, occasion, and style
             </p>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {relatedProducts.map(product => (
