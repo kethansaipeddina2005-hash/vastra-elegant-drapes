@@ -24,7 +24,7 @@ const Collections = ({ category = '' }: { category?: 'Dresses' | 'Sarees' | '' }
   const description = isDresses
     ? 'Discover premium dresses at Vastra Luxe. Explore individual designs, fabrics, colors and available size charts to find a style for your special occasion.'
     : category === 'Sarees'
-      ? 'Shop exclusive sarees at Vastra Luxe. Explore premium fabrics, silk sarees and distinctive designs, with product details for your special occasion.'
+      ? 'Explore luxury sarees, premium silk sarees and unique designs at Vastra Luxe. Compare fabrics, colors, prices and availability in our exclusive sarees collection.'
       : 'Explore premium dresses and luxury sarees at Vastra Luxe. Browse fabrics, colors, occasions and available sizes across our two collections.';
   const canonical = category ? `/${category.toLowerCase()}` : '/collections';
   const legacyCategory = searchParams.get('category');
@@ -81,7 +81,7 @@ const Collections = ({ category = '' }: { category?: 'Dresses' | 'Sarees' | '' }
         noIndex={searchParams.has('search') || searchParams.has('category')}
         structuredData={breadcrumbSchema}
       />
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 py-8">
         <Breadcrumb className="mb-6">
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -103,6 +103,9 @@ const Collections = ({ category = '' }: { category?: 'Dresses' | 'Sarees' | '' }
               <p className="text-sm md:text-base text-muted-foreground">
                 {products.length} {products.length === 1 ? 'product' : 'products'} found
               </p>
+              {category === 'Sarees' && <p className="mt-3 max-w-3xl text-sm md:text-base text-muted-foreground leading-relaxed">
+                Discover luxury sarees through color, texture and the details of each design. Explore premium sarees and silk sarees for occasion dressing, comparing the listed fabric, border and pallu photographs, price and available stock before choosing.
+              </p>}
             </div>
             
             <div className="flex gap-2 w-full md:w-auto">
@@ -218,10 +221,10 @@ const Collections = ({ category = '' }: { category?: 'Dresses' | 'Sarees' | '' }
             )}
         </div>
         {category && <section className="mt-12 border-t border-border pt-8 space-y-4 max-w-3xl text-sm text-muted-foreground leading-relaxed">
-          <h2 className="text-xl font-playfair font-semibold text-foreground">{isDresses ? 'Choose your dress and size' : 'Choose a saree for your occasion'}</h2>
+          <h2 className="text-xl font-playfair font-semibold text-foreground">{isDresses ? 'Choose your dress and size' : 'Unique sarees, chosen for your occasion'}</h2>
           <p>{isDresses
             ? 'Start with the silhouette, fabric and color shown on each dress. Check the product’s occasion details when choosing an outfit for a wedding, festival or family celebration. Compare the available size chart with your measurements, using the units shown, and select an in-stock size before adding it to your cart.'
-            : 'Compare the fabric, color, region and occasion listed for each saree. For silk designs, inspect the product photos for the border and pallu details. Choose a color and drape that suit your wedding, festival or family occasion rather than relying on the product name alone.'}</p>
+            : 'A unique saree is a personal choice: compare the fabric, color, region and occasion listed for each design. For silk sarees, look closely at the border, pallu and motifs in the photographs. Choose a color and drape that suit your wedding, festival or family occasion. Our exclusive sarees selection does not imply that every design is one-of-a-kind or will never be restocked; current availability is shown on the product page.'}</p>
           <h2 className="text-xl font-playfair font-semibold text-foreground">{isDresses ? 'Measurements and customization' : 'Product details and care'}</h2>
           <p>{isDresses
             ? 'Measure against the named columns in the individual product’s chart; different designs may use different measurements. A size chart lists the offered sizes and does not by itself mean made-to-measure tailoring is available. Ask about any design, fabric or fit changes through the product enquiry before ordering; availability must be confirmed for that dress.'

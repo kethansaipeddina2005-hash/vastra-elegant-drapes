@@ -3,8 +3,9 @@
 import { readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
 import { createClient } from "@supabase/supabase-js";
+import { SITE_URL } from '../src/lib/site';
 
-const BASE_URL = "https://www.vastraluxe.com";
+const BASE_URL = SITE_URL;
 
 // Match Vite's local environment loading without printing credentials.
 try {

@@ -1,4 +1,5 @@
 # Marketplace (unified Vastra Luxe fashion platform)
+- [ ] Correct and verify official www.vastraluxe.com SEO, existing Sarees content, live redirects, sitemap and mobile rendering; report evidence and external blockers
 - [x] Apply uploaded two-category SEO brief and verify public metadata, links, product schemas and sitemap (details in SEO_REPORT.md)
 - [ ] Automatic live sitemap refresh and Google indexing verification — requires publishing/server delivery and Google account verification
 - [x] Live customer chats for owning product partners, with admin visibility and replies
