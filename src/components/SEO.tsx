@@ -1,8 +1,9 @@
 import { Helmet } from 'react-helmet-async';
+import { SITE_URL, getSiteUrl } from '@/lib/site';
 
 // Canonical production domain — used for absolute URLs so canonicals/OG stay
 // stable across preview/staging origins.
-export const SITE_URL = 'https://www.vastraluxe.com';
+export { SITE_URL } from '@/lib/site';
 
 interface SEOProps {
   title?: string;
@@ -15,8 +16,8 @@ interface SEOProps {
 }
 
 const SEO = ({
-  title = 'Vastra Luxe — Luxury Designer Sarees | Grace in Every Drape',
-  description = 'Shop luxury designer sarees at Vastra Luxe. Exclusive handcrafted Kanchipuram, Banarasi & bridal silk sarees with worldwide shipping and WhatsApp video shopping.',
+  title = 'Vastra Luxe | Premium Dresses & Luxury Sarees',
+  description = 'Explore premium dresses, luxury sarees and silk designs at Vastra Luxe. Compare product fabrics, colors, prices and availability for your special occasion.',
   canonical,
   ogImage,
   ogType = 'website',
@@ -28,7 +29,7 @@ const SEO = ({
     (typeof window !== 'undefined'
       ? window.location.pathname
       : '/');
-  const fullCanonical = path.startsWith('http') ? path : `${SITE_URL}${path}`;
+  const fullCanonical = getSiteUrl(path);
   const privatePath = typeof window !== 'undefined' && /^\/(account|admin|partner|collaborator|cart|checkout|payment|thank-you)(\/|$)/.test(window.location.pathname);
   const fullOgImage = ogImage ? (ogImage.startsWith('http') ? ogImage : `${SITE_URL}${ogImage}`) : undefined;
 
@@ -151,7 +152,7 @@ export const getProductSchema = (product: {
   name: product.name,
   description: product.description,
   image: product.images,
-  ...(product.url && { url: `${SITE_URL}${product.url}` }),
+  ...(product.url && { url: getSiteUrl(product.url) }),
   ...(product.material && { material: product.material }),
   ...(product.color && { color: product.color }),
   ...(product.sku !== undefined && { sku: String(product.sku) }),
@@ -163,7 +164,7 @@ export const getProductSchema = (product: {
     '@type': 'Offer',
     price: product.price,
     priceCurrency: product.currency || 'INR',
-    ...(product.url && { url: `${SITE_URL}${product.url}` }),
+    ...(product.url && { url: getSiteUrl(product.url) }),
     itemCondition: 'https://schema.org/NewCondition',
     availability: product.inStock !== false 
       ? 'https://schema.org/InStock' 
@@ -198,7 +199,7 @@ export const getBreadcrumbSchema = (items: { name: string; url: string }[]) => (
     '@type': 'ListItem',
     position: index + 1,
     name: item.name,
-    item: `${SITE_URL}${item.url}`,
+    item: getSiteUrl(item.url),
   })),
 });
 
@@ -220,9 +221,5 @@ export const getArticleSchema = (article: {
   publisher: {
     '@type': 'Organization',
     name: 'Vastra',
-    logo: {
-      '@type': 'ImageObject',
-      url: `${SITE_URL}/logo.jpg`,
-    },
   },
 });
