@@ -1234,16 +1234,16 @@ export type Database = {
       create_checkout_order: {
         Args: {
           _coupon_code?: string
-          _customer_email: string
-          _customer_name: string
-          _customer_phone: string
+          _customer_email?: string
+          _customer_name?: string
+          _customer_phone?: string
           _discount_percent?: number
           _final_amount?: number
-          _guest_token: string
-          _items: Json
-          _payment_method: string
+          _guest_token?: string
+          _items?: Json
+          _payment_method?: string
           _pricing_region?: string
-          _shipping_address: string
+          _shipping_address?: string
           _shipping_country?: string
           _shipping_pincode?: string
           _total_amount?: number
@@ -1333,6 +1333,10 @@ export type Database = {
           unread_count: number
           updated_at: string
         }[]
+      }
+      record_payment_attempt: {
+        Args: { _guest_token: string; _order_id: string; _outcome: string }
+        Returns: undefined
       }
       restore_product_stock_for_order: {
         Args: { _order_id: string }
