@@ -8,6 +8,9 @@ project_id = "ulvnkrhowedfdyiqeybp"
 
 [functions.verify-razorpay-payment]
 
+[functions.razorpay-webhook]
+verify_jwt = false
+
 [functions.create-upi-order]
 
 [functions.verify-upi-payment]

@@ -11,15 +11,7 @@ const corsHeaders = {
 
 interface OrderNotificationRequest {
   orderId: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  totalAmount: number;
-  orderItems: Array<{
-    name: string;
-    quantity: number;
-    price: number;
-  }>;
+  guest_token?: string | null;
 }
 
 function escapeHtml(str: unknown): string {
@@ -37,52 +29,68 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      {
-        global: {
-          headers: { Authorization: req.headers.get("Authorization")! },
-        },
-      }
-    );
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const isServiceCall = serviceRoleKey && authHeader === `Bearer ${serviceRoleKey}`;
 
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser();
+    const { orderId, guest_token }: OrderNotificationRequest = await req.json();
+    if (!orderId) throw new Error("orderId is required");
 
-    if (!user) {
-      throw new Error("Unauthorized");
-    }
-
-    const {
-      orderId,
-      customerName,
-      customerEmail,
-      customerPhone,
-      totalAmount,
-      orderItems,
-    }: OrderNotificationRequest = await req.json();
-
-    const safeName = escapeHtml(customerName);
-    const safeEmail = escapeHtml(customerEmail);
-    const safePhone = escapeHtml(customerPhone);
-    const safeOrderId = escapeHtml(orderId);
-
-    // Fetch authoritative order + address details server-side (service role).
     const adminClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      serviceRoleKey
     );
+
+    // Authorization: internal service call, the signed-in order owner, or the
+    // matching guest token. Everyone else is rejected.
+    if (!isServiceCall) {
+      const supabaseClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+        { global: { headers: authHeader ? { Authorization: authHeader } : {} } }
+      );
+      const { data: { user } } = await supabaseClient.auth.getUser();
+
+      const { data: ord } = await adminClient
+        .from("orders")
+        .select("user_id, guest_token")
+        .eq("id", orderId)
+        .maybeSingle();
+      const guestOk = ord && !ord.user_id && guest_token && ord.guest_token === guest_token;
+      const userOk = ord && ord.user_id && user && ord.user_id === user.id;
+      if (!ord || (!guestOk && !userOk)) {
+        throw new Error("Unauthorized");
+      }
+    }
+
+    // All email content is derived server-side from the order record.
     const { data: orderRow } = await adminClient
       .from("orders")
-      .select("order_number, payment_method, payment_status, status, final_amount, shipping_address_id")
+      .select("order_number, payment_method, payment_status, status, final_amount, total_amount, discount_percent, coupon_code, customer_name, customer_email, customer_phone, shipping_address_text, shipping_address_id")
       .eq("id", orderId)
       .maybeSingle();
-    const displayOrderNumber = orderRow?.order_number ?? `#${String(orderId).slice(0, 8)}`;
+    if (!orderRow) throw new Error("Order not found");
+
+    const { data: itemRows } = await adminClient
+      .from("order_items")
+      .select("quantity, price, selected_size, products(name)")
+      .eq("order_id", orderId);
+    const orderItems = (itemRows ?? []).map((i: any) => ({
+      name: i.products?.name ?? "Product",
+      quantity: Number(i.quantity) || 0,
+      price: Number(i.price) || 0,
+      size: i.selected_size ?? null,
+    }));
+
+    const safeName = escapeHtml(orderRow.customer_name);
+    const safeEmail = escapeHtml(orderRow.customer_email);
+    const safePhone = escapeHtml(orderRow.customer_phone);
+    const displayOrderNumber = orderRow.order_number ?? `#${String(orderId).slice(0, 8)}`;
     const safeDisplayOrderNumber = escapeHtml(displayOrderNumber);
+    const totalAmount = Number(orderRow.final_amount) || Number(orderRow.total_amount) || 0;
+
     let addressRow: any = null;
-    if (orderRow?.shipping_address_id) {
+    if (orderRow.shipping_address_id) {
       const { data: addr } = await adminClient
         .from("addresses")
         .select("full_name, phone, address_line1, address_line2, city, state, postal_code, country")
@@ -100,25 +108,29 @@ serve(async (req) => {
           <p style="margin: 5px 0;">${escapeHtml(addressRow.country)}</p>
           <p style="margin: 5px 0;"><strong>Phone:</strong> ${escapeHtml(addressRow.phone)}</p>
         </div>`
-      : "";
-    const paymentHtml = orderRow
-      ? `
+      : orderRow.shipping_address_text
+        ? `
+        <div class="info-box">
+          <h3 style="margin-top: 0;">Shipping Address</h3>
+          <p style="margin: 5px 0;">${escapeHtml(orderRow.shipping_address_text)}</p>
+        </div>`
+        : "";
+    const paymentHtml = `
         <div class="info-box">
           <h3 style="margin-top: 0;">Payment</h3>
           <p style="margin: 5px 0;"><strong>Method:</strong> ${escapeHtml(orderRow.payment_method ?? "-")}</p>
           <p style="margin: 5px 0;"><strong>Status:</strong> ${escapeHtml(orderRow.payment_status ?? "-")}</p>
           <p style="margin: 5px 0;"><strong>Order Status:</strong> ${escapeHtml(orderRow.status ?? "-")}</p>
-        </div>`
-      : "";
+        </div>`;
 
     // Create order summary HTML
     const orderItemsHtml = orderItems
       .map(
         (item) => `
         <tr>
-          <td style="padding: 10px; border-bottom: 1px solid #eee;">${escapeHtml(item.name)}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${Number(item.quantity) || 0}</td>
-          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${(Number(item.price) || 0).toLocaleString()}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee;">${escapeHtml(item.name)}${item.size ? ` (Size ${escapeHtml(item.size)})` : ""}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₹${(item.price * item.quantity).toLocaleString()}</td>
         </tr>
       `
       )
@@ -153,7 +165,7 @@ serve(async (req) => {
               <div class="content">
                 <h2 style="color: #c2a079;">Order Details</h2>
                 <p><strong>Order Number:</strong> ${safeDisplayOrderNumber}</p>
-                
+
                 <div class="info-box">
                   <h3 style="margin-top: 0;">Customer Information</h3>
                   <p style="margin: 5px 0;"><strong>Name:</strong> ${safeName}</p>
@@ -177,7 +189,7 @@ serve(async (req) => {
                 </table>
 
                 <div class="total">
-                  Total Amount: ₹${(Number(totalAmount) || 0).toLocaleString()}
+                  Total Amount: ₹${totalAmount.toLocaleString()}
                 </div>
 
                 <p style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee; color: #666;">
@@ -196,7 +208,7 @@ serve(async (req) => {
     // Send confirmation email to customer
     const customerEmailResponse = await resend.emails.send({
       from: "Vastra <onboarding@resend.dev>",
-      to: [customerEmail],
+      to: [orderRow.customer_email],
       subject: `Order Confirmation - Vastra ${displayOrderNumber}`,
       html: `
         <!DOCTYPE html>
@@ -222,7 +234,7 @@ serve(async (req) => {
                 <h2 style="color: #c2a079;">Order Confirmed</h2>
                 <p>Dear ${safeName},</p>
                 <p>Thank you for your purchase! Your order has been successfully placed.</p>
-                
+
                 <p><strong>Order Number:</strong> ${safeDisplayOrderNumber}</p>
 
                 <h3>Order Summary</h3>
@@ -240,7 +252,7 @@ serve(async (req) => {
                 </table>
 
                 <div class="total">
-                  Total: ₹${(Number(totalAmount) || 0).toLocaleString()}
+                  Total: ₹${totalAmount.toLocaleString()}
                 </div>
 
                 <p style="margin-top: 30px;">

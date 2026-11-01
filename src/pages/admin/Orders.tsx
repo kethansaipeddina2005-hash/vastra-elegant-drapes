@@ -394,6 +394,7 @@ const AdminOrders = () => {
   const getStatusBadge = (status: string) => {
     const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       pending: 'outline',
+      pending_payment: 'outline',
       processing: 'secondary',
       shipped: 'default',
       delivered: 'default',
@@ -401,7 +402,7 @@ const AdminOrders = () => {
       returned: 'secondary',
       cancelled: 'destructive',
     };
-    const labels: Record<string, string> = { return_requested: 'Return Requested', returned: 'Returned' };
+    const labels: Record<string, string> = { pending_payment: 'Pending Payment', return_requested: 'Return Requested', returned: 'Returned' };
     return <Badge variant={variants[status] || 'outline'}>{labels[status] || status}</Badge>;
   };
 
@@ -487,6 +488,7 @@ const AdminOrders = () => {
                   <SelectContent>
                     <SelectItem value="all">All Orders</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="pending_payment">Pending Payment</SelectItem>
                     <SelectItem value="processing">Processing</SelectItem>
                     <SelectItem value="shipped">Shipped</SelectItem>
                     <SelectItem value="delivered">Delivered</SelectItem>
@@ -509,6 +511,7 @@ const AdminOrders = () => {
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
                     <SelectItem value="refunded">Refunded</SelectItem>
                   </SelectContent>
                 </Select>

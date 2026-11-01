@@ -411,26 +411,10 @@ const Checkout = () => {
           } catch {}
         }
 
-        try {
-          await supabase.functions.invoke("send-order-notification", {
-            body: {
-              orderId,
-              customerName: shippingData.fullName,
-              customerEmail: shippingData.email,
-              customerPhone: shippingData.phone,
-              shippingAddress: shippingAddressString,
-              totalAmount: total,
-              orderItems: cart.map((item) => ({
-                name: item.name,
-                quantity: item.quantity,
-                price: item.price * item.quantity,
-              })),
-            },
-          });
-        } catch (emailError) {
-          console.error("Error sending order notification:", emailError);
-        }
       }
+
+      // Confirmation emails are sent only after payment is verified (or COD is
+      // finalized) — never at order creation, so failed payments stay silent.
 
 
       if (paymentMethod === "razorpay") {
@@ -448,6 +432,15 @@ const Checkout = () => {
           },
         });
         if (finalizeErr) throw finalizeErr;
+
+        // COD is confirmed at placement, so notifications go out now.
+        try {
+          await supabase.functions.invoke("send-order-notification", {
+            body: { orderId, guest_token: user ? null : guestToken },
+          });
+        } catch (emailError) {
+          console.error("Error sending order notification:", emailError);
+        }
 
         toast({ title: "Order Placed Successfully!", description: "Pay on delivery." });
         await markCartPurchased(orderId);
@@ -545,15 +538,35 @@ const Checkout = () => {
         theme: { color: "#c2a079" },
         modal: {
           ondismiss: function () {
-            // Cart and details stay intact so the shopper can retry instantly.
+            // Record the cancelled attempt; the order stays unconfirmed and
+            // the same draft order is reused when the shopper retries.
+            supabase.rpc("record_payment_attempt", {
+              _order_id: orderId,
+              _guest_token: user ? null : guestToken,
+              _outcome: "cancelled",
+            }).then(({ error }) => error && console.error("record_payment_attempt:", error));
             toast({
-              title: "Payment Cancelled",
-              description: "Your cart is saved. You can retry payment anytime.",
+              title: "Payment was not completed",
+              description: "Your order is not confirmed. Your cart is saved — you can retry payment anytime.",
               variant: "destructive",
             });
             setIsProcessing(false);
           },
         },
+      });
+      rzp.on("payment.failed", function () {
+        // Razorpay reported a failed payment: never confirm, allow retry.
+        supabase.rpc("record_payment_attempt", {
+          _order_id: orderId,
+          _guest_token: user ? null : guestToken,
+          _outcome: "failed",
+        }).then(({ error }) => error && console.error("record_payment_attempt:", error));
+        toast({
+          title: "Payment failed",
+          description: "Your order has not been confirmed. Please try again.",
+          variant: "destructive",
+        });
+        setIsProcessing(false);
       });
       rzp.open();
     } catch (error) {
