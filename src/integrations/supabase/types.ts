@@ -1334,6 +1334,7 @@ export type Database = {
           updated_at: string
         }[]
       }
+      price_checkout_order: { Args: { _order_id: string }; Returns: undefined }
       record_payment_attempt: {
         Args: { _guest_token: string; _order_id: string; _outcome: string }
         Returns: undefined

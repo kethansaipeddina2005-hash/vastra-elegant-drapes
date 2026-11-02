@@ -1,4 +1,6 @@
 # Marketplace (unified Vastra Luxe fashion platform)
+- [x] Deploy Razorpay gateway-order binding, captured-only confirmation, authoritative totals, retry reuse and notification eligibility; 11 policy tests pass and guest checkout opens without errors
+- [ ] Configure Razorpay webhook — waiting for matching secret and Razorpay event setup; real payment, duplicate callback, webhook delivery and email receipt remain unverified
 - [ ] Correct and verify official www.vastraluxe.com SEO, existing Sarees content, live redirects, sitemap and mobile rendering; report evidence and external blockers
 - [x] Apply uploaded two-category SEO brief and verify public metadata, links, product schemas and sitemap (details in SEO_REPORT.md)
 - [ ] Automatic live sitemap refresh and Google indexing verification — requires publishing/server delivery and Google account verification

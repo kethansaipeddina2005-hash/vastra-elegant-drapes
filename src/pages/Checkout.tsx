@@ -501,7 +501,7 @@ const Checkout = () => {
         order_id: data.orderId,
         handler: async function (response: any) {
           try {
-            const { error: verifyError } = await supabase.functions.invoke(
+            const { data: verification, error: verifyError } = await supabase.functions.invoke(
               "verify-razorpay-payment",
               {
                 body: {
@@ -514,6 +514,7 @@ const Checkout = () => {
               }
             );
             if (verifyError) throw verifyError;
+            if (verification?.success !== true) throw new Error("Payment confirmation is still pending");
 
             draftOrderRef.current = null;
             await markCartPurchased(orderId);

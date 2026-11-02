@@ -115,7 +115,7 @@ const Payments = () => {
       };
 
       // If marking as completed, also update order status to processing
-      if (newPaymentStatus === "completed" && selectedOrder.status === "pending") {
+      if (newPaymentStatus === "completed" && ["pending", "pending_payment"].includes(selectedOrder.status)) {
         updateData.status = "processing";
       }
 
@@ -166,6 +166,8 @@ const Payments = () => {
         return <Badge variant="secondary" className="bg-yellow-500 hover:bg-yellow-600 text-white"><Clock className="h-3 w-3 mr-1" /> Pending</Badge>;
       case "failed":
         return <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" /> Failed</Badge>;
+      case "cancelled":
+        return <Badge variant="outline"><XCircle className="h-3 w-3 mr-1" /> Cancelled attempt</Badge>;
       case "refunded":
         return <Badge variant="outline"><RefreshCw className="h-3 w-3 mr-1" /> Refunded</Badge>;
       default:
@@ -327,6 +329,7 @@ const Payments = () => {
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled attempt</SelectItem>
                     <SelectItem value="refunded">Refunded</SelectItem>
                   </SelectContent>
                 </Select>
@@ -467,10 +470,11 @@ const Payments = () => {
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
                       <SelectItem value="failed">Failed</SelectItem>
+                      <SelectItem value="cancelled">Cancelled attempt</SelectItem>
                       <SelectItem value="refunded">Refunded</SelectItem>
                     </SelectContent>
                   </Select>
-                  {newPaymentStatus === "completed" && selectedOrder.status === "pending" && (
+                  {newPaymentStatus === "completed" && ["pending", "pending_payment"].includes(selectedOrder.status) && (
                     <p className="text-xs text-muted-foreground mt-1">
                       This will also update the order status to "Processing"
                     </p>
