@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.0";
+import { canNotifyOrder } from "../_shared/payment-policy.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -70,6 +71,7 @@ serve(async (req) => {
       .eq("id", orderId)
       .maybeSingle();
     if (!orderRow) throw new Error("Order not found");
+    if (!canNotifyOrder(orderRow)) return new Response(JSON.stringify({ error: "Order is not confirmed" }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const { data: itemRows } = await adminClient
       .from("order_items")
@@ -276,7 +278,7 @@ serve(async (req) => {
       console.error("Resend customer email error:", (customerEmailResponse as any).error);
     }
 
-    console.log("Order notification emails sent:", { adminEmail, customerEmailResponse });
+    if (adminEmail.error || customerEmailResponse.error) throw new Error("Email delivery request rejected");
 
     return new Response(
       JSON.stringify({

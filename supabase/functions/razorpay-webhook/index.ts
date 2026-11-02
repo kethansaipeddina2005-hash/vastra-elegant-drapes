@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.0";
+import { signaturesMatch, validateCapturedPayment } from "../_shared/payment-policy.ts";
 import { crypto } from "https://deno.land/std@0.190.0/crypto/mod.ts";
 
 // Razorpay webhook: a server-to-server confirmation channel so orders are
@@ -54,7 +55,7 @@ serve(async (req) => {
 
   // Verify the webhook signature before trusting anything in the payload.
   const expected = await hmacSha256Hex(webhookSecret, rawBody);
-  if (expected !== signature) {
+  if (!signaturesMatch(expected, signature)) {
     console.error("Webhook signature verification failed");
     return new Response("Invalid signature", { status: 400 });
   }
@@ -84,19 +85,10 @@ serve(async (req) => {
   let order: any = null;
   const { data: byRzpId } = await admin
     .from("orders")
-    .select("id, final_amount, payment_status")
+    .select("id, final_amount, payment_status, razorpay_order_id, payment_method, status")
     .eq("razorpay_order_id", payment.order_id)
     .maybeSingle();
   order = byRzpId;
-
-  if (!order) {
-    const { data: rzpOrder } = await admin
-      .from("orders")
-      .select("id, final_amount, payment_status")
-      .eq("id", payment.notes?.order_id ?? "")
-      .maybeSingle();
-    order = rzpOrder;
-  }
 
   if (!order) {
     console.error("Webhook: no internal order for Razorpay order", payment.order_id);
@@ -104,12 +96,8 @@ serve(async (req) => {
   }
 
   if (eventType === "payment.captured") {
-    // Validate the paid amount against the internal order before confirming.
-    const expectedPaise = Math.round(Number(order.final_amount) * 100);
-    if (Number(payment.amount) !== expectedPaise || payment.currency !== "INR") {
-      console.error(`Webhook amount mismatch for order ${order.id}`);
-      return new Response(JSON.stringify({ received: true }), { status: 200 });
-    }
+    try { validateCapturedPayment(order, payment); }
+    catch { return new Response("Payment does not match an awaiting order", { status: 400 }); }
 
     // Idempotent: only the first confirmation transitions the order.
     const { data: updated, error } = await admin
@@ -124,6 +112,8 @@ serve(async (req) => {
       })
       .eq("id", order.id)
       .neq("payment_status", "completed")
+      .eq("status", "pending_payment")
+      .eq("razorpay_order_id", payment.order_id)
       .select("id");
 
     if (error) {
@@ -136,11 +126,12 @@ serve(async (req) => {
       console.log(`Webhook confirmed order ${order.id}`);
     }
   } else if (eventType === "payment.failed") {
-    await admin
+    const { error } = await admin
       .from("orders")
       .update({ payment_status: "failed", updated_at: new Date().toISOString() })
       .eq("id", order.id)
       .in("payment_status", ["pending", "cancelled"]);
+    if (error) return new Response("Update failed", { status: 500 });
   }
 
   return new Response(JSON.stringify({ received: true }), { status: 200 });

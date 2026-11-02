@@ -1,11 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.0";
 import { crypto } from "https://deno.land/std@0.190.0/crypto/mod.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { z } from "npm:zod@3";
+import { signaturesMatch, validateCapturedPayment } from "../_shared/payment-policy.ts";
 
 interface VerifyPaymentRequest {
   razorpay_order_id: string;
@@ -66,13 +64,15 @@ serve(async (req) => {
 
     const { data: { user } } = await supabaseClient.auth.getUser();
 
+    const parsed = z.object({ razorpay_order_id: z.string().regex(/^order_[A-Za-z0-9]+$/), razorpay_payment_id: z.string().regex(/^pay_[A-Za-z0-9]+$/), razorpay_signature: z.string().regex(/^[a-f0-9]{64}$/), order_id: z.string().uuid(), guest_token: z.string().uuid().nullish() }).safeParse(await req.json());
+    if (!parsed.success) return new Response(JSON.stringify({ error: "Invalid payment details" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     const {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
       order_id,
       guest_token,
-    }: VerifyPaymentRequest = await req.json();
+    } = parsed.data;
 
     const admin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -82,7 +82,7 @@ serve(async (req) => {
     // Authorize: signed-in owner OR matching guest_token
     const { data: ord } = await admin
       .from("orders")
-      .select("id, user_id, guest_token, final_amount, payment_status, razorpay_payment_id")
+      .select("id, user_id, guest_token, final_amount, payment_status, razorpay_payment_id, razorpay_order_id, payment_method, status")
       .eq("id", order_id)
       .maybeSingle();
     const isGuest = !ord?.user_id;
@@ -91,6 +91,8 @@ serve(async (req) => {
     if (!ord || (!guestOk && !userOk)) {
       throw new Error("Unauthorized");
     }
+
+    if (ord.razorpay_order_id !== razorpay_order_id || ord.payment_method !== "razorpay") throw new Error("Payment order mismatch");
 
     // Idempotency: a duplicate success callback for an already-confirmed order is a no-op.
     if (ord.payment_status === "completed") {
@@ -112,7 +114,7 @@ serve(async (req) => {
       razorpayKeySecret,
       `${razorpay_order_id}|${razorpay_payment_id}`
     );
-    if (generatedSignature !== razorpay_signature) {
+    if (!signaturesMatch(generatedSignature, razorpay_signature)) {
       console.error("Payment signature verification failed");
       throw new Error("Invalid payment signature");
     }
@@ -123,22 +125,12 @@ serve(async (req) => {
       headers: { Authorization: `Basic ${rzpAuth}` },
     });
     if (!payRes.ok) {
-      console.error("Razorpay payment fetch failed:", await payRes.text());
+      console.error("Razorpay payment fetch failed");
       throw new Error("Could not validate payment with Razorpay");
     }
     const payment = await payRes.json();
 
-    if (!["captured", "authorized"].includes(payment.status)) {
-      throw new Error(`Payment not successful (status: ${payment.status})`);
-    }
-    if (payment.order_id !== razorpay_order_id) {
-      throw new Error("Payment does not belong to this Razorpay order");
-    }
-    const expectedPaise = Math.round(Number(ord.final_amount) * 100);
-    if (Number(payment.amount) !== expectedPaise || payment.currency !== "INR") {
-      console.error(`Amount mismatch: expected ${expectedPaise}, got ${payment.amount}`);
-      throw new Error("Payment amount does not match the order");
-    }
+    validateCapturedPayment(ord, payment);
 
     // 3) Confirm the order exactly once (conditional update guards concurrent retries).
     const updQuery = admin
@@ -152,10 +144,12 @@ serve(async (req) => {
         updated_at: new Date().toISOString(),
       })
       .eq("id", order_id)
-      .neq("payment_status", "completed");
+      .neq("payment_status", "completed")
+      .eq("razorpay_order_id", razorpay_order_id)
+      .eq("status", "pending_payment");
     const { data: updated, error: updateError } = isGuest
       ? await updQuery.eq("guest_token", guest_token as string).select("id")
-      : await updQuery.eq("user_id", user!.id).select("id");
+      : await updQuery.eq("user_id", user?.id).select("id");
 
     if (updateError) {
       console.error("Error updating order:", updateError);
@@ -165,6 +159,11 @@ serve(async (req) => {
     // 4) Notifications only after verified payment, and only on the first confirmation.
     if (updated && updated.length > 0) {
       await sendOrderNotifications(order_id);
+    }
+
+    if (!updated?.length) {
+      const { data: latest } = await admin.from("orders").select("payment_status").eq("id", order_id).single();
+      if (latest?.payment_status !== "completed") throw new Error("Payment could not be confirmed");
     }
 
     console.log(`Payment verified for order ${order_id}`);
