@@ -141,6 +141,13 @@
       "when": 1793508135483,
       "tag": "0019_razorpay_pending_payment_and_attempt_tracking",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793590622926,
+      "tag": "0020_authoritative_checkout_totals_and_payment_binding",
+      "breakpoints": true
     }
   ]
 }
