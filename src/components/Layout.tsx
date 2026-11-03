@@ -3,6 +3,7 @@ import Header from './Header';
 import Footer from './Footer';
 import MobileBottomNav from './MobileBottomNav';
 import DeferUntilIdle from './DeferUntilIdle';
+import ChatErrorBoundary from './chat/ChatErrorBoundary';
 
 // Chat is a non-critical widget — keep it out of the initial bundle/render.
 const CustomerChat = lazy(() => import('./chat/CustomerChat'));
@@ -18,9 +19,11 @@ const Layout = ({ children }: LayoutProps) => {
       <main className="flex-1 pb-14 lg:pb-0">{children}</main>
       <Footer className="hidden lg:block" />
       <DeferUntilIdle>
-        <Suspense fallback={null}>
-          <CustomerChat />
-        </Suspense>
+        <ChatErrorBoundary>
+          <Suspense fallback={null}>
+            <CustomerChat />
+          </Suspense>
+        </ChatErrorBoundary>
       </DeferUntilIdle>
       <MobileBottomNav />
     </div>
