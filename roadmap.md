@@ -1,4 +1,5 @@
 # Marketplace (unified Vastra Luxe fashion platform)
+- [ ] Admin country delivery charges and checkout/server pricing integration with verification
 - [x] Deploy Razorpay gateway-order binding, captured-only confirmation, authoritative totals, retry reuse and notification eligibility; 11 policy tests pass and guest checkout opens without errors
 - [ ] Confirm Razorpay event setup and real payment delivery — webhook secret is saved and unsigned requests are rejected; real payment, duplicate callback, webhook delivery and email receipt remain unverified
 - [ ] Correct and verify official www.vastraluxe.com SEO, existing Sarees content, live redirects, sitemap and mobile rendering; report evidence and external blockers
