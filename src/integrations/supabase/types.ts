@@ -459,6 +459,30 @@ export type Database = {
           },
         ]
       }
+      delivery_rates: {
+        Row: {
+          amount: number
+          country_code: string
+          country_name: string
+          free_above: number | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          country_code: string
+          country_name: string
+          free_above?: number | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          country_code?: string
+          country_name?: string
+          free_above?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string | null
@@ -531,6 +555,7 @@ export type Database = {
           return_product_received: boolean | null
           shipping_address_id: string | null
           shipping_address_text: string | null
+          shipping_amount: number | null
           shipping_company: string | null
           shipping_country: string | null
           shipping_id: string | null
@@ -564,6 +589,7 @@ export type Database = {
           return_product_received?: boolean | null
           shipping_address_id?: string | null
           shipping_address_text?: string | null
+          shipping_amount?: number | null
           shipping_company?: string | null
           shipping_country?: string | null
           shipping_id?: string | null
@@ -597,6 +623,7 @@ export type Database = {
           return_product_received?: boolean | null
           shipping_address_id?: string | null
           shipping_address_text?: string | null
+          shipping_amount?: number | null
           shipping_company?: string | null
           shipping_country?: string | null
           shipping_id?: string | null
@@ -1253,6 +1280,10 @@ export type Database = {
           order_id: string
           order_number: string
         }[]
+      }
+      delivery_charge: {
+        Args: { _country: string; _subtotal: number }
+        Returns: number
       }
       get_guest_order: {
         Args: { _guest_token: string; _order_id: string }
