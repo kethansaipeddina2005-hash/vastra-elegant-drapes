@@ -1,4 +1,5 @@
 # Architecture rules
+- Isolate deferred customer chat inside its own error boundary with explicit reload recovery so a missing deployment chunk cannot blank the storefront or trigger automatic reload loops.
 - Razorpay orders charge immutable server-derived order totals, persist gateway linkage before checkout, and confirm only matching captured INR payments; shared payment policy governs callbacks, webhooks and notification eligibility.
 - Dresses and Sarees share the existing collections component at stable category paths; legacy category queries redirect there to avoid duplicate indexable pages.
 - Per-page canonicals are owned by the shared SEO component, with no static canonical in index.html; the sitemap keeps its existing build-time generator and page-specific timestamps.
