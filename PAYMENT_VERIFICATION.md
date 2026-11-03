@@ -11,13 +11,13 @@
 ## Observed checks
 - Deployed create-razorpay-order rejects a nonexistent order with HTTP 404.
 - Deployed verify-razorpay-payment rejects malformed input with HTTP 400.
-- Deployed webhook currently returns HTTP 500 because its signing secret is not configured.
+- Webhook signing secret is securely saved; the deployed endpoint rejects an unsigned request with HTTP 400, Invalid signature.
 - Guest product-to-cart-to-checkout navigation works for product 52; delivery fields and Pay Securely are visible, without runtime errors.
 - Latest observed app checks report build OK.
 
 ## Not yet verified
 - The policy tests are not real Razorpay transactions or full handler integration tests.
 - No live charge was submitted; success, failure, cancellation, retries and duplicate callbacks still require gateway end-to-end checks.
-- Webhook event setup and signature verification require the matching Razorpay webhook secret.
+- Razorpay event setup and successful signed-event delivery are not verified; the secret is saved in Lovable Cloud and must match the Razorpay webhook configuration.
 - Customer/admin inbox delivery is unverified. The existing sender uses onboarding@resend.dev, which may restrict recipients until a sending domain is verified.
 - Failed/abandoned order inventory expiry and release remain a separate unresolved lifecycle concern; this continuation retains the existing reservation/restoration behavior.
