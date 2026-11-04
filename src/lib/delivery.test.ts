@@ -1,5 +1,6 @@
-import { describe, it } from 'node:test';
-import { strict as assert } from 'node:assert';
+import { describe, it, expect } from 'vitest';
+
+const assert = { equal: (a: unknown, b: unknown) => expect(a).toBe(b) };
 import { deliveryCharge } from './delivery';
 
 describe('country-specific delivery pricing', () => {

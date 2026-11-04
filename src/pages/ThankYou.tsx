@@ -41,6 +41,7 @@ interface OrderDetails {
   payment_method: string;
   total_amount: number;
   final_amount: number;
+  shipping_amount: number | null;
   discount_percent: number;
   coupon_code: string | null;
   created_at: string;
@@ -164,6 +165,7 @@ const ThankYou = () => {
           payment_method: data.payment_method,
           total_amount: Number(data.total_amount) || 0,
           final_amount: Number(data.final_amount) || Number(data.total_amount) || 0,
+          shipping_amount: data.shipping_amount === null || data.shipping_amount === undefined ? null : Number(data.shipping_amount),
           discount_percent: Number(data.discount_percent) || 0,
           coupon_code: data.coupon_code,
           created_at: data.created_at,
@@ -223,9 +225,9 @@ const ThankYou = () => {
     ? Math.floor((order.discount_percent / 100) * order.total_amount)
     : 0;
 
-  // final_amount = total_amount - discount + shipping
+  // final_amount = total_amount - discount + shipping; prefer the snapshot saved at order time
   const shippingAmount = order
-    ? Math.max(0, order.final_amount - order.total_amount + discountAmount)
+    ? (order.shipping_amount ?? Math.max(0, order.final_amount - order.total_amount + discountAmount))
     : 0;
 
 

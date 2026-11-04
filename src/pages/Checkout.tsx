@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useDeliveryRates } from "@/hooks/useDeliveryRates";
+import { deliveryCharge, deliveryCountries, countryName } from "@/lib/delivery";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -76,7 +79,7 @@ const Checkout = () => {
   });
 
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
-  const [isInternational, setIsInternational] = useState(false);
+  const [country, setCountry] = useState("IN");
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
   // Admin can limit each product to online, COD, or both; checkout offers only what every item allows.
   const [allowOnline, setAllowOnline] = useState(false);
@@ -117,6 +120,7 @@ const Checkout = () => {
 
   // Reuse the same draft order across payment retries so we never create duplicates.
   const draftOrderRef = useRef<string | null>(null);
+  const draftCountryRef = useRef<string | null>(null);
   const paymentInfoTracked = useRef(false);
 
   useEffect(() => {
@@ -125,16 +129,15 @@ const Checkout = () => {
     } catch {}
   }, [shippingData]);
 
-  const pincodeLooksIntl =
-    shippingData.pincode.trim().length > 0 && !/^\d{6}$/.test(shippingData.pincode.trim());
-  const internationalOrder = isInternational || pincodeLooksIntl;
-  const INTERNATIONAL_SHIPPING = 4000;
+  const internationalOrder = country !== "IN";
+  const { data: deliveryRates } = useDeliveryRates();
 
   const displayTotal = cart.reduce(
     (t, item) => t + getDisplayPrice(item.price, (item as any).foreignPrice) * item.quantity,
     0
   );
-  const shipping = internationalOrder ? INTERNATIONAL_SHIPPING : displayTotal > 2000 ? 0 : 200;
+  // Admin-configured per-country delivery charge; falls back to ₹200 India / ₹4,000 international.
+  const shipping = deliveryCharge(deliveryRates || [], country, displayTotal);
   const discountAmount = Math.floor((discountPercent / 100) * displayTotal);
   const total = displayTotal + shipping - discountAmount;
 
@@ -158,7 +161,11 @@ const Checkout = () => {
   }, [user]);
 
   const applySavedAddress = (addr: SavedAddress) => {
-    setIsInternational(!!addr.country && addr.country.toLowerCase() !== "india");
+    const saved = (addr.country || "").trim();
+    const code = deliveryCountries.find(
+      (c) => c.code === saved.toUpperCase() || c.name.toLowerCase() === saved.toLowerCase()
+    )?.code;
+    setCountry(code || "IN");
     setShippingData((prev) => ({
       ...prev,
       fullName: addr.full_name || prev.fullName,
@@ -271,7 +278,7 @@ const Checkout = () => {
   const shippingAddressString = [
     shippingData.address,
     shippingData.pincode,
-    internationalOrder ? "International" : "India",
+    countryName(country),
   ]
     .filter(Boolean)
     .join(", ");
@@ -376,6 +383,14 @@ const Checkout = () => {
       let guestToken = !user ? localStorage.getItem(GUEST_TOKEN_KEY) : null;
       let orderId = draftOrderRef.current;
 
+      // A country change re-prices delivery, so a stale draft must be discarded —
+      // its saved total (and any linked payment amount) no longer matches.
+      if (orderId && draftCountryRef.current && draftCountryRef.current !== country) {
+        orderId = null;
+        draftOrderRef.current = null;
+        try { localStorage.removeItem(GUEST_ORDER_KEY); } catch {}
+      }
+
       if (!orderId) {
         // Orders are created through a security-definer RPC so guests never need
         // read access to the orders table. Ownership is derived server-side.
@@ -393,7 +408,7 @@ const Checkout = () => {
           _final_amount: total,
           _pricing_region: pricingRegion,
           _shipping_pincode: shippingData.pincode.trim(),
-          _shipping_country: internationalOrder ? "International" : "India",
+          _shipping_country: country,
         });
 
         if (orderError) throw orderError;
@@ -402,6 +417,7 @@ const Checkout = () => {
 
         orderId = result.order_id as string;
         draftOrderRef.current = orderId;
+        draftCountryRef.current = country;
         if (!user) guestToken = (result.guest_token as string) ?? guestToken;
 
         if (!user && guestToken) {
@@ -517,6 +533,7 @@ const Checkout = () => {
             if (verification?.success !== true) throw new Error("Payment confirmation is still pending");
 
             draftOrderRef.current = null;
+            draftCountryRef.current = null;
             await markCartPurchased(orderId);
             toast({ title: "Payment Successful!", description: "Order has been confirmed." });
             navigate("/thank-you", { state: { orderId, shippingAddress: shippingAddressString } });
@@ -704,26 +721,24 @@ const Checkout = () => {
                         value={shippingData.pincode}
                         onChange={(e) => setShippingData({ ...shippingData, pincode: e.target.value })}
                       />
-                      {!isInternational && pincodeLooksIntl && (
-                        <p className="text-xs text-amber-700 mt-1">
-                          Looks like an international code — ₹4,000 shipping will apply.
-                        </p>
-                      )}
                     </div>
-                    <div className="flex items-start gap-3 p-3 border rounded-lg bg-accent/5 self-end">
-                      <input
-                        id="intl"
-                        type="checkbox"
-                        className="mt-1 h-4 w-4"
-                        checked={isInternational}
-                        onChange={(e) => setIsInternational(e.target.checked)}
-                      />
-                      <Label htmlFor="intl" className="cursor-pointer flex-1 text-sm">
-                        Shipping outside India
-                        <span className="block text-xs text-muted-foreground mt-0.5">
-                          Flat ₹4,000 international shipping.
-                        </span>
-                      </Label>
+                    <div>
+                      <Label htmlFor="country">Country</Label>
+                      <Select value={country} onValueChange={setCountry}>
+                        <SelectTrigger id="country" aria-label="Delivery country">
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {deliveryCountries.map((c) => (
+                            <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {shipping === 0
+                          ? "Free delivery to this destination."
+                          : `Delivery to ${countryName(country)}: ₹${shipping.toLocaleString()}.`}
+                      </p>
                     </div>
                   </div>
                 </CardContent>

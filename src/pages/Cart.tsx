@@ -10,6 +10,8 @@ import { usePricing } from "@/contexts/PricingContext";
 import { Minus, Plus, Trash2, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { effectiveCouponPercent } from "@/lib/couponScope";
+import { useDeliveryRates } from "@/hooks/useDeliveryRates";
+import { deliveryCharge } from "@/lib/delivery";
 import { useState, useEffect } from "react";
 import SEO from "@/components/SEO";
 import {
@@ -38,6 +40,7 @@ const Cart = () => {
   } = useCart();
   const { addToWishlist, isInWishlist } = useWishlist();
   const { formatPrice, getDisplayPrice, currencySymbol } = usePricing();
+  const { data: deliveryRates } = useDeliveryRates();
 
   const [promoCode, setPromoCode] = useState(savedPromoCode);
   const [discountPercent, setDiscountPercent] = useState(savedDiscountPercent);
@@ -182,7 +185,9 @@ const Cart = () => {
   const displayTotal = cart.reduce((total, item) => {
     return total + getDisplayPrice(item.price, item.foreignPrice) * item.quantity;
   }, 0);
-  const shipping = displayTotal > 2000 ? 0 : 200;
+  // Domestic estimate; the exact charge is confirmed at checkout from the delivery country.
+  const shipping = deliveryCharge(deliveryRates || [], "IN", displayTotal);
+  const freeAbove = (deliveryRates || []).find((r) => r.country_code === "IN")?.free_above ?? 2000;
   const discountAmount = Math.floor((discountPercent / 100) * displayTotal);
   const total = displayTotal + shipping - discountAmount;
 
@@ -323,9 +328,9 @@ const Cart = () => {
                   <Button variant="outline" className="w-full">Continue Shopping</Button>
                 </Link>
 
-                {displayTotal < 2000 && (
+                {shipping > 0 && displayTotal <= freeAbove && (
                   <p className="text-sm text-center text-muted-foreground">
-                    Add {currencySymbol}{(2000 - displayTotal).toLocaleString()} more for free shipping!
+                    Add {currencySymbol}{(freeAbove - displayTotal + 1).toLocaleString()} more for free shipping!
                   </p>
                 )}
               </CardContent>
