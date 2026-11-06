@@ -542,6 +542,7 @@ export type Database = {
           final_amount: number | null
           guest_token: string | null
           id: string
+          inventory_deducted: boolean
           order_number: string | null
           paid_at: string | null
           payment_method: string | null
@@ -576,6 +577,7 @@ export type Database = {
           final_amount?: number | null
           guest_token?: string | null
           id?: string
+          inventory_deducted?: boolean
           order_number?: string | null
           paid_at?: string | null
           payment_method?: string | null
@@ -610,6 +612,7 @@ export type Database = {
           final_amount?: number | null
           guest_token?: string | null
           id?: string
+          inventory_deducted?: boolean
           order_number?: string | null
           paid_at?: string | null
           payment_method?: string | null
@@ -1281,6 +1284,10 @@ export type Database = {
           order_number: string
         }[]
       }
+      deduct_confirmed_order_inventory: {
+        Args: { _order_id: string }
+        Returns: undefined
+      }
       delivery_charge: {
         Args: { _country: string; _subtotal: number }
         Returns: number
@@ -1396,6 +1403,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      test_payment_inventory_regression: { Args: never; Returns: boolean }
       user_can_review_product: {
         Args: { _order_item_id: string; _product_id: number; _user_id: string }
         Returns: boolean

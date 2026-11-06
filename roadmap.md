@@ -1,4 +1,6 @@
 # Marketplace (unified Vastra Luxe fashion platform)
+- [x] Block unpaid online confirmation and defer total/size stock deduction until payment completion; rollback-isolated database lifecycle tests pass; six unshipped unpaid legacy orders released
+- [ ] Review legacy unpaid orders already marked shipped/delivered against Razorpay records — physical fulfillment/payment evidence needed before changing them
 - [ ] Admin country delivery charges and checkout/server pricing integration with verification
 - [x] Deploy Razorpay gateway-order binding, captured-only confirmation, authoritative totals, retry reuse and notification eligibility; 11 policy tests pass and guest checkout opens without errors
 - [ ] Confirm Razorpay event setup and real payment delivery — webhook secret is saved and unsigned requests are rejected; real payment, duplicate callback, webhook delivery and email receipt remain unverified

@@ -107,6 +107,10 @@ const Payments = () => {
 
   const updatePaymentStatus = async () => {
     if (!selectedOrder || !newPaymentStatus) return;
+    if (selectedOrder.payment_method === "razorpay" && newPaymentStatus === "completed" && selectedOrder.payment_status !== "completed") {
+      toast({ title: "Payment verification required", description: "Razorpay must verify a successful payment before this order can be confirmed.", variant: "destructive" });
+      return;
+    }
 
     setUpdating(true);
     try {

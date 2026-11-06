@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { trackPurchase } from "@/lib/analytics";
 import SEO from "@/components/SEO";
 import { toast } from "@/hooks/use-toast";
+import { isOrderConfirmed } from "@/lib/orderConfirmation";
 
 interface OrderItem {
   selected_size?: string | null;
@@ -96,12 +97,6 @@ const ThankYou = () => {
     setAccountCreated(true);
     toast({ title: "Account created", description: "You can now track all your orders." });
   };
-
-  // Clear cart and promo once on arrival
-  useEffect(() => {
-    clearCart();
-    clearPromo();
-  }, []);
 
   useEffect(() => {
     if (!orderId) {
@@ -178,8 +173,9 @@ const ThankYou = () => {
         };
 
         setOrder(orderDetails);
-
-
+        if (!isOrderConfirmed(orderDetails)) return;
+        clearCart();
+        clearPromo();
         // Track purchase once
         if (!sessionStorage.getItem(`thankyou-tracked-${orderId}`)) {
           sessionStorage.setItem(`thankyou-tracked-${orderId}`, "true");
@@ -229,13 +225,14 @@ const ThankYou = () => {
   const shippingAmount = order
     ? (order.shipping_amount ?? Math.max(0, order.final_amount - order.total_amount + discountAmount))
     : 0;
+  const confirmed = order ? isOrderConfirmed(order) : false;
 
 
   return (
     <Layout>
       <SEO
-        title="Thank You for Your Order | Vastra"
-        description="Your order has been placed successfully. Thank you for shopping with Vastra."
+        title={confirmed ? "Thank You for Your Order | Vastra" : "Order Payment Status | Vastra"}
+        description={confirmed ? "Your order has been placed successfully. Thank you for shopping with Vastra." : "Check your order payment status at Vastra."}
         noIndex={true}
       />
       <div className="min-h-screen bg-gradient-to-b from-[#faf9f3] via-[#f5f5dc] to-[#faf9f3]">
@@ -244,13 +241,13 @@ const ThankYou = () => {
             {/* Hero Thank You Card */}
             <div className="text-center mb-8 md:mb-12">
               <div className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#d4af37]/15 mb-6">
-                <CheckCircle className="h-10 w-10 md:h-12 md:w-12 text-[#b8860b]" />
+                {confirmed ? <CheckCircle className="h-10 w-10 md:h-12 md:w-12 text-primary" /> : <Package className="h-10 w-10 md:h-12 md:w-12 text-primary" />}
               </div>
               <h1 className="text-3xl md:text-5xl font-playfair font-bold text-[#2c1810] mb-3 text-balance">
-                Thank You for Your Purchase
+                {confirmed ? "Thank You for Your Purchase" : loading ? "Checking Your Payment" : "Order Not Confirmed"}
               </h1>
               <p className="text-[#5a4a3a] text-base md:text-lg max-w-xl mx-auto text-balance">
-                Your order has been received and is being prepared with care. We appreciate you choosing Vastra for your timeless ensemble.
+                {confirmed ? "Your order has been received and is being prepared with care. We appreciate you choosing Vastra for your timeless ensemble." : "Your order is confirmed only after payment succeeds. Your cart stays saved while payment is pending or unsuccessful."}
               </p>
             </div>
 
@@ -261,7 +258,7 @@ const ThankYou = () => {
                   <p className="text-[#5a4a3a]">Loading your order details...</p>
                 </CardContent>
               </Card>
-            ) : order ? (
+            ) : order && confirmed ? (
               <div className="space-y-6">
                 {/* Order Info Card */}
                 <Card className="border-[#d4af37]/20 shadow-lg overflow-hidden">
@@ -459,6 +456,11 @@ const ThankYou = () => {
                     </div>
                   </CardContent>
                 </Card>
+              </div>
+            ) : order ? (
+              <div className="space-y-4 text-center">
+                <p className="text-muted-foreground">Order {order.order_number} · Payment: {order.payment_status}</p>
+                <Button onClick={() => navigate("/checkout")}>Return to Checkout <ArrowRight className="h-4 w-4 ml-2" /></Button>
               </div>
             ) : (
               <Card className="border-[#d4af37]/20 shadow-lg">
