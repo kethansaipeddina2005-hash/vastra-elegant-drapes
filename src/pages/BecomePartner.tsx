@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const opt = (max: number) => z.string().trim().max(max).optional().or(z.literal(""));
 const schema = z.object({
@@ -55,6 +56,7 @@ const fields: { key: keyof Form; label: string; area?: boolean; required?: boole
 ];
 
 const BecomePartner = () => {
+  const { user } = useAuth();
   const [form, setForm] = useState<Form>(empty);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -64,8 +66,9 @@ const BecomePartner = () => {
 
   const upload = async (folder: string, file: File | null) => {
     if (!file) return null;
+    if (!user) throw new Error("Sign in to upload application files");
     const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
-    const path = `${folder}/${crypto.randomUUID()}.${ext}`;
+    const path = `${user.id}/${folder}/${crypto.randomUUID()}.${ext}`;
     const { error } = await supabase.storage.from("partner-applications").upload(path, file, { contentType: file.type });
     if (error) throw error;
     return path;
@@ -157,13 +160,18 @@ const BecomePartner = () => {
                 {errors[f.key] && <p className="text-destructive text-xs mt-1">{errors[f.key]}</p>}
               </div>
             ))}
+            {!user && (
+              <p className="md:col-span-2 text-sm text-muted-foreground">
+                <a href="/account/login" className="text-accent underline">Sign in</a> to attach a logo or catalogue. Applications can still be submitted without file uploads.
+              </p>
+            )}
             <div>
               <Label htmlFor="logo_file">Logo (image)</Label>
-              <Input id="logo_file" type="file" accept="image/*" className="mt-1.5" onChange={pick(setLogoFile, ["image/"])} />
+              <Input id="logo_file" type="file" accept="image/*" className="mt-1.5" disabled={!user} onChange={pick(setLogoFile, ["image/"])} />
             </div>
             <div>
               <Label htmlFor="cat_file">Catalogue / Portfolio (PDF or image)</Label>
-              <Input id="cat_file" type="file" accept="application/pdf,image/*" className="mt-1.5" onChange={pick(setCatFile, ["image/", "application/pdf"])} />
+              <Input id="cat_file" type="file" accept="application/pdf,image/*" className="mt-1.5" disabled={!user} onChange={pick(setCatFile, ["image/", "application/pdf"])} />
             </div>
             <div className="md:col-span-2">
               <Button type="submit" disabled={submitting} className="w-full md:w-auto px-10">

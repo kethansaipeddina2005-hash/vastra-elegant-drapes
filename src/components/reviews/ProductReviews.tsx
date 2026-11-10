@@ -14,9 +14,6 @@ interface Review {
   photos: string[];
   created_at: string;
   order_item_id: string | null;
-  profiles?: {
-    full_name: string | null;
-  } | null;
 }
 
 interface ProductReviewsProps {
@@ -37,33 +34,15 @@ export const ProductReviews = ({ productId, productRating = 0, productReviewCoun
 
   const fetchReviews = async () => {
     try {
-      const { data: reviewsData, error } = await supabase
-        .from('reviews')
-        .select('id, rating, comment, photos, created_at, user_id, order_item_id')
-        .eq('product_id', productId)
-        .order('created_at', { ascending: false });
+      const { data: reviewsData, error } = await supabase.rpc('get_public_product_reviews', {
+        _product_id: productId,
+      });
 
       if (error) throw error;
-
-      // Fetch profiles for the reviews
-      if (reviewsData && reviewsData.length > 0) {
-        const userIds = [...new Set(reviewsData.map((r) => r.user_id))];
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('id, full_name')
-          .in('id', userIds);
-
-        const profilesMap = new Map(profilesData?.map((p) => [p.id, p]) || []);
-
-        const reviewsWithProfiles = reviewsData.map((review) => ({
-          ...review,
-          profiles: profilesMap.get(review.user_id) || null,
-        }));
-
-        setReviews(reviewsWithProfiles);
-      } else {
-        setReviews([]);
-      }
+      setReviews((reviewsData || []).map((review) => ({
+        ...review,
+        order_item_id: review.verified_purchase ? 'verified' : null,
+      })));
     } catch (error) {
       console.error('Error fetching reviews:', error);
     } finally {

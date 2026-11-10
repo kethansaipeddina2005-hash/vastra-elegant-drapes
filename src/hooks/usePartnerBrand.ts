@@ -43,8 +43,10 @@ export const fetchPartnerBrand = async (id: string): Promise<PartnerBrand | null
   if (!row) { cache.set(id, null); return null; }
   let logoSrc: string | null = row.logo_url || null;
   if (row.logo_path) {
-    const { data: s } = await supabase.storage.from("partner-applications").createSignedUrl(row.logo_path, 3600);
-    if (s?.signedUrl) logoSrc = s.signedUrl;
+    const { data, error } = await supabase.functions.invoke("get-approved-partner-logo", {
+      body: { partner_id: row.id },
+    });
+    if (!error && typeof data?.logo_url === "string") logoSrc = data.logo_url;
   }
   const brand = { id: row.id, slug: row.slug, brand_name: row.brand_name, location: row.location, business_description: row.business_description, logoSrc };
   cache.set(id, brand);

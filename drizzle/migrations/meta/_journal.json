@@ -183,6 +183,13 @@
       "when": 1793944445414,
       "tag": "0025_release_legacy_unpaid_inventory",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1794322956913,
+      "tag": "0026_secure_public_reviews_and_partner_uploads",
+      "breakpoints": true
     }
   ]
 }

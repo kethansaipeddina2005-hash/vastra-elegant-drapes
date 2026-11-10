@@ -8,6 +8,7 @@
 - Partner commission overrides are stored in private per-product pricing and changed by an admin-only atomic RPC; base-price recalculation preserves overrides and historical sale snapshots.
 - Public partner routes resolve brand-name slugs through the approved-only brand directory and redirect legacy ID URLs; this keeps private application data inaccessible and old links usable.
 - Use the generated Lovable Cloud client for application queries and additive tool-applied SQL migrations for schema changes; generated integration files are not hand-edited.
+- Public product reviews and approved partner logos are served through narrow functions that omit reviewer and applicant records; partner application uploads are scoped to authenticated user-owned folders, while catalogues remain private.
 - Product size charts are per-product JSON with named measurement columns and per-size stock; shared editor and sizing helpers keep admin, partner, and shopping behavior consistent.
 - Cart lines are keyed by product ID plus selected size, and orders store size and measurement snapshots so subsequent chart changes do not alter purchased selections.
 - Deduct online inventory only on verified payment completion and COD inventory at placement; locked, idempotent database triggers update total/size stock and restore only actually deducted stock, preserving partner approval.

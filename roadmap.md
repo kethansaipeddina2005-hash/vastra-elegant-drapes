@@ -1,4 +1,5 @@
 # Marketplace (unified Vastra Luxe fashion platform)
+- [x] Fix only the selected review-row and partner-application storage findings; approved logos remain available through approved-only signed URLs
 - [x] Block unpaid online confirmation and defer total/size stock deduction until payment completion; rollback-isolated database lifecycle tests pass; six unshipped unpaid legacy orders released
 - [ ] Review legacy unpaid orders already marked shipped/delivered against Razorpay records — physical fulfillment/payment evidence needed before changing them
 - [ ] Admin country delivery charges and checkout/server pricing integration with verification

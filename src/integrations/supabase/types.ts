@@ -1335,6 +1335,17 @@ export type Database = {
           usage_limit_per_user: number
         }[]
       }
+      get_public_product_reviews: {
+        Args: { _product_id: number }
+        Returns: {
+          comment: string
+          created_at: string
+          id: string
+          photos: string[]
+          rating: number
+          verified_purchase: boolean
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
